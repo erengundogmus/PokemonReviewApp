@@ -55,5 +55,11 @@ namespace PokemonReviewApp.Repository
         {
             return this.context.Reviewers.Where(r => r.Id == reviewerId).Include(e => e.Reviews).FirstOrDefault();
         }
+
+        public bool UpdateReview(Review review)
+        {
+            this.context.Update(review);
+            return Save();
+        }
     }
 }

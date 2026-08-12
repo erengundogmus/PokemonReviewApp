@@ -82,5 +82,11 @@ namespace PokemonReviewApp.Repository
             var saved = this.context.SaveChanges();
             return saved > 0 ? true : false;
         }
+
+        public bool Update(Pokemon pokemon)
+        {
+            this.context.Update(pokemon);
+            return Save();
+        }
     }
 }
