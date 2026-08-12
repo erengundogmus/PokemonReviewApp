@@ -33,7 +33,7 @@ namespace PokemonReviewApp.Controllers
         }
 
 
-        [HttpGet("{pokeid}")]
+        [HttpGet("pokeid")]
         [ProducesResponseType(200, Type = typeof(Pokemon))]
         [ProducesResponseType(400)]
 
@@ -50,7 +50,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(pokemon);
         }
 
-        [HttpGet("{pokeID}/rating")]
+        [HttpGet("pokeID/rating")]
         [ProducesResponseType(200, Type = typeof(decimal))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemonRating(int pokeID) 

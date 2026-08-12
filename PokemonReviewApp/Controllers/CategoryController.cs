@@ -32,7 +32,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(categories);
         }
 
-        [HttpGet("{categoryId}")]
+        [HttpGet("categoryId")]
         [ProducesResponseType(200, Type = typeof(Category))]
         [ProducesResponseType(400)]
         public IActionResult GetCategory(int categoryId)
@@ -48,7 +48,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(category);
         }
 
-        [HttpGet("pokemon/{categoryId}")]
+        [HttpGet("pokemon/categoryId")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemonByCategoryId(int categoryId)

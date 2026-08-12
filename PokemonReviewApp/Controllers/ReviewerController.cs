@@ -34,7 +34,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviewers);
         }
 
-        [HttpGet("{reviewerId}")]
+        [HttpGet("reviewerId")]
         [ProducesResponseType(200, Type = typeof(Reviewer))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemon(int reviewerId)
@@ -50,7 +50,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviewer);
         }
 
-        [HttpGet("{reviewerId}/reviews")]
+        [HttpGet("reviewerId/reviews")]
         public IActionResult GetReviewsByAReviewer(int reviewerId)
         {
             if (!reviewerInterface.ReviewerExists(reviewerId))

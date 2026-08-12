@@ -3,12 +3,18 @@ using PokemonReviewApp;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Repository;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+// Reviewerın tüm reviewlarını aynı anda görebilmek için
+builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<Seed>();
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 builder.Services.AddScoped<IPokemonInterface, PokemonRepository>();
@@ -17,8 +23,6 @@ builder.Services.AddScoped<ICountryInterface, CountryRepository>();
 builder.Services.AddScoped<IOwnerInterface, OwnerRepository>();
 builder.Services.AddScoped<IReviewInterface, ReviewRepository>();
 builder.Services.AddScoped<IReviewerInterface, ReviewerRepository>();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
@@ -43,7 +47,8 @@ void SeedData(IHost app)
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
