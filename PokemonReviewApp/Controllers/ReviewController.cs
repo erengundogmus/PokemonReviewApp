@@ -13,12 +13,13 @@ namespace PokemonReviewApp.Controllers
     {
         private readonly IReviewInterface reviewInterface;
         private readonly IMapper mapper;
+        private readonly IPokemonInterface pokemonInterface;
 
-        public ReviewController(IReviewInterface reviewInterface, IMapper mapper)
+        public ReviewController(IReviewInterface reviewInterface, IMapper mapper, IPokemonInterface pokemonInterface)
         {
             this.reviewInterface = reviewInterface;
             this.mapper = mapper;
-
+            this.pokemonInterface = pokemonInterface;
         }
 
         [HttpGet]
@@ -65,6 +66,50 @@ namespace PokemonReviewApp.Controllers
 
             return Ok(reviews);
         }
+
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateReview([FromQuery] int reviewerId, [FromQuery] int pokeId, [FromBody] ReviewDto reviewCreate)
+        {
+            if (reviewCreate == null)
+                return BadRequest(ModelState);
+
+            var review = reviewInterface.GetReviews().Where(c => c.Title.Trim().ToUpper() == reviewCreate.Title.TrimEnd().ToUpper()).FirstOrDefault();
+
+            if (review != null)
+            {
+                ModelState.AddModelError("", "Review already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var ReviewMap = mapper.Map<Review>(reviewCreate);
+
+            ReviewMap.Pokemon = pokemonInterface.GetPokemon(pokeId);
+            ReviewMap.Reviewer = reviewInterface.GetReviewer(reviewerId);
+
+            if (!reviewInterface.CreateReview(ReviewMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
+        }
+
+
+
+
+
+
+
+
+
+
+
 
     }
 }

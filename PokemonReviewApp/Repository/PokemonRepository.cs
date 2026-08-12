@@ -14,6 +14,39 @@ namespace PokemonReviewApp.Repository
             this.context = context;
         }
 
+        public bool CreatePokemon(Pokemon pokemon)
+        {
+            this.context.Add(pokemon);
+            return Save();
+        }
+
+        public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+            var category = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+            //join table için ekledik
+            var pokemonOwner = new PokemonOwner()
+            {
+                Owner = pokemonOwnerEntity,
+                Pokemon = pokemon,
+            };
+
+            this.context.Add(pokemonOwner);
+            
+            //join table için ekledik
+            var pokemonCategory = new PokemonCategory()
+            {
+                Category = category,
+                Pokemon = pokemon,
+            };
+
+            this.context.Add(pokemonCategory);
+
+            this.context.Add(pokemon);
+
+            return Save();
+        }
+
         public Pokemon GetPokemon(int id)
         {
             return this.context.Pokemon.Where(p => p.Id == id).FirstOrDefault();
@@ -42,6 +75,12 @@ namespace PokemonReviewApp.Repository
         public bool PokemonExists(int pokeId)
         {
             return this.context.Pokemon.Any(p => p.Id == pokeId);
+        }
+
+        public bool Save()
+        {
+            var saved = this.context.SaveChanges();
+            return saved > 0 ? true : false;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
@@ -36,6 +37,23 @@ namespace PokemonReviewApp.Repository
         public bool ReviewExists(int reviewId)
         {
             return this.context.Reviews.Any(r => r.Id == reviewId);
+        }
+
+        public bool CreateReview(Review review)
+        {
+            this.context.Add(review);
+            return Save();
+        }
+
+        public bool Save()
+        {
+            var saved = this.context.SaveChanges();
+            return saved > 0 ? true : false;
+        }
+
+        public Reviewer GetReviewer(int reviewerId)
+        {
+            return this.context.Reviewers.Where(r => r.Id == reviewerId).Include(e => e.Reviews).FirstOrDefault();
         }
     }
 }

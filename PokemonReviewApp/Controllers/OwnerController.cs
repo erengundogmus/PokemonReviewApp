@@ -14,11 +14,13 @@ namespace PokemonReviewApp.Controllers
     {
         private readonly IOwnerInterface ownerInterface;
         private readonly IMapper mapper;
+        private readonly ICountryInterface countryInterface;
 
-        public OwnerController(IOwnerInterface ownerInterface, IMapper mapper)
+        public OwnerController(IOwnerInterface ownerInterface, IMapper mapper, ICountryInterface countryInterface)
         {
             this.ownerInterface = ownerInterface;
             this.mapper = mapper;
+            this.countryInterface = countryInterface;
         }
 
         [HttpGet]
@@ -69,7 +71,36 @@ namespace PokemonReviewApp.Controllers
             return Ok(owner);
         }
 
+        [HttpPost]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        public IActionResult CreateOwner([FromQuery] int countryId, [FromBody] OwnerDto ownerCreate)
+        {
+            if (ownerCreate == null)
+                return BadRequest(ModelState);
 
+            var owner = ownerInterface.GetOwners().Where(c => c.Name.Trim().ToUpper() == ownerCreate.Name.TrimEnd().ToUpper()).FirstOrDefault();
+
+            if (owner != null)
+            {
+                ModelState.AddModelError("", "Owner already exists");
+                return StatusCode(422, ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var ownerMap = mapper.Map<Owner>(ownerCreate);
+            ownerMap.Country = countryInterface.GetCountry(countryId);
+
+            if (!ownerInterface.CreateOwner(ownerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return Ok("Successfully created");
+        }
 
 
     }
