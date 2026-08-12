@@ -33,12 +33,6 @@ namespace PokemonReviewApp.Controllers
         }
 
 
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return Ok("API ayakta!");
-        }
-
         [HttpGet("{pokeid}")]
         [ProducesResponseType(200, Type = typeof(Pokemon))]
         [ProducesResponseType(400)]

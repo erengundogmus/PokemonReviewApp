@@ -42,5 +42,30 @@ namespace PokemonReviewApp.Data
                     .WithMany(po => po.PokemonOwners)
                     .HasForeignKey(o => o.OwnerId);
         }
+
+        internal object GetReviewer(int reviewerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal object GetReviewers()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal object GetReviewsByReviewer(int reviewerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal bool ReviewerExists(int reviewerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal bool ReviewersExist(Func<object, bool> value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

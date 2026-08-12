@@ -14,6 +14,9 @@ builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAss
 builder.Services.AddScoped<IPokemonInterface, PokemonRepository>();
 builder.Services.AddScoped<ICategoryInterface, CategoryRepository>();
 builder.Services.AddScoped<ICountryInterface, CountryRepository>();
+builder.Services.AddScoped<IOwnerInterface, OwnerRepository>();
+builder.Services.AddScoped<IReviewInterface, ReviewRepository>();
+builder.Services.AddScoped<IReviewerInterface, ReviewerRepository>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<DataContext>(options =>
