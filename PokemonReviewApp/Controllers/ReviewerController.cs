@@ -34,7 +34,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviewers);
         }
 
-        [HttpGet("reviewerId")]
+        [HttpGet("{reviewerId}")]
         [ProducesResponseType(200, Type = typeof(Reviewer))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemon(int reviewerId)
@@ -50,7 +50,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviewer);
         }
 
-        [HttpGet("reviewerId/reviews")]
+        [HttpGet("{reviewerId}/reviews")]
         public IActionResult GetReviewsByAReviewer(int reviewerId)
         {
             if (!reviewerInterface.ReviewerExists(reviewerId))
@@ -93,6 +93,39 @@ namespace PokemonReviewApp.Controllers
 
             return Ok("Successfully created");
         }
+
+        
+        
+        [HttpPut("{reviewerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateReviewer(int reviewerId, [FromBody] ReviewerDto updatedreviewer)
+        {
+            if (updatedreviewer == null)
+                return BadRequest(ModelState);
+            if (reviewerId != updatedreviewer.Id)
+                return BadRequest(ModelState);
+            if (!reviewerInterface.ReviewerExists(reviewerId))
+                return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var reviewerMap = this.mapper.Map<Reviewer>(updatedreviewer);
+
+            if (!reviewerInterface.UpdateReviewer(reviewerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating reviewer.");
+                return StatusCode(500, ModelState);
+
+            }
+
+            return NoContent();
+
+        }
+
+
+
 
 
 

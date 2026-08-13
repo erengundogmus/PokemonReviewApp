@@ -36,7 +36,7 @@ namespace PokemonReviewApp.Controllers
         }
 
 
-        [HttpGet("reviewid")]
+        [HttpGet("{reviewid}")]
         [ProducesResponseType(200, Type = typeof(Review))]
         [ProducesResponseType(400)]
 
@@ -54,7 +54,7 @@ namespace PokemonReviewApp.Controllers
 
         }
 
-        [HttpGet("pokemon/pokeId")]
+        [HttpGet("pokemon/{pokeId}")]
         [ProducesResponseType(200, Type = typeof(Review))]
         [ProducesResponseType(400)]
         public IActionResult GetReviewsForAPokemon(int pokeId)
@@ -101,7 +101,33 @@ namespace PokemonReviewApp.Controllers
         }
 
 
+        [HttpPut("{reviewId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateReview(int reviewId, [FromBody] ReviewDto updatedreview)
+        {
+            if (updatedreview == null)
+                return BadRequest(ModelState);
+            if (reviewId != updatedreview.Id)
+                return BadRequest(ModelState);
+            if (!reviewInterface.ReviewExists(reviewId))
+                return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest();
 
+            var reviewMap = this.mapper.Map<Review>(updatedreview);
+
+            if (!reviewInterface.UpdateReview(reviewMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating review.");
+                return StatusCode(500, ModelState);
+
+            }
+
+            return NoContent();
+
+        }
 
 
 

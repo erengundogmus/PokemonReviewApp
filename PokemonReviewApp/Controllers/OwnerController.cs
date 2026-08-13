@@ -36,7 +36,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(owners);
         }
 
-        [HttpGet("ownerid")]
+        [HttpGet("{ownerid}")]
         [ProducesResponseType(200, Type = typeof(Owner))]
         [ProducesResponseType(400)]
 
@@ -53,7 +53,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(owner);
         }
 
-        [HttpGet("ownerId/pokemon")]
+        [HttpGet("{ownerId}/pokemon")]
         [ProducesResponseType(200, Type = typeof(Owner))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemonByOwner(int ownerId)
@@ -102,6 +102,43 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created");
         }
 
+
+        [HttpPut("{ownerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateOwner(int ownerId, [FromBody] OwnerDto updatedowner)
+        {
+            if (updatedowner == null)
+                return BadRequest(ModelState);
+            if (ownerId != updatedowner.Id)
+                return BadRequest(ModelState);
+            if (!ownerInterface.OwnerExists(ownerId))
+                return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest();
+
+            var ownerMap = this.mapper.Map<Owner>(updatedowner);
+
+            if (!ownerInterface.UpdateOwner(ownerMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating owner.");
+                return StatusCode(500, ModelState);
+
+            }
+
+            return NoContent();
+
+        }
+
+
+
+
+
+
+
+
+        
 
     }
 }

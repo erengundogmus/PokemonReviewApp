@@ -50,7 +50,7 @@ namespace PokemonReviewApp.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool Update(Owner owner)
+        public bool UpdateOwner(Owner owner)
         {
             this.context.Update(owner);
             return Save();

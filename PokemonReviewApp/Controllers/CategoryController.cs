@@ -32,7 +32,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(categories);
         }
 
-        [HttpGet("categoryId")]
+        [HttpGet("{categoryId}")]
         [ProducesResponseType(200, Type = typeof(Category))]
         [ProducesResponseType(400)]
         public IActionResult GetCategory(int categoryId)
@@ -48,7 +48,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(category);
         }
 
-        [HttpGet("pokemon/categoryId")]
+        [HttpGet("pokemon/{categoryId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
         [ProducesResponseType(400)]
         public IActionResult GetPokemonByCategoryId(int categoryId)
@@ -95,7 +95,7 @@ namespace PokemonReviewApp.Controllers
         }
 
 
-        [HttpPut("categoryId")]
+        [HttpPut("{categoryId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
@@ -110,11 +110,13 @@ namespace PokemonReviewApp.Controllers
             if(!ModelState.IsValid)
                 return BadRequest();
 
+            /*   mapping yapmasaydık kullanacağımız yöntem
             Category category = new Category
             {
                 Id = updatedcategory.Id,
                 Name = updatedcategory.Name,
             };
+            */
 
             var categoryMap = this.mapper.Map<Category>(updatedcategory);
             

@@ -32,7 +32,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(countries);
         }
 
-        [HttpGet("countryId")]
+        [HttpGet("{countryId}")]
         [ProducesResponseType(200, Type = typeof(Country))]
         [ProducesResponseType(400)]
         public IActionResult GetCountry(int countryId)
@@ -48,7 +48,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(country);
         }
 
-        [HttpGet("/owners/ownerId")]
+        [HttpGet("/owners/{ownerId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(200, Type = typeof(Country))]
         public IActionResult GetCountryOfAnOwner(int ownerId)
@@ -70,8 +70,7 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
 
             var country = countryInterface.GetCountries()
-                .Where(c => c.Name.Trim().ToUpper() == countryCreate.Name.TrimEnd().ToUpper())
-                .FirstOrDefault();
+                .Where(c => c.Name.Trim().ToUpper() == countryCreate.Name.TrimEnd().ToUpper()).FirstOrDefault();
 
             if (country != null)
             {
@@ -94,7 +93,33 @@ namespace PokemonReviewApp.Controllers
         }
 
 
+        [HttpPut("{countryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCountry(int countryID, [FromBody] CountryDto updatedcountry)
+        {
+            if (updatedcountry == null)
+                return BadRequest(ModelState);
+            if (countryID != updatedcountry.Id)
+                return BadRequest(ModelState);
+            if (!countryInterface.CountryExists(countryID))
+                return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest();
 
+            var countryMap = this.mapper.Map<Country>(updatedcountry);
+
+            if (!countryInterface.UpdateCountry(countryMap))
+            {
+                ModelState.AddModelError("", "Something went wrong while updating country.");
+                return StatusCode(500, ModelState);
+
+            }
+
+            return NoContent();
+
+        }
 
 
 
