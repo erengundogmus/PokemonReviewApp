@@ -97,13 +97,13 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateCountry(int countryID, [FromBody] CountryDto updatedcountry)
+        public IActionResult UpdateCountry(int countryId, [FromBody] CountryDto updatedcountry)
         {
             if (updatedcountry == null)
                 return BadRequest(ModelState);
-            if (countryID != updatedcountry.Id)
+            if (countryId != updatedcountry.Id)
                 return BadRequest(ModelState);
-            if (!countryInterface.CountryExists(countryID))
+            if (!countryInterface.CountryExists(countryId))
                 return NotFound();
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -142,6 +142,7 @@ namespace PokemonReviewApp.Controllers
             if (!countryInterface.DeleteCountry(countryToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong while deleting country.");
+                return StatusCode(500, ModelState);
             }
 
             return NoContent();

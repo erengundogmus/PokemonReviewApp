@@ -35,6 +35,7 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("{categoryId}")]
         [ProducesResponseType(200, Type = typeof(Category))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult GetCategory(int categoryId)
         {
             if (!categoryInterface.CategoryExists(categoryId))
@@ -51,8 +52,12 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("pokemon/{categoryId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult GetPokemonByCategoryId(int categoryId)
         {
+            if (!categoryInterface.CategoryExists(categoryId)) //category yoksa boş olduğunu bildirir
+                return NotFound("Category does not exists.");
+
             var pokemons = mapper.Map<List<PokemonDto>>(categoryInterface.GetPokemonByCategory(categoryId));
 
             if (!ModelState.IsValid)
@@ -70,7 +75,7 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
 
             var category = categoryInterface.GetCategories()
-                .Where(c => c.Name.Trim().ToUpper() == categoryCreate.Name.TrimEnd().ToUpper())
+                .Where(c => c.Name.Trim().ToUpper() == categoryCreate.Name.Trim().ToUpper())
                 .FirstOrDefault();
 
             if (category != null)
@@ -87,11 +92,11 @@ namespace PokemonReviewApp.Controllers
             if (!categoryInterface.CreateCategory(categoryMap))
             {
                 //modelstate key value olduğu için iki tane "" açtık
-                ModelState.AddModelError("", "Something went wrong while savin");
+                ModelState.AddModelError("", "Something went wrong while saving.");
                 return StatusCode(500, ModelState);
             }
 
-            return Ok("Successfully created");
+            return Ok("Successfully created.");
         }
 
 
@@ -99,26 +104,38 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateCategory(int categoryID, [FromBody]CategoryDto updatedcategory)
+        public IActionResult UpdateCategory(int categoryId, [FromBody]CategoryDto updatedcategory)
         {
             if(updatedcategory == null)
                 return BadRequest(ModelState);
-            if(categoryID != updatedcategory.Id)
+            if(categoryId != updatedcategory.Id)
                 return BadRequest(ModelState);
-            if(!categoryInterface.CategoryExists(categoryID))
+            if(!categoryInterface.CategoryExists(categoryId))
                 return NotFound();
             if(!ModelState.IsValid)
                 return BadRequest();
 
-            /*   mapping yapmasaydık kullanacağımız yöntem
-            Category category = new Category
-            {
-                Id = updatedcategory.Id,
-                Name = updatedcategory.Name,
-            };
-            */
 
-            var categoryMap = this.mapper.Map<Category>(updatedcategory);
+
+
+            var existingCategory = categoryInterface.GetCategories()
+            .Where(c => c.Name.Trim().ToUpper() == updatedcategory.Name.Trim().ToUpper() && c.Id != categoryId).FirstOrDefault();
+
+            if (existingCategory != null)
+            {
+                ModelState.AddModelError("", "Category already exists.");
+                return StatusCode(422, ModelState);
+            }
+
+                /*   mapping yapmasaydık kullanacağımız yöntem
+                Category category = new Category
+                {
+                    Id = updatedcategory.Id,
+                    Name = updatedcategory.Name,
+                };
+                */
+
+                var categoryMap = this.mapper.Map<Category>(updatedcategory);
             
             if (!categoryInterface.UpdateCategory(categoryMap))
             {
@@ -151,6 +168,7 @@ namespace PokemonReviewApp.Controllers
             if (!categoryInterface.DeleteCategory(categoryToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong while deleting category.");
+                return StatusCode(500, ModelState);
             }
 
             return NoContent();
