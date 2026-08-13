@@ -87,7 +87,7 @@ namespace PokemonReviewApp.Controllers
 
             var PokemonMap = mapper.Map<Pokemon>(pokemonCreate);
 
-            if (!pokemonInterface.CreatePokemon(ownerId, categoryId, PokemonMap))
+            if (!pokemonInterface.CreatePokemon(ownerId, categoryId, PokemonMap)) // veritabanına kayıt başarılı olmazsa bu hata
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
                 return StatusCode(500, ModelState);
@@ -110,6 +110,17 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
             if (!pokemonInterface.PokemonExists(pokemonId))
                 return NotFound();
+            
+            // pokemonun olup olmadığını kontrol eder
+            var existingPokemon = pokemonInterface.GetPokemons()                               /*şu an güncellenen pokemon hariç(category değişecekse buraya takılmamak için)*/  
+                .Where(c => c.Name.Trim().ToUpper() == updatedpokemon.Name.TrimEnd().ToUpper() && c.Id != pokemonId).FirstOrDefault();
+
+            if (existingPokemon != null)
+            {
+                ModelState.AddModelError("", "Pokemon already exists.");
+                return StatusCode(422, ModelState); //422 Unprocessable Entity hata kodu
+            }
+
             if (!ModelState.IsValid)
                 return BadRequest();
 
@@ -131,7 +142,7 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult DeleteReview(int pokemonId)
+        public IActionResult DeletePokemon(int pokemonId)
         {
             if (!pokemonInterface.PokemonExists(pokemonId))
             {
