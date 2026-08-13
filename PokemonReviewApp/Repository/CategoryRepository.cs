@@ -24,6 +24,12 @@ namespace PokemonReviewApp.Repository
             return Save();
         }
 
+        public bool DeleteCategory(Category category)
+        {
+            this.context.Remove(category);
+            return Save();
+        }
+
         public ICollection<Category> GetCategories()
         {
             return this.context.Categories.ToList();

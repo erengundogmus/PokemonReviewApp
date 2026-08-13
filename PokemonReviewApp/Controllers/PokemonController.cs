@@ -127,6 +127,31 @@ namespace PokemonReviewApp.Controllers
         }
 
 
+        [HttpDelete("{pokemonId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteReview(int pokemonId)
+        {
+            if (!pokemonInterface.PokemonExists(pokemonId))
+            {
+                return NotFound();
+            }
+
+            var pokemonToDelete = pokemonInterface.GetPokemon(pokemonId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!pokemonInterface.DeletePokemon(pokemonToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting pokemon.");
+            }
+
+            return NoContent();
+
+        }
+
 
 
 

@@ -132,7 +132,30 @@ namespace PokemonReviewApp.Controllers
         }
 
 
+        [HttpDelete("{categoryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int categoryId)
+        {
+            if (!categoryInterface.CategoryExists(categoryId))
+            {
+                return NotFound();
+            }
 
+            var categoryToDelete = categoryInterface.GetCategory(categoryId);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!categoryInterface.DeleteCategory(categoryToDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong while deleting category.");
+            }
+
+            return NoContent();
+
+        }
 
 
 
