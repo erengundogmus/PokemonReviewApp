@@ -56,7 +56,7 @@ namespace PokemonReviewApp.Controllers
         public IActionResult GetPokemonByCategoryId(int categoryId)
         {
             if (!categoryInterface.CategoryExists(categoryId)) //category yoksa boş olduğunu bildirir
-                return NotFound("Category does not exists.");
+                return NotFound("Category does not exist.");
 
             var pokemons = mapper.Map<List<PokemonDto>>(categoryInterface.GetPokemonByCategory(categoryId));
 
@@ -80,7 +80,7 @@ namespace PokemonReviewApp.Controllers
 
             if (category != null)
             {
-                ModelState.AddModelError("", "Category already exists");
+                ModelState.AddModelError("", "Category already exist");
                 return StatusCode(422, ModelState);
             }
 
@@ -123,7 +123,7 @@ namespace PokemonReviewApp.Controllers
 
             if (existingCategory != null)
             {
-                ModelState.AddModelError("", "Category already exists.");
+                ModelState.AddModelError("", "Category already exist.");
                 return StatusCode(422, ModelState);
             }
 

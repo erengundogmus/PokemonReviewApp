@@ -35,10 +35,11 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("{countryId}")]
         [ProducesResponseType(200, Type = typeof(Country))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult GetCountry(int countryId)
         {
             if (!countryInterface.CountryExists(countryId))
-                return NotFound();
+                return NotFound("Country does not exist.");
 
             var country = mapper.Map<CountryDto>(countryInterface.GetCountry(countryId));
 
@@ -48,33 +49,41 @@ namespace PokemonReviewApp.Controllers
             return Ok(country);
         }
 
-        [HttpGet("/owners/{ownerId}")]
+        [HttpGet("owners/{ownerId}")]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         [ProducesResponseType(200, Type = typeof(Country))]
         public IActionResult GetCountryOfAnOwner(int ownerId)
         {
-            var country = mapper.Map<CountryDto>(countryInterface.GetCountryByOwner(ownerId));
+            var country = countryInterface.GetCountryByOwner(ownerId);
+            
+            //owner'ın country'si var mı kontrol ediyoruz
+            if (country == null)
+                return NotFound("Owner does not exist or has no country.");
+
+            var countryDto = mapper.Map<CountryDto>(country);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return Ok(country);
+            return Ok(countryDto);
         }
 
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult CreateCountry([FromBody] CountryDto countryCreate)
         {
             if (countryCreate == null)
                 return BadRequest(ModelState);
 
             var country = countryInterface.GetCountries()
-                .Where(c => c.Name.Trim().ToUpper() == countryCreate.Name.TrimEnd().ToUpper()).FirstOrDefault();
+                .Where(c => c.Name.Trim().ToUpper() == countryCreate.Name.Trim().ToUpper()).FirstOrDefault();
 
             if (country != null)
             {
-                ModelState.AddModelError("", "Country already exists");
+                ModelState.AddModelError("", "Country already exist");
                 return StatusCode(422, ModelState);
             }
 
@@ -107,6 +116,17 @@ namespace PokemonReviewApp.Controllers
                 return NotFound();
             if (!ModelState.IsValid)
                 return BadRequest();
+
+            var existingCountry = countryInterface.GetCountries()
+                .Where(c => c.Name.Trim().ToUpper() == updatedcountry.Name.Trim().ToUpper() && c.Id != countryId).FirstOrDefault();
+
+            if (existingCountry != null)
+            {
+                ModelState.AddModelError("", "Country already exist.");
+                return StatusCode(422, ModelState);
+            }
+
+
 
             var countryMap = this.mapper.Map<Country>(updatedcountry);
 
