@@ -12,11 +12,15 @@ namespace PokemonReviewApp.Controllers
     {
         private readonly IPokemonInterface pokemonInterface;
         private readonly IMapper mapper;
+        private readonly ICategoryInterface categoryInterface; // category'nin varlığını kontrol etmek için
+        private readonly IOwnerInterface ownerInterface;  // owner'ın varlığını kontrol etmek için
 
-        public PokemonController(IPokemonInterface pokemonInterface, IMapper mapper)
+        public PokemonController(IPokemonInterface pokemonInterface, ICategoryInterface categoryInterface, IOwnerInterface ownerInterface, IMapper mapper)
         {
             this.pokemonInterface = pokemonInterface;
             this.mapper = mapper;
+            this.categoryInterface = categoryInterface; // category'nin varlığını kontrol etmek için
+            this.ownerInterface = ownerInterface; // owner'ın varlığını kontrol etmek için
         }
 
         [HttpGet]
@@ -74,6 +78,18 @@ namespace PokemonReviewApp.Controllers
             if (pokemonCreate == null)
                 return BadRequest(ModelState);
 
+            if (!ownerInterface.OwnerExists(ownerId))
+            {
+                ModelState.AddModelError("", "Owner does not exist!");
+                return NotFound(ModelState);
+            }
+
+            if (!categoryInterface.CategoryExists(categoryId))
+            {
+                ModelState.AddModelError("", "Category does not exist!");
+                return NotFound(ModelState);
+            }
+    
             var pokemon = pokemonInterface.GetPokemons().Where(c => c.Name.Trim().ToUpper() == pokemonCreate.Name.TrimEnd().ToUpper()).FirstOrDefault();
 
             if (pokemon != null)
