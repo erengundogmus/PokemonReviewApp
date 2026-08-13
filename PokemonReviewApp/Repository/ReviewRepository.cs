@@ -18,20 +18,20 @@ namespace PokemonReviewApp.Repository
             this.mapper = mapper;
         }
 
-
+        //Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
         public Review GetReview(int reviewId)
         {
-            return this.context.Reviews.Where(r => r.Id == reviewId).FirstOrDefault();
+            return this.context.Reviews.Include(r => r.Pokemon).Where(r => r.Id == reviewId).FirstOrDefault();
         }
 
         public ICollection<Review> GetReviewsOfAPokemon(int pokeId)
         {
-            return this.context.Reviews.Where(r => r.Pokemon.Id == pokeId).ToList();
+            return this.context.Reviews.Include(r => r.Pokemon).Where(r => r.Pokemon.Id == pokeId).ToList();
         }
 
         public ICollection<Review> GetReviews()
         {
-            return this.context.Reviews.ToList();
+            return this.context.Reviews.Include(r => r.Pokemon).ToList();
         }
 
         public bool ReviewExists(int reviewId)
