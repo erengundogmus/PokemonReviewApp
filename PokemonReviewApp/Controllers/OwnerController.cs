@@ -36,16 +36,17 @@ namespace PokemonReviewApp.Controllers
             return Ok(owners);
         }
 
-        [HttpGet("{ownerid}")]
+        [HttpGet("{ownerId}")]
         [ProducesResponseType(200, Type = typeof(Owner))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
 
-        public IActionResult GetOwner(int ownerid)
+        public IActionResult GetOwner(int ownerId)
         {
-            if (!ownerInterface.OwnerExists(ownerid))
+            if (!ownerInterface.OwnerExists(ownerId))
                 return NotFound();
 
-            var owner = mapper.Map<List<OwnerDto>>(ownerInterface.GetOwner(ownerid));
+            var owner = mapper.Map<OwnerDto>(ownerInterface.GetOwner(ownerId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -56,30 +57,32 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("{ownerId}/pokemon")]
         [ProducesResponseType(200, Type = typeof(Owner))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult GetPokemonByOwner(int ownerId)
         {
             if (!ownerInterface.OwnerExists(ownerId))
             {
-                return NotFound();
+                return NotFound("Owner does not exist.");
             }
 
-            var owner = mapper.Map<List<PokemonDto>>(ownerInterface.GetPokemonByOwner(ownerId));
+            var ownersPokemons = mapper.Map<List<PokemonDto>>(ownerInterface.GetPokemonByOwner(ownerId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return Ok(owner);
+            return Ok(ownersPokemons);
         }
 
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult CreateOwner([FromQuery] int countryId, [FromBody] OwnerDto ownerCreate)
         {
             if (ownerCreate == null)
                 return BadRequest(ModelState);
 
-            var owner = ownerInterface.GetOwners().Where(c => c.Name.Trim().ToUpper() == ownerCreate.Name.TrimEnd().ToUpper()).FirstOrDefault();
+            var owner = ownerInterface.GetOwners().Where(c => c.Name.Trim().ToUpper() == ownerCreate.Name.Trim().ToUpper()).FirstOrDefault();
 
             if (owner != null)
             {
@@ -118,6 +121,15 @@ namespace PokemonReviewApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
+            var existingOwner = ownerInterface.GetOwners()
+            .Where(o => o.Name.Trim().ToUpper() == updatedowner.Name.Trim().ToUpper() && o.Id != ownerId).FirstOrDefault();
+
+            if (existingOwner != null)
+            {
+                ModelState.AddModelError("", "Owner already exist.");
+                return StatusCode(422, ModelState);
+            }
+
             var ownerMap = this.mapper.Map<Owner>(updatedowner);
 
             if (!ownerInterface.UpdateOwner(ownerMap))
@@ -151,6 +163,7 @@ namespace PokemonReviewApp.Controllers
             if (!ownerInterface.DeleteOwner(ownerToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong while deleting owner.");
+                return StatusCode(500, ModelState);
             }
 
             return NoContent();
