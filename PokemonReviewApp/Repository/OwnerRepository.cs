@@ -58,6 +58,8 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateOwner(Owner owner)
         {
+            this.context.ChangeTracker.Clear();
+
             this.context.Update(owner);
             return Save();
         }

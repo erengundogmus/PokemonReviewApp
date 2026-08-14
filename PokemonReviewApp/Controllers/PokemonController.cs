@@ -40,6 +40,7 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("{pokeid}")]
         [ProducesResponseType(200, Type = typeof(Pokemon))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
 
         public IActionResult GetPokemon(int pokeid)
         {
@@ -57,6 +58,7 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("{pokeID}/rating")]
         [ProducesResponseType(200, Type = typeof(decimal))]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult GetPokemonRating(int pokeID) 
         {
             if (!pokemonInterface.PokemonExists(pokeID))
@@ -73,6 +75,7 @@ namespace PokemonReviewApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public IActionResult CreatePokemon([FromQuery] int ownerId, [FromQuery] int categoryId, [FromBody] PokemonDto pokemonCreate)
         {
             if (pokemonCreate == null)
@@ -90,7 +93,7 @@ namespace PokemonReviewApp.Controllers
                 return NotFound(ModelState);
             }
     
-            var pokemon = pokemonInterface.GetPokemons().Where(c => c.Name.Trim().ToUpper() == pokemonCreate.Name.TrimEnd().ToUpper()).FirstOrDefault();
+            var pokemon = pokemonInterface.GetPokemons().Where(c => c.Name.Trim().ToUpper() == pokemonCreate.Name.Trim().ToUpper()).FirstOrDefault();
 
             if (pokemon != null)
             {
@@ -129,13 +132,26 @@ namespace PokemonReviewApp.Controllers
             
             // pokemonun olup olmadığını kontrol eder
             var existingPokemon = pokemonInterface.GetPokemons()                               /*şu an güncellenen pokemon hariç(category değişecekse buraya takılmamak için)*/  
-                .Where(c => c.Name.Trim().ToUpper() == updatedpokemon.Name.TrimEnd().ToUpper() && c.Id != pokemonId).FirstOrDefault();
+                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != pokemonId).FirstOrDefault();
 
             if (existingPokemon != null)
             {
-                ModelState.AddModelError("", "Pokemon already exists.");
+                ModelState.AddModelError("", "Pokemon already exist.");
                 return StatusCode(422, ModelState); //422 Unprocessable Entity hata kodu
             }
+
+            if (!ownerInterface.OwnerExists(ownerId))
+            {
+                ModelState.AddModelError("", "Owner does not exist");
+                return NotFound(ModelState);
+            }
+
+            if (!categoryInterface.CategoryExists(categoryId))
+            {
+                ModelState.AddModelError("", "Category does not exist");
+                return NotFound(ModelState);
+            }
+
 
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -173,16 +189,12 @@ namespace PokemonReviewApp.Controllers
             if (!pokemonInterface.DeletePokemon(pokemonToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong while deleting pokemon.");
+                return StatusCode(500, ModelState);
             }
 
             return NoContent();
 
         }
-
-
-
-
-
 
     }
 

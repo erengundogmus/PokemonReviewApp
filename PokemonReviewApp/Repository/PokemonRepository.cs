@@ -92,6 +92,10 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
+            //ef core'un hafızasındaki tracked nesneleri temizliyoruz ki çakışma olmasın
+            this.context.ChangeTracker.Clear();
+
+
             this.context.Update(pokemon);
             return Save();
         }

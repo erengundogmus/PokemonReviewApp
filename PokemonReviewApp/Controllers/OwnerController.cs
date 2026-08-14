@@ -93,6 +93,12 @@ namespace PokemonReviewApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (!countryInterface.CountryExists(countryId))
+            {
+                ModelState.AddModelError("", "Country does not exist.");
+                return StatusCode(404, ModelState);
+            }
+
             var ownerMap = mapper.Map<Owner>(ownerCreate);
             ownerMap.Country = countryInterface.GetCountry(countryId);
 
