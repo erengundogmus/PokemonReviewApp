@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.Dto;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using PokemonReviewApp.Repository;
 
 namespace PokemonReviewApp.Controllers
 {
@@ -75,7 +74,7 @@ namespace PokemonReviewApp.Controllers
             if (reviewCreate == null)
                 return BadRequest(ModelState);
 
-            var review = reviewInterface.GetReviews().Where(c => c.Title.Trim().ToUpper() == reviewCreate.Title.TrimEnd().ToUpper()).FirstOrDefault();
+            var review = reviewInterface.GetReviews().Where(c => c.Title.Trim().ToUpper() == reviewCreate.Title.Trim().ToUpper()).FirstOrDefault();
 
             if (review != null)
             {
@@ -86,10 +85,23 @@ namespace PokemonReviewApp.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var ReviewMap = mapper.Map<Review>(reviewCreate);
+            var pokemon = pokemonInterface.GetPokemon(pokeId);
+            if (pokemon == null)
+            {
+                ModelState.AddModelError("", "Pokemon does not exist");
+                return NotFound(ModelState);
+            }
 
-            ReviewMap.Pokemon = pokemonInterface.GetPokemon(pokeId);
-            ReviewMap.Reviewer = reviewInterface.GetReviewer(reviewerId);
+            var reviewer = reviewInterface.GetReviewer(reviewerId);
+            if (reviewer == null)
+            {
+                ModelState.AddModelError("", "Reviewer does not exist");
+                return NotFound(ModelState);
+            }
+
+            var ReviewMap = mapper.Map<Review>(reviewCreate);
+            ReviewMap.Pokemon = pokemon;
+            ReviewMap.Reviewer = reviewer;
 
             if (!reviewInterface.CreateReview(ReviewMap))
             {
@@ -149,6 +161,7 @@ namespace PokemonReviewApp.Controllers
             if (!reviewInterface.DeleteReview(reviewToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong while deleting review.");
+                return StatusCode(500, ModelState);
             }
 
             return NoContent();

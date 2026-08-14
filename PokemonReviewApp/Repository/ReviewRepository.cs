@@ -9,8 +9,8 @@ namespace PokemonReviewApp.Repository
 
     public class ReviewRepository : IReviewInterface
     {
-        private DataContext context;
-        private IMapper mapper;
+        private readonly DataContext context;
+        private readonly IMapper mapper;
 
         public ReviewRepository(DataContext context, IMapper mapper)
         {
@@ -58,6 +58,8 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateReview(Review review)
         {
+            this.context.ChangeTracker.Clear();
+
             this.context.Update(review);
             return Save();
         }

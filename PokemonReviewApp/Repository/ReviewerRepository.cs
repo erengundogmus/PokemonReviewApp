@@ -57,6 +57,8 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateReviewer(Reviewer reviewer)
         {
+            this.context.ChangeTracker.Clear();
+
             this.context.Update(reviewer);
             return Save();
         }

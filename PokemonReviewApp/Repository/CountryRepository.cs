@@ -60,6 +60,8 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateCountry(Country country)
         {
+            this.context.ChangeTracker.Clear();
+
             this.context.Update(country);
             return Save();
         }

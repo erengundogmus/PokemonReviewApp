@@ -52,6 +52,8 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateCategory(Category category)
         {
+            this.context.ChangeTracker.Clear();
+
             this.context.Update(category);
             return Save();
         }

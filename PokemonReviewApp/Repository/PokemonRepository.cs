@@ -90,7 +90,7 @@ namespace PokemonReviewApp.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        public bool UpdatePokemon(Pokemon pokemon)
         {
             //ef core'un hafızasındaki tracked nesneleri temizliyoruz ki çakışma olmasın
             this.context.ChangeTracker.Clear();

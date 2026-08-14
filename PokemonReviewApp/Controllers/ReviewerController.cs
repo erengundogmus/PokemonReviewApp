@@ -37,7 +37,7 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("{reviewerId}")]
         [ProducesResponseType(200, Type = typeof(Reviewer))]
         [ProducesResponseType(400)]
-        public IActionResult GetPokemon(int reviewerId)
+        public IActionResult GetReviewer(int reviewerId)
         {
             if (!reviewerInterface.ReviewerExists(reviewerId))
                 return NotFound();
@@ -72,7 +72,8 @@ namespace PokemonReviewApp.Controllers
             if (reviewerCreate == null)
                 return BadRequest(ModelState);
 
-            var reviewer = reviewerInterface.GetReviewers().Where(c => c.FirstName.Trim().ToUpper() == reviewerCreate.LastName.TrimEnd().ToUpper()).FirstOrDefault();
+            var reviewer = reviewerInterface.GetReviewers()
+            .Where(c => c.FirstName.Trim().ToUpper() == reviewerCreate.FirstName.Trim().ToUpper() && c.LastName.Trim().ToUpper() == reviewerCreate.LastName.Trim().ToUpper()).FirstOrDefault();
 
             if (reviewer != null)
             {
@@ -108,6 +109,21 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
             if (!reviewerInterface.ReviewerExists(reviewerId))
                 return NotFound();
+
+            var existingReviewer = reviewerInterface.GetReviewers()
+                .Where(r => r.FirstName.Trim().ToUpper() == updatedreviewer.FirstName.Trim().ToUpper()
+                && r.LastName.Trim().ToUpper() == updatedreviewer.LastName.Trim().ToUpper()&& r.Id != reviewerId).FirstOrDefault();
+
+            if (existingReviewer != null)
+            {
+                ModelState.AddModelError("", "Reviewer already exists.");
+                return StatusCode(422, ModelState);
+            }
+
+
+
+
+
             if (!ModelState.IsValid)
                 return BadRequest();
 
@@ -144,6 +160,7 @@ namespace PokemonReviewApp.Controllers
             if (!reviewerInterface.DeleteReviewer(reviewerToDelete))
             {
                 ModelState.AddModelError("", "Something went wrong while deleting reviewer.");
+                return StatusCode(500, ModelState);
             }
 
             return NoContent();

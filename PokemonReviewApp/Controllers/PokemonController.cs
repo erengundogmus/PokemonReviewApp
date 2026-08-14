@@ -117,22 +117,22 @@ namespace PokemonReviewApp.Controllers
 
 
 
-        [HttpPut("{pokemonId}")]
+        [HttpPut]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdatePokemon(int pokemonId, [FromQuery] int ownerId, [FromQuery] int categoryId, [FromBody] PokemonDto updatedpokemon)
+        public IActionResult UpdatePokemon([FromBody] PokemonDto updatedpokemon)
         {
             if (updatedpokemon == null)
                 return BadRequest(ModelState);
-            if (pokemonId != updatedpokemon.Id)
+            if (updatedpokemon.Id != updatedpokemon.Id)
                 return BadRequest(ModelState);
-            if (!pokemonInterface.PokemonExists(pokemonId))
+            if (!pokemonInterface.PokemonExists(updatedpokemon.Id))
                 return NotFound();
             
             // pokemonun olup olmadığını kontrol eder
             var existingPokemon = pokemonInterface.GetPokemons()                               /*şu an güncellenen pokemon hariç(category değişecekse buraya takılmamak için)*/  
-                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != pokemonId).FirstOrDefault();
+                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != updatedpokemon.Id).FirstOrDefault();
 
             if (existingPokemon != null)
             {
@@ -140,17 +140,17 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState); //422 Unprocessable Entity hata kodu
             }
 
-            if (!ownerInterface.OwnerExists(ownerId))
-            {
-                ModelState.AddModelError("", "Owner does not exist");
-                return NotFound(ModelState);
-            }
+            //if (!ownerInterface.OwnerExists(ownerId))
+            //{
+            //    ModelState.AddModelError("", "Owner does not exist");
+            //    return NotFound(ModelState);
+            //}
 
-            if (!categoryInterface.CategoryExists(categoryId))
-            {
-                ModelState.AddModelError("", "Category does not exist");
-                return NotFound(ModelState);
-            }
+            //if (!categoryInterface.CategoryExists(categoryId))
+            //{
+            //    ModelState.AddModelError("", "Category does not exist");
+            //    return NotFound(ModelState);
+            //}
 
 
             if (!ModelState.IsValid)
@@ -158,7 +158,7 @@ namespace PokemonReviewApp.Controllers
 
             var pokemonMap = this.mapper.Map<Pokemon>(updatedpokemon);
 
-            if (!pokemonInterface.UpdatePokemon(ownerId, categoryId, pokemonMap))
+            if (!pokemonInterface.UpdatePokemon(pokemonMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating pokemon.");
                 return StatusCode(500, ModelState);
