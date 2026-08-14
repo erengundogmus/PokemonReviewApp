@@ -191,7 +191,7 @@ namespace PokemonReviewApp.Controllers
 
             if (!foodInterface.PokemonCanEatFood(pokeId, foodId))
             {
-                ModelState.AddModelError("", "This okemon does not have this food in its menu");
+                ModelState.AddModelError("", "This pokemon does not have this food in its menu");
                 return StatusCode(404, ModelState);
             }
 
