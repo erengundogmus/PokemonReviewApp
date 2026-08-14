@@ -23,6 +23,7 @@ builder.Services.AddScoped<ICountryInterface, CountryRepository>();
 builder.Services.AddScoped<IOwnerInterface, OwnerRepository>();
 builder.Services.AddScoped<IReviewInterface, ReviewRepository>();
 builder.Services.AddScoped<IReviewerInterface, ReviewerRepository>();
+builder.Services.AddScoped<IFoodInterface, FoodRepository>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

@@ -17,6 +17,8 @@ namespace PokemonReviewApp.Data
         public DbSet<PokemonCategory> PokemonCategories { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Reviewer> Reviewers { get; set; }
+        public DbSet<Food> Foods { get; set; }
+        public DbSet<PokemonFood> PokemonFoods { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +43,22 @@ namespace PokemonReviewApp.Data
                     .HasOne(p => p.Owner)
                     .WithMany(po => po.PokemonOwners)
                     .HasForeignKey(o => o.OwnerId);
+
+            modelBuilder.Entity<Review>()
+                    .Property(r => r.Rating)
+                    .HasPrecision(18, 2);
+
+            modelBuilder.Entity<PokemonFood>()
+                    .HasKey(pf => new { pf.PokemonId, pf.FoodId });
+            modelBuilder.Entity<PokemonFood>()
+                    .HasOne(p => p.Pokemon)
+                    .WithMany(pf => pf.PokemonFoods)
+                    .HasForeignKey(p => p.PokemonId);
+            modelBuilder.Entity<PokemonFood>()
+                    .HasOne(p => p.Food)
+                    .WithMany(pf => pf.PokemonFoods)
+                    .HasForeignKey(p => p.FoodId);
+
         }
 
         internal object GetReviewer(int reviewerId)

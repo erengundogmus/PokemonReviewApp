@@ -6,7 +6,7 @@ namespace PokemonReviewApp.Repository
 {
     public class OwnerRepository : IOwnerInterface
     {
-        private DataContext context;
+        private readonly DataContext context;
 
         public OwnerRepository(DataContext context) 
         {
