@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PokemonConsoleApp.InputDtos;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -109,13 +110,14 @@ namespace PokemonConsoleApp
                         await GetPokemonById();
                         break;
 
-                    //case "3":
-                    //    await CreatePokemon();
-                    //    break;
+                    case "3":
+                        await CreatePokemon();
+                        break;
 
                     case "0":
                         backToMain = true;
                         break;
+                    
                     default:
                         Console.WriteLine("Invalid choice, press a key to continue.");
                         Console.ReadKey();
@@ -231,7 +233,7 @@ namespace PokemonConsoleApp
         }
 
 
-        /*static async Task CreatePokemon()
+        static async Task CreatePokemon()
         {
             Console.Clear();
             Console.WriteLine("// Create a New Pokemon\n");
@@ -243,13 +245,20 @@ namespace PokemonConsoleApp
 
                 Console.Write("Please enter the Birth Date (yyyy-MM-dd): ");
                 string dateInput = Console.ReadLine();
-
                 DateTime birthDate = Convert.ToDateTime(dateInput);
 
-                Pokemon newPokemon = new Pokemon
+                Console.Write("Please enter the Owner ID: ");
+                int ownerId = Convert.ToInt32(Console.ReadLine());
+
+                Console.Write("Please enter the Category ID: ");
+                int categoryId = Convert.ToInt32(Console.ReadLine());
+
+                PokemonInputDto newPokemon = new PokemonInputDto
                 {
                     Name = name,
-                    BirthDate = birthDate
+                    BirthDate = birthDate,
+                    OwnerId = ownerId,
+                    CategoryId = categoryId
                 };
 
                 HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Pokemon", newPokemon);
@@ -260,7 +269,7 @@ namespace PokemonConsoleApp
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not create the pokemon. {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not create the pokemon. Status Code: {response.StatusCode}");
 
                     string errorDetail = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error Details: {errorDetail}");
@@ -268,7 +277,7 @@ namespace PokemonConsoleApp
             }
             catch (FormatException)
             {
-                Console.WriteLine("\nInvalid Date Format: Please enter the date as yyyy-MM-dd");
+                Console.WriteLine("\nInvalid Format: Please ensure dates (yyyy-MM-dd) and IDs (numbers) are correct.");
             }
             catch (HttpRequestException ex)
             {
@@ -282,7 +291,7 @@ namespace PokemonConsoleApp
 
             Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();
-        } */
+        }
 
 
 
