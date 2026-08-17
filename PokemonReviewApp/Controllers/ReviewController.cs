@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-
+using PokemonReviewApp.OutputDtos;
 namespace PokemonReviewApp.Controllers
 {
     [Route("api/[controller]")]
@@ -22,11 +22,10 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Review>))]
-
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewOutputDto>))]
         public IActionResult GetReviews()
         {
-            var reviews = mapper.Map<List<ReviewDto>>(reviewInterface.GetReviews());
+            var reviews = mapper.Map<List<ReviewOutputDto>>(reviewInterface.GetReviews());
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -34,31 +33,29 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviews);
         }
 
-
         [HttpGet("{reviewid}")]
-        [ProducesResponseType(200, Type = typeof(Review))]
+        [ProducesResponseType(200, Type = typeof(ReviewOutputDto))]
         [ProducesResponseType(400)]
-
+        [ProducesResponseType(404)]
         public IActionResult GetReview(int reviewid)
         {
             if (!reviewInterface.ReviewExists(reviewid))
                 return NotFound();
 
-            var review = mapper.Map<ReviewDto>(reviewInterface.GetReview(reviewid));
+            var review = mapper.Map<ReviewOutputDto>(reviewInterface.GetReview(reviewid));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             return Ok(review);
-
         }
 
         [HttpGet("pokemon/{pokeId}")]
-        [ProducesResponseType(200, Type = typeof(Review))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewOutputDto>))]
         [ProducesResponseType(400)]
         public IActionResult GetReviewsForAPokemon(int pokeId)
         {
-            var reviews = mapper.Map<List<ReviewDto>>(reviewInterface.GetReviewsOfAPokemon(pokeId));
+            var reviews = mapper.Map<List<ReviewOutputDto>>(reviewInterface.GetReviewsOfAPokemon(pokeId));
 
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -69,12 +66,15 @@ namespace PokemonReviewApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateReview([FromQuery] int reviewerId, [FromQuery] int pokeId, [FromBody] ReviewDto reviewCreate)
+        [ProducesResponseType(404)]
+        public IActionResult CreateReview([FromBody] ReviewInputDto reviewCreate)
         {
             if (reviewCreate == null)
                 return BadRequest(ModelState);
 
-            var review = reviewInterface.GetReviews().Where(c => c.Title.Trim().ToUpper() == reviewCreate.Title.Trim().ToUpper()).FirstOrDefault();
+            var review = reviewInterface.GetReviews()
+                .Where(c => c.Title.Trim().ToUpper() == reviewCreate.Title.Trim().ToUpper())
+                .FirstOrDefault();
 
             if (review != null)
             {
@@ -82,28 +82,28 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState);
             }
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var pokemon = pokemonInterface.GetPokemon(pokeId);
+            var pokemon = pokemonInterface.GetPokemon(reviewCreate.PokemonId);
             if (pokemon == null)
             {
                 ModelState.AddModelError("", "Pokemon does not exist");
                 return NotFound(ModelState);
             }
 
-            var reviewer = reviewInterface.GetReviewer(reviewerId);
+            var reviewer = reviewInterface.GetReviewer(reviewCreate.ReviewerId);
             if (reviewer == null)
             {
                 ModelState.AddModelError("", "Reviewer does not exist");
                 return NotFound(ModelState);
             }
 
-            var ReviewMap = mapper.Map<Review>(reviewCreate);
-            ReviewMap.Pokemon = pokemon;
-            ReviewMap.Reviewer = reviewer;
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            if (!reviewInterface.CreateReview(ReviewMap))
+            var reviewMap = mapper.Map<Review>(reviewCreate);
+            reviewMap.Pokemon = pokemon;
+            reviewMap.Reviewer = reviewer;
+
+            if (!reviewInterface.CreateReview(reviewMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
                 return StatusCode(500, ModelState);
@@ -112,35 +112,49 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created");
         }
 
-
         [HttpPut("{reviewId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateReview(int reviewId, [FromBody] ReviewDto updatedreview)
+        public IActionResult UpdateReview(int reviewId, [FromBody] ReviewInputDto updatedreview)
         {
             if (updatedreview == null)
                 return BadRequest(ModelState);
-            if (reviewId != updatedreview.Id)
-                return BadRequest(ModelState);
+
             if (!reviewInterface.ReviewExists(reviewId))
                 return NotFound();
+
+            var pokemon = pokemonInterface.GetPokemon(updatedreview.PokemonId);
+            if (pokemon == null)
+            {
+                ModelState.AddModelError("", "Pokemon does not exist");
+                return NotFound(ModelState);
+            }
+
+            var reviewer = reviewInterface.GetReviewer(updatedreview.ReviewerId);
+            if (reviewer == null)
+            {
+                ModelState.AddModelError("", "Reviewer does not exist");
+                return NotFound(ModelState);
+            }
+
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(ModelState);
 
             var reviewMap = this.mapper.Map<Review>(updatedreview);
+            reviewMap.Id = reviewId;
+
+            reviewMap.Pokemon = pokemon;
+            reviewMap.Reviewer = reviewer;
 
             if (!reviewInterface.UpdateReview(reviewMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating review.");
                 return StatusCode(500, ModelState);
-
             }
 
             return NoContent();
-
         }
-
 
         [HttpDelete("{reviewId}")]
         [ProducesResponseType(400)]
@@ -167,11 +181,5 @@ namespace PokemonReviewApp.Controllers
             return NoContent();
 
         }
-
-
-
-
-
-
     }
 }

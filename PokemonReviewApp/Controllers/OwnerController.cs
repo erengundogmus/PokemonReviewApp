@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using PokemonReviewApp.Repository;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonReviewApp.Controllers
 {
@@ -24,11 +24,10 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Owner>))]
-
+        [ProducesResponseType(200, Type = typeof(IEnumerable<OwnerOutputDto>))]
         public IActionResult GetOwners()
         {
-            var owners = mapper.Map<List<OwnerDto>>(ownerInterface.GetOwners());
+            var owners = mapper.Map<List<OwnerOutputDto>>(ownerInterface.GetOwners());
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -37,16 +36,15 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet("{ownerId}")]
-        [ProducesResponseType(200, Type = typeof(Owner))]
+        [ProducesResponseType(200, Type = typeof(OwnerOutputDto))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-
         public IActionResult GetOwner(int ownerId)
         {
             if (!ownerInterface.OwnerExists(ownerId))
                 return NotFound();
 
-            var owner = mapper.Map<OwnerDto>(ownerInterface.GetOwner(ownerId));
+            var owner = mapper.Map<OwnerOutputDto>(ownerInterface.GetOwner(ownerId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -55,7 +53,7 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet("{ownerId}/pokemon")]
-        [ProducesResponseType(200, Type = typeof(Owner))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<PokemonOutputDto>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetPokemonByOwner(int ownerId)
@@ -65,7 +63,7 @@ namespace PokemonReviewApp.Controllers
                 return NotFound("Owner does not exist.");
             }
 
-            var ownersPokemons = mapper.Map<List<PokemonDto>>(ownerInterface.GetPokemonByOwner(ownerId));
+            var ownersPokemons = mapper.Map<List<PokemonOutputDto>>(ownerInterface.GetPokemonByOwner(ownerId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -77,7 +75,7 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public IActionResult CreateOwner([FromQuery] int countryId, [FromBody] OwnerDto ownerCreate)
+        public IActionResult CreateOwner([FromBody] OwnerInputDto ownerCreate)
         {
             if (ownerCreate == null)
                 return BadRequest(ModelState);
@@ -90,18 +88,17 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState);
             }
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!countryInterface.CountryExists(countryId))
+            if (!countryInterface.CountryExists(ownerCreate.CountryId))
             {
                 ModelState.AddModelError("", "Country does not exist.");
                 return StatusCode(404, ModelState);
             }
 
-            var ownerMap = mapper.Map<Owner>(ownerCreate);
-            ownerMap.Country = countryInterface.GetCountry(countryId);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            var ownerMap = mapper.Map<Owner>(ownerCreate);
+            ownerMap.Country = countryInterface.GetCountry(ownerCreate.CountryId);
             if (!ownerInterface.CreateOwner(ownerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
@@ -116,16 +113,13 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateOwner(int ownerId, [FromBody] OwnerDto updatedowner)
+        public IActionResult UpdateOwner(int ownerId, [FromBody] OwnerInputDto updatedowner)
         {
             if (updatedowner == null)
                 return BadRequest(ModelState);
-            if (ownerId != updatedowner.Id)
-                return BadRequest(ModelState);
+
             if (!ownerInterface.OwnerExists(ownerId))
                 return NotFound();
-            if (!ModelState.IsValid)
-                return BadRequest();
 
             var existingOwner = ownerInterface.GetOwners()
             .Where(o => o.Name.Trim().ToUpper() == updatedowner.Name.Trim().ToUpper() && o.Id != ownerId).FirstOrDefault();
@@ -136,17 +130,29 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState);
             }
 
+            //gerekirse güncellemede de CountryId kontrolü yapılabilir
+            if (!countryInterface.CountryExists(updatedowner.CountryId))
+            {
+                ModelState.AddModelError("", "Country does not exist.");
+                return NotFound(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             var ownerMap = this.mapper.Map<Owner>(updatedowner);
+            ownerMap.Id = ownerId;
+
+            //eğer güncellemede country ilişkisi de güncellenecekse
+            ownerMap.Country = countryInterface.GetCountry(updatedowner.CountryId);
 
             if (!ownerInterface.UpdateOwner(ownerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating owner.");
                 return StatusCode(500, ModelState);
-
             }
 
             return NoContent();
-
         }
 
 
@@ -173,14 +179,6 @@ namespace PokemonReviewApp.Controllers
             }
 
             return NoContent();
-
         }
-
-
-
-
-
-
-
     }
 }

@@ -32,7 +32,7 @@ namespace PokemonReviewApp.Repository
             };
 
             this.context.Add(pokemonOwner);
-            
+
             //join table için ekledik
             var pokemonCategory = new PokemonCategory()
             {
@@ -51,17 +51,20 @@ namespace PokemonReviewApp.Repository
         {
             this.context.Remove(pokemon);
             return Save();
-           
+
         }
 
         public Pokemon GetPokemon(int id)
         {
-            return this.context.Pokemon.Where(p => p.Id == id).FirstOrDefault();
+            //lazy loading kapalı olduğu için veritabanından yüklenmiyor include kullanıyoruz
+            return this.context.Pokemon.Where(p => p.Id == id).Include(p => p.PokemonOwners)
+                .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).FirstOrDefault();
         }
 
         public Pokemon GetPokemon(string name)
         {
-            return this.context.Pokemon.Where(p => p.Name == name).FirstOrDefault();
+            return this.context.Pokemon.Where(p => p.Name == name).Include(p => p.PokemonOwners)
+                .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).FirstOrDefault();
         }
 
         public decimal GetPokemonRating(int pokeId)
@@ -76,7 +79,8 @@ namespace PokemonReviewApp.Repository
 
         public ICollection<Pokemon> GetPokemons()
         {
-             return this.context.Pokemon.OrderBy(p => p.Id).ToList();
+            return this.context.Pokemon.Include(p => p.PokemonOwners)
+                .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).OrderBy(p => p.Id).ToList();
         }
 
         public bool PokemonExists(int pokeId)
@@ -94,7 +98,6 @@ namespace PokemonReviewApp.Repository
         {
             //ef core'un hafızasındaki tracked nesneleri temizliyoruz ki çakışma olmasın
             this.context.ChangeTracker.Clear();
-
 
             this.context.Update(pokemon);
             return Save();

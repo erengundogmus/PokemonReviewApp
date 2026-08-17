@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonReviewApp.Controllers
 {
@@ -22,48 +23,48 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<FoodDto>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<FoodOutputDto>))]
         public IActionResult GetFoods()
         {
-            var foods = mapper.Map<List<FoodDto>>(foodInterface.GetFoods());
-            
-            if (!ModelState.IsValid) 
+            var foods = mapper.Map<List<FoodOutputDto>>(foodInterface.GetFoods());
+
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             return Ok(foods);
         }
 
         [HttpGet("{foodId}")]
-        [ProducesResponseType(200, Type = typeof(FoodDto))]
+        [ProducesResponseType(200, Type = typeof(FoodOutputDto))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetFood(int foodId)
         {
-            if (!foodInterface.FoodExists(foodId)) 
+            if (!foodInterface.FoodExists(foodId))
                 return NotFound();
-            
-            var food = mapper.Map<FoodDto>(foodInterface.GetFood(foodId));
-            
-            if (!ModelState.IsValid) 
+
+            var food = mapper.Map<FoodOutputDto>(foodInterface.GetFood(foodId));
+
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             return Ok(food);
         }
 
         [HttpGet("pokemon/{pokeId}")]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<FoodDto>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<FoodOutputDto>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetFoodsByPokemon(int pokeId)
         {
-            if (!pokemonInterface.PokemonExists(pokeId)) 
+            if (!pokemonInterface.PokemonExists(pokeId))
                 return NotFound("Pokemon does not exist.");
-            
-            var foods = mapper.Map<List<FoodDto>>(foodInterface.GetFoodsByPokemon(pokeId));
-            
-            if (!ModelState.IsValid) 
+
+            var foods = mapper.Map<List<FoodOutputDto>>(foodInterface.GetFoodsByPokemon(pokeId));
+
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             return Ok(foods);
         }
 
@@ -71,9 +72,9 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(422)]
-        public IActionResult CreateFood([FromBody] FoodDto foodCreate)
+        public IActionResult CreateFood([FromBody] FoodInputDto foodCreate)
         {
-            if (foodCreate == null) 
+            if (foodCreate == null)
                 return BadRequest(ModelState);
 
             var food = foodInterface.GetFoods()
@@ -126,10 +127,9 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateFood(int foodId, [FromBody] FoodDto updatedFood)
+        public IActionResult UpdateFood(int foodId, [FromBody] FoodInputDto updatedFood)
         {
             if (updatedFood == null) return BadRequest(ModelState);
-            if (foodId != updatedFood.Id) return BadRequest(ModelState);
             if (!foodInterface.FoodExists(foodId)) return NotFound();
 
             var existingFood = foodInterface.GetFoods()
@@ -141,9 +141,11 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState);
             }
 
-            if (!ModelState.IsValid) 
+            if (!ModelState.IsValid)
                 return BadRequest();
+
             var foodMap = this.mapper.Map<Food>(updatedFood);
+            foodMap.Id = foodId;
 
             if (!foodInterface.UpdateFood(foodMap))
             {
@@ -160,12 +162,12 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult DeleteFood(int foodId)
         {
-            if (!foodInterface.FoodExists(foodId)) 
+            if (!foodInterface.FoodExists(foodId))
                 return NotFound();
-            
+
             var foodToDelete = foodInterface.GetFood(foodId);
-            
-            if (!ModelState.IsValid) 
+
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             if (!foodInterface.DeleteFood(foodToDelete))
@@ -183,10 +185,10 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(404)]
         public IActionResult RemoveFoodFromPokemon(int foodId, int pokeId)
         {
-            if (!foodInterface.FoodExists(foodId)) 
+            if (!foodInterface.FoodExists(foodId))
                 return NotFound("Food does not exist");
-            
-            if (!pokemonInterface.PokemonExists(pokeId)) 
+
+            if (!pokemonInterface.PokemonExists(pokeId))
                 return NotFound("Pokemon does not exist");
 
             if (!foodInterface.PokemonCanEatFood(pokeId, foodId))

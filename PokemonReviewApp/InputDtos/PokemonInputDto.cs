@@ -1,9 +1,10 @@
 ﻿namespace PokemonReviewApp.Dto
 {
-    public class PokemonDto
-    {   
-        public int Id { get; set; }
+    public class PokemonInputDto
+    {
         public string Name { get; set; }
         public DateTime BirthDate { get; set; }
+        public int OwnerId { get; set; }
+        public int CategoryId { get; set; }
     }
 }

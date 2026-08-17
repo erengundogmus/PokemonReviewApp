@@ -86,7 +86,7 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Pokemon");
-                Console.WriteLine("1 - GetAll");
+                Console.WriteLine("1 - GetAllP");
                 Console.WriteLine("2 - GetById");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
@@ -104,9 +104,15 @@ namespace PokemonConsoleApp
                     case "1":
                         await GetAllPokemons();
                         break;
-                    // case "2":
-                    //    await GetPokemonById();
+
+                    case "2":
+                        await GetPokemonById();
+                        break;
+
+                    //case "3":
+                    //    await CreatePokemon();
                     //    break;
+
                     case "0":
                         backToMain = true;
                         break;
@@ -153,12 +159,12 @@ namespace PokemonConsoleApp
                 }
                 else
                 {
-                    Console.WriteLine($"Error: Received an unsuccessful response from the API. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"Error: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
                 }
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine("Connection Error: Could not reach the API. Please make sure the API is running.");
+                Console.WriteLine("Connection Error: Could not reach the API.");
                 Console.WriteLine($"{ex.Message}");
             }
             catch (Exception ex)
@@ -169,5 +175,127 @@ namespace PokemonConsoleApp
             Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();
         }
+
+        static async Task GetPokemonById()
+        {
+            Console.Clear();
+            Console.WriteLine("// Get Pokemon By Id\n");
+
+            Console.Write("ID of the Pokemon you want to find: ");
+            string input = Console.ReadLine();
+
+            try
+            {
+                //harf hatası
+                int pokemonId = Convert.ToInt32(input);
+
+                //api kapalıysa gidecek hata mesajı
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Pokemon/{pokemonId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Pokemon p = await response.Content.ReadFromJsonAsync<Pokemon>();
+
+                    Console.WriteLine("\n--- POKEMON DETAILS ---");
+                    Console.WriteLine($"ID: {p.Id}");
+                    Console.WriteLine($"Name: {p.Name}");
+                    Console.WriteLine($"Birth Date: {p.BirthDate.ToString("yyyy-MM-dd")}");
+                    Console.WriteLine("-----------------------");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    //404 notfound
+                    Console.WriteLine($"Pokemon with ID {pokemonId} could not be found.");
+                }
+                else
+                {
+                    Console.WriteLine($"Error: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Input: Please enter a valid number.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
+
+
+        /*static async Task CreatePokemon()
+        {
+            Console.Clear();
+            Console.WriteLine("// Create a New Pokemon\n");
+
+            try
+            {
+                Console.Write("Please enter the name of the pokemon: ");
+                string name = Console.ReadLine();
+
+                Console.Write("Please enter the Birth Date (yyyy-MM-dd): ");
+                string dateInput = Console.ReadLine();
+
+                DateTime birthDate = Convert.ToDateTime(dateInput);
+
+                Pokemon newPokemon = new Pokemon
+                {
+                    Name = name,
+                    BirthDate = birthDate
+                };
+
+                HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Pokemon", newPokemon);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("\nSuccess: Pokemon created successfully.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Could not create the pokemon. {response.StatusCode}");
+
+                    string errorDetail = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error Details: {errorDetail}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Date Format: Please enter the date as yyyy-MM-dd");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        } */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

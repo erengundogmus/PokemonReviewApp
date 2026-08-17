@@ -63,8 +63,7 @@ namespace PokemonReviewApp.Repository
 
         public bool RemoveFoodFromPokemon(int pokeId, int foodId)
         {
-            var pokemonFood = this.context.PokemonFoods
-                            .FirstOrDefault(pf => pf.PokemonId == pokeId && pf.FoodId == foodId);
+            var pokemonFood = this.context.PokemonFoods.FirstOrDefault(pf => pf.PokemonId == pokeId && pf.FoodId == foodId);
 
             if (pokemonFood != null)
             {

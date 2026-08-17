@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using PokemonReviewApp.Repository;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonReviewApp.Controllers
 {
@@ -21,10 +21,10 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Category>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<CategoryOutputDto>))]
         public IActionResult GetCategories()
         {
-            var categories = mapper.Map<List<CategoryDto>>(categoryInterface.GetCategories());
+            var categories = mapper.Map<List<CategoryOutputDto>>(categoryInterface.GetCategories());
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -33,7 +33,7 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet("{categoryId}")]
-        [ProducesResponseType(200, Type = typeof(Category))]
+        [ProducesResponseType(200, Type = typeof(CategoryOutputDto))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetCategory(int categoryId)
@@ -41,7 +41,7 @@ namespace PokemonReviewApp.Controllers
             if (!categoryInterface.CategoryExists(categoryId))
                 return NotFound();
 
-            var category = mapper.Map<CategoryDto>(categoryInterface.GetCategory(categoryId));
+            var category = mapper.Map<CategoryOutputDto>(categoryInterface.GetCategory(categoryId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -50,7 +50,7 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet("pokemon/{categoryId}")]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Pokemon>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<PokemonOutputDto>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetPokemonByCategoryId(int categoryId)
@@ -58,7 +58,7 @@ namespace PokemonReviewApp.Controllers
             if (!categoryInterface.CategoryExists(categoryId)) //category yoksa boş olduğunu bildirir
                 return NotFound("Category does not exist.");
 
-            var pokemons = mapper.Map<List<PokemonDto>>(categoryInterface.GetPokemonByCategory(categoryId));
+            var pokemons = mapper.Map<List<PokemonOutputDto>>(categoryInterface.GetPokemonByCategory(categoryId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -69,7 +69,7 @@ namespace PokemonReviewApp.Controllers
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
-        public IActionResult CreateCategory([FromBody] CategoryDto categoryCreate)
+        public IActionResult CreateCategory([FromBody] CategoryInputDto categoryCreate)
         {
             if (categoryCreate == null)
                 return BadRequest(ModelState);
@@ -104,19 +104,16 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateCategory(int categoryId, [FromBody]CategoryDto updatedcategory)
+        public IActionResult UpdateCategory(int categoryId, [FromBody] CategoryInputDto updatedcategory)
         {
-            if(updatedcategory == null)
+            if (updatedcategory == null)
                 return BadRequest(ModelState);
-            if(categoryId != updatedcategory.Id)
-                return BadRequest(ModelState);
-            if(!categoryInterface.CategoryExists(categoryId))
+
+            if (!categoryInterface.CategoryExists(categoryId))
                 return NotFound();
-            if(!ModelState.IsValid)
+
+            if (!ModelState.IsValid)
                 return BadRequest();
-
-
-
 
             var existingCategory = categoryInterface.GetCategories()
             .Where(c => c.Name.Trim().ToUpper() == updatedcategory.Name.Trim().ToUpper() && c.Id != categoryId).FirstOrDefault();
@@ -124,19 +121,20 @@ namespace PokemonReviewApp.Controllers
             if (existingCategory != null)
             {
                 ModelState.AddModelError("", "Category already exist.");
-                return StatusCode(422, ModelState);
+                return StatusCode(422, ModelState); //422 Unprocessable Entity hata kodu
             }
 
-                /*   mapping yapmasaydık kullanacağımız yöntem
-                Category category = new Category
-                {
-                    Id = updatedcategory.Id,
-                    Name = updatedcategory.Name,
-                };
-                */
+            /*   mapping yapmasaydık kullanacağımız yöntem
+            Category category = new Category
+            {
+                Id = updatedcategory.Id,
+                Name = updatedcategory.Name,
+            };
+            */
 
-                var categoryMap = this.mapper.Map<Category>(updatedcategory);
-            
+            var categoryMap = this.mapper.Map<Category>(updatedcategory);
+            categoryMap.Id = categoryId;
+
             if (!categoryInterface.UpdateCategory(categoryMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating category.");
@@ -174,8 +172,5 @@ namespace PokemonReviewApp.Controllers
             return NoContent();
 
         }
-
-
-
     }
 }

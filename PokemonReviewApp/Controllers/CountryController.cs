@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using PokemonReviewApp.Repository;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonReviewApp.Controllers
 {
@@ -21,10 +21,10 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Country>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<CountryOutputDto>))]
         public IActionResult GetCountries()
         {
-            var countries = mapper.Map<List<CountryDto>>(countryInterface.GetCountries());
+            var countries = mapper.Map<List<CountryOutputDto>>(countryInterface.GetCountries());
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -33,7 +33,7 @@ namespace PokemonReviewApp.Controllers
         }
 
         [HttpGet("{countryId}")]
-        [ProducesResponseType(200, Type = typeof(Country))]
+        [ProducesResponseType(200, Type = typeof(CountryOutputDto))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetCountry(int countryId)
@@ -41,7 +41,7 @@ namespace PokemonReviewApp.Controllers
             if (!countryInterface.CountryExists(countryId))
                 return NotFound("Country does not exist.");
 
-            var country = mapper.Map<CountryDto>(countryInterface.GetCountry(countryId));
+            var country = mapper.Map<CountryOutputDto>(countryInterface.GetCountry(countryId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -52,16 +52,16 @@ namespace PokemonReviewApp.Controllers
         [HttpGet("owners/{ownerId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [ProducesResponseType(200, Type = typeof(Country))]
+        [ProducesResponseType(200, Type = typeof(CountryOutputDto))]
         public IActionResult GetCountryOfAnOwner(int ownerId)
         {
             var country = countryInterface.GetCountryByOwner(ownerId);
-            
+
             //owner'ın country'si var mı kontrol ediyoruz
             if (country == null)
                 return NotFound("Owner does not exist or has no country.");
 
-            var countryDto = mapper.Map<CountryDto>(country);
+            var countryDto = mapper.Map<CountryOutputDto>(country);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -73,7 +73,7 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public IActionResult CreateCountry([FromBody] CountryDto countryCreate)
+        public IActionResult CreateCountry([FromBody] CountryInputDto countryCreate)
         {
             if (countryCreate == null)
                 return BadRequest(ModelState);
@@ -106,14 +106,14 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdateCountry(int countryId, [FromBody] CountryDto updatedcountry)
+        public IActionResult UpdateCountry(int countryId, [FromBody] CountryInputDto updatedcountry)
         {
             if (updatedcountry == null)
                 return BadRequest(ModelState);
-            if (countryId != updatedcountry.Id)
-                return BadRequest(ModelState);
+
             if (!countryInterface.CountryExists(countryId))
                 return NotFound();
+
             if (!ModelState.IsValid)
                 return BadRequest();
 
@@ -126,9 +126,8 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState);
             }
 
-
-
             var countryMap = this.mapper.Map<Country>(updatedcountry);
+            countryMap.Id = countryId;
 
             if (!countryInterface.UpdateCountry(countryMap))
             {
@@ -168,9 +167,5 @@ namespace PokemonReviewApp.Controllers
             return NoContent();
 
         }
-
-
-
-
     }
 }

@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-
 namespace PokemonReviewApp.Repository
-{ 
-
+{
     public class ReviewRepository : IReviewInterface
     {
         private readonly DataContext context;
@@ -18,20 +16,22 @@ namespace PokemonReviewApp.Repository
             this.mapper = mapper;
         }
 
-        //Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
+        // Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
         public Review GetReview(int reviewId)
         {
-            return this.context.Reviews.Include(r => r.Pokemon).Where(r => r.Id == reviewId).FirstOrDefault();
+            return this.context.Reviews.Where(r => r.Id == reviewId).Include(r => r.Pokemon).Include(r => r.Reviewer).FirstOrDefault();
         }
 
         public ICollection<Review> GetReviewsOfAPokemon(int pokeId)
         {
-            return this.context.Reviews.Include(r => r.Pokemon).Where(r => r.Pokemon.Id == pokeId).ToList();
+            // Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
+            return this.context.Reviews.Where(r => r.Pokemon.Id == pokeId).Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
         }
 
         public ICollection<Review> GetReviews()
         {
-            return this.context.Reviews.Include(r => r.Pokemon).ToList();
+            // Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
+            return this.context.Reviews.Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
         }
 
         public bool ReviewExists(int reviewId)
@@ -60,7 +60,8 @@ namespace PokemonReviewApp.Repository
         {
             this.context.ChangeTracker.Clear();
 
-            this.context.Update(review);
+            this.context.Entry(review).State = EntityState.Modified;
+
             return Save();
         }
 
