@@ -4,45 +4,45 @@ using System.Net.Http.Json;
 
 namespace PokemonConsoleApp
 {
-    public class PokemonMenu
+    public class CountryMenu
     {
         private readonly HttpClient client;
         private readonly string baseUrl;
 
-        public PokemonMenu(HttpClient client, string baseUrl)
+        public CountryMenu(HttpClient client, string baseUrl)
         {
             this.client = client;
             this.baseUrl = baseUrl;
         }
 
-        public async Task GetAllPokemons()
+        public async Task GetAllCountries()
         {
             Console.Clear();
-            Console.WriteLine("//Pokemon List is Loading\n");
+            Console.WriteLine("//Country List is Loading\n");
 
             try
             {
                 //apiye istek atıyoruz
-                HttpResponseMessage response = await client.GetAsync(baseUrl + "Pokemon");
+                HttpResponseMessage response = await client.GetAsync(baseUrl + "Country");
 
                 if (response.IsSuccessStatusCode)
                 {
                     //json dosyasını dönüştürüyoruz
-                    List<Pokemon> pokemonList = await response.Content.ReadFromJsonAsync<List<Pokemon>>();
+                    List<Country> countryList = await response.Content.ReadFromJsonAsync<List<Country>>();
 
-                    Console.WriteLine("--- POKEMON LİST ---");
+                    Console.WriteLine("--- COUNTRY LİST ---");
 
                     //foreach ile döndürüyoruz
-                    if (pokemonList != null && pokemonList.Count > 0)
+                    if (countryList != null && countryList.Count > 0)
                     {
-                        foreach (Pokemon p in pokemonList)
+                        foreach (Country c in countryList)
                         {
-                            Console.WriteLine($"{p.Id} - Name: {p.Name} | Birth Date: {p.BirthDate.ToString("yyyy-MM-dd")}");
+                            Console.WriteLine($"{c.Id} - Name: {c.Name}");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("There are no pokemons in the database.");
+                        Console.WriteLine("There are no countries in the database.");
                     }
 
                     Console.WriteLine("-----------------------");
@@ -66,36 +66,36 @@ namespace PokemonConsoleApp
             Console.ReadKey();
         }
 
-        public async Task GetPokemonById()
+
+
+        public async Task GetCountryById()
         {
             Console.Clear();
-            Console.WriteLine("// Get Pokemon By Id\n");
+            Console.WriteLine("// Get Country By Id\n");
 
-            Console.Write("ID of the Pokemon you want to find: ");
+            Console.Write("ID of the Country you want to find: ");
             string input = Console.ReadLine();
 
             try
             {
-                //harf hatası
-                int pokemonId = Convert.ToInt32(input);
+                int countryId = Convert.ToInt32(input);
 
                 //api kapalıysa gidecek hata mesajı
-                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Pokemon/{pokemonId}");
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Country/{countryId}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Pokemon p = await response.Content.ReadFromJsonAsync<Pokemon>();
+                    Country c = await response.Content.ReadFromJsonAsync<Country>();
 
-                    Console.WriteLine("\n--- POKEMON DETAILS ---");
-                    Console.WriteLine($"ID: {p.Id}");
-                    Console.WriteLine($"Name: {p.Name}");
-                    Console.WriteLine($"Birth Date: {p.BirthDate.ToString("yyyy-MM-dd")}");
+                    Console.WriteLine("\n--- Country DETAILS ---");
+                    Console.WriteLine($"ID: {c.Id}");
+                    Console.WriteLine($"Name: {c.Name}");
                     Console.WriteLine("-----------------------");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     //404 notfound
-                    Console.WriteLine($"Pokemon with ID {pokemonId} could not be found.");
+                    Console.WriteLine($"Country with ID {countryId} could not be found.");
                 }
                 else
                 {
@@ -120,44 +120,32 @@ namespace PokemonConsoleApp
             Console.ReadKey();
         }
 
-
-        public async Task CreatePokemon()
+          
+        public async Task CreateCountry()
         {
             Console.Clear();
-            Console.WriteLine("// Create a New Pokemon\n");
+            Console.WriteLine("// Create a New Country\n");
 
             try
             {
-                Console.Write("Please enter the name of the pokemon: ");
+                Console.Write("Please enter the name of the country: ");
                 string name = Console.ReadLine();
 
-                Console.Write("Please enter the Birth Date (yyyy-MM-dd): ");
-                string dateInput = Console.ReadLine();
-                DateTime birthDate = Convert.ToDateTime(dateInput);
-
-                Console.Write("Please enter the Owner ID: ");
-                int ownerId = Convert.ToInt32(Console.ReadLine());
-
-                Console.Write("Please enter the Category ID: ");
-                int categoryId = Convert.ToInt32(Console.ReadLine());
-
-                PokemonInputDto newPokemon = new PokemonInputDto
+                CountryInputDto newCountry = new CountryInputDto()
                 {
-                    Name = name,
-                    BirthDate = birthDate,
-                    OwnerId = ownerId,
-                    CategoryId = categoryId
+                    Name = name
+
                 };
 
-                HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Pokemon", newPokemon);
+                HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Country", newCountry);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("\nSuccess: Pokemon created successfully.");
+                    Console.WriteLine("\nSuccess: Country created successfully.");
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not create the pokemon. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not create the country. Status Code: {response.StatusCode}");
 
                     string errorDetail = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error Details: {errorDetail}");
@@ -182,50 +170,38 @@ namespace PokemonConsoleApp
         }
 
 
-
-        public async Task UpdatePokemon()
+        
+        public async Task UpdateCountry()
         {
             Console.Clear();
-            Console.WriteLine("// Update a Pokemon\n");
+            Console.WriteLine("// Update a Country\n");
 
-            Console.Write("Please enter the id of the pokemon: ");
+            Console.Write("Please enter the id of the country: ");
             string input = Console.ReadLine();
 
 
             try
             {
-                int pokemonId = Convert.ToInt32(input);
+                int countryId = Convert.ToInt32(input);
 
-                Console.Write("Please enter the new name of the pokemon: ");
+                Console.Write("Please enter the new name of the country: ");
                 string name = Console.ReadLine();
 
-                Console.Write("Please enter the new Birth Date (yyyy-MM-dd): ");
-                string dateInput = Console.ReadLine();
-                DateTime birthDate = Convert.ToDateTime(dateInput);
-
-                Console.Write("Please enter the new Owner ID: ");
-                int ownerId = Convert.ToInt32(Console.ReadLine());
-
-                Console.Write("Please enter the new Category ID: ");
-                int categoryId = Convert.ToInt32(Console.ReadLine());
-
-                PokemonInputDto updatedPokemon = new PokemonInputDto
+                CountryInputDto updatedCountry = new CountryInputDto
                 {
                     Name = name,
-                    BirthDate = birthDate,
-                    OwnerId = ownerId,
-                    CategoryId = categoryId
+
                 };
 
-                HttpResponseMessage response = await client.PutAsJsonAsync(baseUrl + $"Pokemon/{pokemonId}", updatedPokemon);
+                HttpResponseMessage response = await client.PutAsJsonAsync(baseUrl + $"Country/{countryId}", updatedCountry);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("\nSuccess: Pokemon updated successfully.");
+                    Console.WriteLine("\nSuccess: Country updated successfully.");
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not update the pokemon. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not update the country. Status Code: {response.StatusCode}");
 
                     string errorDetail = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error Details: {errorDetail}");
@@ -249,15 +225,15 @@ namespace PokemonConsoleApp
             Console.ReadKey();
         }
 
-        public async Task DeletePokemon()
+        public async Task DeleteCountry()
         {
             Console.Clear();
-            Console.WriteLine("// Delete a Pokemon\n");
+            Console.WriteLine("// Delete a Country\n");
 
             try
             {
-                Console.Write("Enter the ID of the Pokemon you want to delete: ");
-                if (!int.TryParse(Console.ReadLine(), out int pokemonId))
+                Console.Write("Enter the ID of the country you want to delete: ");
+                if (!int.TryParse(Console.ReadLine(), out int countryId))
                 {
                     Console.WriteLine("\nInvalid ID format.");
                     Console.WriteLine("\nPress any key to continue...");
@@ -265,19 +241,19 @@ namespace PokemonConsoleApp
                     return;
                 }
 
-                HttpResponseMessage response = await client.DeleteAsync(baseUrl + $"Pokemon/{pokemonId}");
+                HttpResponseMessage response = await client.DeleteAsync(baseUrl + $"Country/{countryId}");
 
                 if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.NoContent)
                 {
-                    Console.WriteLine("\nSuccess: Pokemon deleted successfully.");
+                    Console.WriteLine("\nSuccess: Country deleted successfully.");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    Console.WriteLine($"\nPokemon with {pokemonId} ID could not be found.");
+                    Console.WriteLine($"Country with {countryId} ID could not be found.");
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not delete the pokemon. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not delete the country. Status Code: {response.StatusCode}");
                 }
             }
             catch (HttpRequestException ex)
@@ -293,7 +269,6 @@ namespace PokemonConsoleApp
             Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();
         }
-
 
 
 

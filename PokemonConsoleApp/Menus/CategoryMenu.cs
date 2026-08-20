@@ -1,4 +1,5 @@
 ﻿using PokemonConsoleApp.InputDtos;
+using PokemonConsoleApp.Models;
 using System.Net.Http.Json;
 
 namespace PokemonConsoleApp

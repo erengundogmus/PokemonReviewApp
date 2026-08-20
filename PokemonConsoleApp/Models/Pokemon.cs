@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PokemonConsoleApp
+﻿namespace PokemonConsoleApp.Models
 {
    public class Pokemon
     {
