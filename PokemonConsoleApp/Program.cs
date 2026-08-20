@@ -1,5 +1,6 @@
 ﻿using PokemonConsoleApp.InputDtos;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -11,8 +12,13 @@ namespace PokemonConsoleApp
     {
         static readonly string baseUrl = "https://localhost:7013/api/";
         static readonly HttpClient client = new HttpClient();
+        static CategoryMenu categoryMenu = new CategoryMenu(client, baseUrl);
+        //static CountryMenu countryMenu = new countryMenu(client, baseUrl);
+        //static FoodMenu foodMenu = new foodMenu(client, baseUrl);
+        //static OwnerMenu ownerMenu = new ownerMenu(client, baseUrl);
         static PokemonMenu pokemonMenu = new PokemonMenu(client, baseUrl);
-
+        //static ReviewerMenu reviewerMenu = new reviewerMenu(client, baseUrl);
+        //static ReviewMenu reviewMenu = new reviewMenu(client, baseUrl);
         static async Task Main(string[] args)
         {
             bool exit = false;
@@ -39,9 +45,9 @@ namespace PokemonConsoleApp
 
                 switch (choice)
                 {
-                    //case "1":
-                    //    await CategoryMenu();
-                    //    break;
+                    case "1":
+                        await CategoryMenu();
+                        break;
                     
                     //case "2":
                     //    await CountryMenu();
@@ -136,7 +142,60 @@ namespace PokemonConsoleApp
         }
 
 
-       
+        static async Task CategoryMenu()
+        {
+            bool backToMain = false;
+
+            while (!backToMain)
+            {
+                Console.Clear();
+                Console.WriteLine("//Category");
+                Console.WriteLine("1 - GetAll");
+                Console.WriteLine("2 - GetById");
+                Console.WriteLine("3 - Create");
+                Console.WriteLine("4 - Update");
+                Console.WriteLine("5 - Delete");
+                Console.WriteLine("0 - Exit to Main Menu");
+                Console.WriteLine();
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
+                Console.Write("Please choose the process you want to continue: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        await categoryMenu.GetAllCategories();
+                        break;
+
+                    case "2":
+                        await categoryMenu.GetCategoryById();
+                        break;
+
+                    case "3":
+                        await categoryMenu.CreateCategory();
+                        break;
+
+                    case "4":
+                        await categoryMenu.UpdateCategory();
+                        break;
+
+                    case "5":
+                        await categoryMenu.DeleteCategory();
+                        break;
+
+                    case "0":
+                        backToMain = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, press a key to continue.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
 
 
 
