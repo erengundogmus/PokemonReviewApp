@@ -4,45 +4,45 @@ using System.Net.Http.Json;
 
 namespace PokemonConsoleApp
 {
-    public class CountryMenu
+    public class OwnerMenu
     {
         private readonly HttpClient client;
         private readonly string baseUrl;
 
-        public CountryMenu(HttpClient client, string baseUrl)
+        public OwnerMenu(HttpClient client, string baseUrl)
         {
             this.client = client;
             this.baseUrl = baseUrl;
         }
 
-        public async Task GetAllCountries()
+        public async Task GetAllOwners()
         {
             Console.Clear();
-            Console.WriteLine("//Country List is Loading\n");
+            Console.WriteLine("//Owner List is Loading\n");
 
             try
             {
                 //apiye istek atıyoruz
-                HttpResponseMessage response = await client.GetAsync(baseUrl + "Country");
+                HttpResponseMessage response = await client.GetAsync(baseUrl + "Owner");
 
                 if (response.IsSuccessStatusCode)
                 {
                     //json dosyasını dönüştürüyoruz
-                    List<Country> countryList = await response.Content.ReadFromJsonAsync<List<Country>>();
+                    List<Owner> ownerList = await response.Content.ReadFromJsonAsync<List<Owner>>();
 
-                    Console.WriteLine("--- COUNTRY LİST ---");
+                    Console.WriteLine("--- OWNER LİST ---");
 
                     //foreach ile döndürüyoruz
-                    if (countryList != null && countryList.Count > 0)
+                    if (ownerList != null && ownerList.Count > 0)
                     {
-                        foreach (Country c in countryList)
+                        foreach (Owner o in ownerList)
                         {
-                            Console.WriteLine($"{c.Id} - Name: {c.Name}");
+                            Console.WriteLine($"{o.Id} - Name: {o.Name} - Gym: {o.Gym}");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("There are no countries in the database.");
+                        Console.WriteLine("There are no owners in the database.");
                     }
 
                     Console.WriteLine("-----------------------");
@@ -66,36 +66,35 @@ namespace PokemonConsoleApp
             Console.ReadKey();
         }
 
-
-
-        public async Task GetCountryById()
+        public async Task GetOwnerById()
         {
             Console.Clear();
-            Console.WriteLine("// Get Country By Id\n");
+            Console.WriteLine("// Get Owner By Id\n");
 
-            Console.Write("ID of the Country you want to find: ");
+            Console.Write("ID of the owner you want to find: ");
             string input = Console.ReadLine();
 
             try
             {
-                int countryId = Convert.ToInt32(input);
+                int ownerId = Convert.ToInt32(input);
 
                 //api kapalıysa gidecek hata mesajı
-                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Country/{countryId}");
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Owner/{ownerId}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Country c = await response.Content.ReadFromJsonAsync<Country>();
+                    Owner o = await response.Content.ReadFromJsonAsync<Owner>();
 
-                    Console.WriteLine("\n--- Country DETAILS ---");
-                    Console.WriteLine($"ID: {c.Id}");
-                    Console.WriteLine($"Name: {c.Name}");
+                    Console.WriteLine("\n--- OWNER DETAILS ---");
+                    Console.WriteLine($"ID: {o.Id}");
+                    Console.WriteLine($"Name: {o.Name}");
+                    Console.WriteLine($"Gym: {o.Gym}");
                     Console.WriteLine("-----------------------");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     //404 notfound
-                    Console.WriteLine($"Country with ID {countryId} could not be found.");
+                    Console.WriteLine($"Owner with ID {ownerId} could not be found.");
                 }
                 else
                 {
@@ -120,32 +119,35 @@ namespace PokemonConsoleApp
             Console.ReadKey();
         }
 
-          
-        public async Task CreateCountry()
+
+        public async Task CreateOwner()
         {
             Console.Clear();
-            Console.WriteLine("// Create a New Country\n");
+            Console.WriteLine("// Create a New Owner\n");
 
             try
             {
-                Console.Write("Please enter the name of the country: ");
+                Console.Write("Please enter the name of the owner: ");
                 string name = Console.ReadLine();
+                
+                Console.Write("Please enter the gym of the owner: ");
+                string gym = Console.ReadLine();
 
-                CountryInputDto newCountry = new CountryInputDto()
+                OwnerInputDto newOwner = new OwnerInputDto
                 {
-                    Name = name
-
+                    Name = name,
+                    Gym = gym
                 };
 
-                HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Country", newCountry);
+                HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Owner", newOwner);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("\nSuccess: Country created successfully.");
+                    Console.WriteLine("\nSuccess: Owner created successfully.");
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not create the country. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not create the owner. Status Code: {response.StatusCode}");
 
                     string errorDetail = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error Details: {errorDetail}");
@@ -170,38 +172,41 @@ namespace PokemonConsoleApp
         }
 
 
-        
-        public async Task UpdateCountry()
+
+        public async Task UpdateOwner()
         {
             Console.Clear();
-            Console.WriteLine("// Update a Country\n");
+            Console.WriteLine("// Update a Owner\n");
 
-            Console.Write("Please enter the id of the country: ");
+            Console.Write("Please enter the id of the owner: ");
             string input = Console.ReadLine();
 
 
             try
             {
-                int countryId = Convert.ToInt32(input);
+                int ownerId = Convert.ToInt32(input);
 
-                Console.Write("Please enter the new name of the country: ");
+                Console.Write("Please enter the name of the owner: ");
                 string name = Console.ReadLine();
 
-                CountryInputDto updatedCountry = new CountryInputDto
+                Console.Write("Please enter the gym of the owner: ");
+                string gym = Console.ReadLine();
+
+                OwnerInputDto updatedOwner = new OwnerInputDto
                 {
                     Name = name,
-
+                    Gym = gym
                 };
 
-                HttpResponseMessage response = await client.PutAsJsonAsync(baseUrl + $"Country/{countryId}", updatedCountry);
+                HttpResponseMessage response = await client.PutAsJsonAsync(baseUrl + $"Owner/{ownerId}", updatedOwner);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("\nSuccess: Country updated successfully.");
+                    Console.WriteLine("\nSuccess: Owner updated successfully.");
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not update the country. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not update the owner. Status Code: {response.StatusCode}");
 
                     string errorDetail = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Error Details: {errorDetail}");
@@ -225,15 +230,15 @@ namespace PokemonConsoleApp
             Console.ReadKey();
         }
 
-        public async Task DeleteCountry()
+        public async Task DeleteOwner()
         {
             Console.Clear();
-            Console.WriteLine("// Delete a Country\n");
+            Console.WriteLine("// Delete a Owner\n");
 
             try
             {
-                Console.Write("Enter the ID of the country you want to delete: ");
-                if (!int.TryParse(Console.ReadLine(), out int countryId))
+                Console.Write("Enter the ID of the owner you want to delete: ");
+                if (!int.TryParse(Console.ReadLine(), out int ownerId))
                 {
                     Console.WriteLine("\nInvalid ID format.");
                     Console.WriteLine("\nPress any key to continue...");
@@ -241,19 +246,19 @@ namespace PokemonConsoleApp
                     return;
                 }
 
-                HttpResponseMessage response = await client.DeleteAsync(baseUrl + $"Country/{countryId}");
+                HttpResponseMessage response = await client.DeleteAsync(baseUrl + $"Owner/{ownerId}");
 
                 if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.NoContent)
                 {
-                    Console.WriteLine("\nSuccess: Country deleted successfully.");
+                    Console.WriteLine("\nSuccess: Owner deleted successfully.");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    Console.WriteLine($"\nCountry with {countryId} ID could not be found.");
+                    Console.WriteLine($"\nOwner with {ownerId} ID could not be found.");
                 }
                 else
                 {
-                    Console.WriteLine($"\nError: Could not delete the country. Status Code: {response.StatusCode}");
+                    Console.WriteLine($"\nError: Could not delete the owner. Status Code: {response.StatusCode}");
                 }
             }
             catch (HttpRequestException ex)
@@ -269,6 +274,7 @@ namespace PokemonConsoleApp
             Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();
         }
+
 
 
 

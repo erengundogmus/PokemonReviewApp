@@ -15,7 +15,7 @@ namespace PokemonConsoleApp
         static CategoryMenu categoryMenu = new CategoryMenu(client, baseUrl);
         static CountryMenu countryMenu = new CountryMenu(client, baseUrl);
         //static FoodMenu foodMenu = new FoodMenu(client, baseUrl);
-        //static OwnerMenu ownerMenu = new OwnerMenu(client, baseUrl);
+        static OwnerMenu ownerMenu = new OwnerMenu(client, baseUrl);
         static PokemonMenu pokemonMenu = new PokemonMenu(client, baseUrl);
         static ReviewerMenu reviewerMenu = new ReviewerMenu(client, baseUrl);
         //static ReviewMenu reviewMenu = new ReviewMenu(client, baseUrl);
@@ -57,9 +57,9 @@ namespace PokemonConsoleApp
                     //    await FoodMenu();
                     //    break;
                   
-                    //case "4":
-                    //    await OwnerMenu();
-                    //    break;
+                    case "4":
+                        await OwnerMenu();
+                        break;
                   
                     case "5":
                         await PokemonMenu();
@@ -184,6 +184,63 @@ namespace PokemonConsoleApp
 
                     case "5":
                         await countryMenu.DeleteCountry();
+                        break;
+
+                    case "0":
+                        backToMain = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, press a key to continue.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
+
+
+
+        static async Task OwnerMenu()
+        {
+            bool backToMain = false;
+
+            while (!backToMain)
+            {
+                Console.Clear();
+                Console.WriteLine("//Owner");
+                Console.WriteLine("1 - GetAll");
+                Console.WriteLine("2 - GetById");
+                Console.WriteLine("3 - Create");
+                Console.WriteLine("4 - Update");
+                Console.WriteLine("5 - Delete");
+                Console.WriteLine("0 - Exit to Main Menu");
+                Console.WriteLine();
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
+                Console.Write("Please choose the process you want to continue: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        await ownerMenu.GetAllOwners();
+                        break;
+
+                    case "2":
+                        await ownerMenu.GetOwnerById();
+                        break;
+
+                    case "3":
+                        await ownerMenu.CreateOwner();
+                        break;
+
+                    case "4":
+                        await ownerMenu.UpdateOwner();
+                        break;
+
+                    case "5":
+                        await ownerMenu.DeleteOwner();
                         break;
 
                     case "0":

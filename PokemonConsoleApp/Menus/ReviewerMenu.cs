@@ -256,7 +256,7 @@ namespace PokemonConsoleApp
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    Console.WriteLine($"Reviewer with {reviewerId} ID could not be found.");
+                    Console.WriteLine($"\nReviewer with {reviewerId} ID could not be found.");
                 }
                 else
                 {
