@@ -15,13 +15,15 @@ namespace PokemonReviewApp.Controllers
         private readonly IMapper mapper;
         private readonly ICategoryInterface categoryInterface; // category'nin varlığını kontrol etmek için
         private readonly IOwnerInterface ownerInterface;  // owner'ın varlığını kontrol etmek için
+        private readonly IReviewInterface reviewInterface;
 
-        public PokemonController(IPokemonInterface pokemonInterface, ICategoryInterface categoryInterface, IOwnerInterface ownerInterface, IMapper mapper)
+        public PokemonController(IPokemonInterface pokemonInterface, ICategoryInterface categoryInterface, IOwnerInterface ownerInterface, IReviewInterface reviewInterface, IMapper mapper)
         {
             this.pokemonInterface = pokemonInterface;
             this.mapper = mapper;
             this.categoryInterface = categoryInterface; // category'nin varlığını kontrol etmek için
             this.ownerInterface = ownerInterface; // owner'ın varlığını kontrol etmek için
+            this.reviewInterface = reviewInterface; //toplu review silme işlemi için
         }
 
         [HttpGet]
@@ -158,7 +160,7 @@ namespace PokemonReviewApp.Controllers
 
             pokemonMap.Id = pokeId;
 
-            if (!pokemonInterface.UpdatePokemon(pokemonMap))
+            if (!pokemonInterface.UpdatePokemon(updatedpokemon.OwnerId, updatedpokemon.CategoryId, pokemonMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating pokemon.");
                 return StatusCode(500, ModelState);
@@ -181,10 +183,21 @@ namespace PokemonReviewApp.Controllers
                 return NotFound();
             }
 
+            //silinecek pokemon için review var mı kontrol ediyoruz varsa reviewlerini de silmek için
+            var reviewsToDelete = reviewInterface.GetReviewsOfAPokemon(pokemonId);
             var pokemonToDelete = pokemonInterface.GetPokemon(pokemonId);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            if (reviewsToDelete != null && reviewsToDelete.Count > 0)
+            {
+                if (!reviewInterface.DeleteReviews(reviewsToDelete.ToList()))
+                {
+                    ModelState.AddModelError("", "Something went wrong when deleting reviews");
+                    return StatusCode(500, ModelState);
+                }
+            }
 
             if (!pokemonInterface.DeletePokemon(pokemonToDelete))
             {

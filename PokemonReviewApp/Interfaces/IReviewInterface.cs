@@ -12,6 +12,8 @@ namespace PokemonReviewApp.Interfaces
         bool CreateReview(Review review);
         bool UpdateReview(Review review);
         bool DeleteReview(Review review);
+        //pokemon silinince reviewleri toplu silmek için
+        bool DeleteReviews(List<Review> reviews);
         bool Save();
     }
 }

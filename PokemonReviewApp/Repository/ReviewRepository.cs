@@ -70,5 +70,12 @@ namespace PokemonReviewApp.Repository
             this.context.Remove(review);
             return Save();
         }
+
+        public bool DeleteReviews(List<Review> reviews)
+        {
+            this.context.RemoveRange(reviews);
+            return Save();
+        }
+
     }
 }

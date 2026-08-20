@@ -94,13 +94,42 @@ namespace PokemonReviewApp.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool UpdatePokemon(Pokemon pokemon)
+        public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
-            //ef core'un hafızasındaki tracked nesneleri temizliyoruz ki çakışma olmasın
             this.context.ChangeTracker.Clear();
+            //eski kategori ve sahip
+            var existingOwner = this.context.PokemonsOwners.Where(po => po.PokemonId == pokemon.Id).FirstOrDefault();
+            var existingCategory = this.context.PokemonCategories.Where(pc => pc.PokemonId == pokemon.Id).FirstOrDefault();
 
+            //eski kayıtları sil
+            if (existingOwner != null)
+                this.context.Remove(existingOwner);
+            if (existingCategory != null)
+                this.context.Remove(existingCategory);
+
+            //yeni owner ve category nesnelerini buluyor
+            var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+            var categoryEntity = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+
+            var pokemonOwner = new PokemonOwner()
+            {
+                Owner = pokemonOwnerEntity,
+                Pokemon = pokemon,
+            };
+            this.context.Add(pokemonOwner);
+
+            var pokemonCategory = new PokemonCategory()
+            {
+                Category = categoryEntity,
+                Pokemon = pokemon,
+            };
+            this.context.Add(pokemonCategory);
             this.context.Update(pokemon);
+
             return Save();
         }
+
+
+
     }
 }

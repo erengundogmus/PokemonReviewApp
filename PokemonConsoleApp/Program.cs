@@ -87,7 +87,7 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Pokemon");
-                Console.WriteLine("1 - GetAllP");
+                Console.WriteLine("1 - GetAll");
                 Console.WriteLine("2 - GetById");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
@@ -112,6 +112,14 @@ namespace PokemonConsoleApp
 
                     case "3":
                         await CreatePokemon();
+                        break;
+                    
+                    case "4":
+                        await UpdatePokemon();
+                        break;
+                    
+                    case "5":
+                        await DeletePokemon();
                         break;
 
                     case "0":
@@ -277,7 +285,7 @@ namespace PokemonConsoleApp
             }
             catch (FormatException)
             {
-                Console.WriteLine("\nInvalid Format: Please ensure dates (yyyy-MM-dd) and IDs (numbers) are correct.");
+                Console.WriteLine("\nInvalid Format: Please ensure dates and numbers are correct.");
             }
             catch (HttpRequestException ex)
             {
@@ -295,9 +303,116 @@ namespace PokemonConsoleApp
 
 
 
+        static async Task UpdatePokemon()
+        {
+            Console.Clear();
+            Console.WriteLine("// Update a Pokemon\n");
+
+            Console.Write("Please enter the id of the pokemon: ");
+            string input = Console.ReadLine();
 
 
+            try
+            {
+                int pokemonId = Convert.ToInt32(input);
 
+                Console.Write("Please enter the new name of the pokemon: ");
+                string name = Console.ReadLine();
+
+                Console.Write("Please enter the new Birth Date (yyyy-MM-dd): ");
+                string dateInput = Console.ReadLine();
+                DateTime birthDate = Convert.ToDateTime(dateInput);
+
+                Console.Write("Please enter the new Owner ID: ");
+                int ownerId = Convert.ToInt32(Console.ReadLine());
+
+                Console.Write("Please enter the new Category ID: ");
+                int categoryId = Convert.ToInt32(Console.ReadLine());
+
+                PokemonInputDto updatedPokemon = new PokemonInputDto
+                {
+                    Name = name,
+                    BirthDate = birthDate,
+                    OwnerId = ownerId,
+                    CategoryId = categoryId
+                };
+
+                HttpResponseMessage response = await client.PutAsJsonAsync(baseUrl + $"Pokemon/{pokemonId}", updatedPokemon);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("\nSuccess: Pokemon updated successfully.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Could not update the pokemon. Status Code: {response.StatusCode}");
+
+                    string errorDetail = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Error Details: {errorDetail}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Format: Please ensure dates and numbers are correct.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
+
+        static async Task DeletePokemon()
+        {
+            Console.Clear();
+            Console.WriteLine("// Delete a Pokemon\n");
+
+            try
+            {
+                Console.Write("Enter the ID of the Pokemon you want to delete: ");
+                if (!int.TryParse(Console.ReadLine(), out int pokemonId))
+                {
+                    Console.WriteLine("\nInvalid ID format.");
+                    Console.WriteLine("\nPress any key to continue...");
+                    Console.ReadKey();
+                    return;
+                }
+
+                HttpResponseMessage response = await client.DeleteAsync(baseUrl + $"Pokemon/{pokemonId}");
+
+                if (response.IsSuccessStatusCode || response.StatusCode == System.Net.HttpStatusCode.NoContent)
+                {
+                    Console.WriteLine("\nSuccess: Pokemon deleted successfully.");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"\nPokemon with {pokemonId} ID could not be found.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Could not delete the pokemon. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
 
 
 
