@@ -272,6 +272,53 @@ namespace PokemonConsoleApp
 
 
 
+        public async Task GetCountryOfAnOwner()
+        {
+            Console.Clear();
+            Console.WriteLine("// Get Country Of An Owner\n");
+
+            Console.Write("Enter the owner ID to see it's country: ");
+            string input = Console.ReadLine();
+
+            try
+            {
+                int ownerId = Convert.ToInt32(input);
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Country/owners/{ownerId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Country c = await response.Content.ReadFromJsonAsync<Country>();
+                    Console.WriteLine($"\n--- COUNTRY DETAILS ---");
+                    Console.WriteLine($"ID: {c.Id}");
+                    Console.WriteLine($"Name: {c.Name}");
+                    Console.WriteLine("-----------------------");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"\nOwner with ID {ownerId} could not be found, or has no country.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Input: Please enter a valid number.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
 
 
 

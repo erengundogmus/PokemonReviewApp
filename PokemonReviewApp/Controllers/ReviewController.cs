@@ -50,12 +50,12 @@ namespace PokemonReviewApp.Controllers
             return Ok(review);
         }
 
-        [HttpGet("pokemon/{pokeId}")]
+        [HttpGet("pokemon/{pokemonId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewOutputDto>))]
         [ProducesResponseType(400)]
-        public IActionResult GetReviewsForAPokemon(int pokeId)
+        public IActionResult GetReviewsForAPokemon(int pokemonId)
         {
-            var reviews = mapper.Map<List<ReviewOutputDto>>(reviewInterface.GetReviewsOfAPokemon(pokeId));
+            var reviews = mapper.Map<List<ReviewOutputDto>>(reviewInterface.GetReviewsOfAPokemon(pokemonId));
 
             if (!ModelState.IsValid)
                 return BadRequest();

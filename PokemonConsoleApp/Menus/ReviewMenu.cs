@@ -308,6 +308,71 @@ namespace PokemonConsoleApp
 
 
 
+        public async Task GetReviewsForAPokemon()
+        {
+            Console.Clear();
+            Console.WriteLine("// Get Reviews For A Pokemon\n");
+
+            Console.Write("Enter the Pokemon ID: ");
+            string input = Console.ReadLine();
+
+            try
+            {
+                int pokeId = Convert.ToInt32(input);
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Review/pokemon/{pokeId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var reviews = await response.Content.ReadFromJsonAsync<List<System.Text.Json.JsonElement>>();
+
+                    Console.WriteLine($"\n--- REVIEWS (Pokemon ID: {pokeId}) ---");
+
+                    if (reviews != null && reviews.Count > 0)
+                    {
+                        foreach (var r in reviews)
+                        {
+                            int id = r.GetProperty("id").GetInt32();
+                            string title = r.GetProperty("title").GetString();
+                            string text = r.GetProperty("text").GetString();
+                            string pokemonName = r.GetProperty("pokemonName").GetString();
+                            int rating = (int)r.GetProperty("rating").GetDecimal();
+
+                            Console.WriteLine($"{id} - Pokemon: {pokemonName} - Title: {title} - Rating: {rating} - Text: {text}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No reviews found for this Pokemon.");
+                    }
+                    Console.WriteLine("-----------------------");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"\nPokemon with ID {pokeId} could not be found.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Input: Please enter a valid number.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
+
 
 
     }

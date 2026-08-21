@@ -273,7 +273,72 @@ namespace PokemonConsoleApp
 
 
 
+
+        public async Task GetPokemonsByCategory()
+        {
+            Console.Clear();
+            Console.WriteLine("// Get Pokemons By Category\n");
+
+            Console.Write("Enter the Category ID: ");
+            string input = Console.ReadLine();
+
+            try
+            {
+                int categoryId = Convert.ToInt32(input);
+
+                // API'ye istek atıyoruz
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Category/pokemon/{categoryId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    List<Pokemon> pokemons = await response.Content.ReadFromJsonAsync<List<Pokemon>>();
+
+                    Console.WriteLine($"\n--- POKEMONS (Category ID: {categoryId}) ---");
+
+                    if (pokemons != null && pokemons.Count > 0)
+                    {
+                        foreach (Pokemon p in pokemons)
+                        {
+                            Console.WriteLine($"{p.Id} - Name: {p.Name}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No Pokemons found for this category.");
+                    }
+
+                    Console.WriteLine("-----------------------");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"\nCategory with ID {categoryId} could not be found, or no Pokemons exist.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Input: Please enter a valid number.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
+
+
         
+
 
 
 

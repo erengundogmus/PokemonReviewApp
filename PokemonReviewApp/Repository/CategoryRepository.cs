@@ -1,4 +1,5 @@
-﻿using PokemonReviewApp.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
 
@@ -41,7 +42,8 @@ namespace PokemonReviewApp.Repository
         }
         public ICollection<Pokemon> GetPokemonByCategory(int categoryId)
         {
-            return this.context.PokemonCategories.Where(e =>e.CategoryId == categoryId).Select(c => c.Pokemon).ToList();
+            return this.context.Pokemon.Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).Include(p => p.PokemonOwners)
+                .ThenInclude(po => po.Owner).Where(p => p.PokemonCategories.Any(pc => pc.CategoryId == categoryId)).ToList();
         }
 
         public bool Save()

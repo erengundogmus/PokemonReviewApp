@@ -277,8 +277,63 @@ namespace PokemonConsoleApp
 
 
 
+        public async Task GetPokemonsByOwner()
+        {
+            Console.Clear();
+            Console.WriteLine("// Get Pokemons By Owner\n");
 
+            Console.Write("Enter the Owner ID: ");
+            string input = Console.ReadLine();
 
+            try
+            {
+                int ownerId = Convert.ToInt32(input);
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Owner/{ownerId}/pokemon");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    List<Pokemon> pokemons = await response.Content.ReadFromJsonAsync<List<Pokemon>>();
+                    Console.WriteLine($"\n--- POKEMONS (Owner ID: {ownerId}) ---");
+
+                    if (pokemons != null && pokemons.Count > 0)
+                    {
+                        foreach (Pokemon p in pokemons)
+                        {
+                            Console.WriteLine($"{p.Id} - Name: {p.Name}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No pokemons found for this owner.");
+                    }
+                    Console.WriteLine("-----------------------");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"\nOwner with ID {ownerId} could not be found.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Input: Please enter a valid number.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
 
 
 

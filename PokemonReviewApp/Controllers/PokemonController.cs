@@ -39,16 +39,16 @@ namespace PokemonReviewApp.Controllers
         }
 
 
-        [HttpGet("{pokeid}")]
+        [HttpGet("{pokemonId}")]
         [ProducesResponseType(200, Type = typeof(PokemonOutputDto))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public IActionResult GetPokemon(int pokeid)
+        public IActionResult GetPokemon(int pokemonId)
         {
-            if (!pokemonInterface.PokemonExists(pokeid))
+            if (!pokemonInterface.PokemonExists(pokemonId))
                 return NotFound();
 
-            var pokemon = mapper.Map<PokemonOutputDto>(pokemonInterface.GetPokemon(pokeid));
+            var pokemon = mapper.Map<PokemonOutputDto>(pokemonInterface.GetPokemon(pokemonId));
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -56,16 +56,16 @@ namespace PokemonReviewApp.Controllers
             return Ok(pokemon);
         }
 
-        [HttpGet("{pokeID}/rating")]
+        [HttpGet("{pokemonId}/rating")]
         [ProducesResponseType(200, Type = typeof(decimal))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public IActionResult GetPokemonRating(int pokeID)
+        public IActionResult GetPokemonRating(int pokemonId)
         {
-            if (!pokemonInterface.PokemonExists(pokeID))
+            if (!pokemonInterface.PokemonExists(pokemonId))
                 return NotFound();
 
-            var rating = pokemonInterface.GetPokemonRating(pokeID);
+            var rating = pokemonInterface.GetPokemonRating(pokemonId);
 
             if (!ModelState.IsValid)
                 return BadRequest();
@@ -118,21 +118,21 @@ namespace PokemonReviewApp.Controllers
 
 
 
-        [HttpPut("{pokeId}")]
+        [HttpPut("{pokemonId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
         [ProducesResponseType(404)]
-        public IActionResult UpdatePokemon(int pokeId, [FromBody] PokemonInputDto updatedpokemon)
+        public IActionResult UpdatePokemon(int pokemonId, [FromBody] PokemonInputDto updatedpokemon)
         {
             if (updatedpokemon == null)
                 return BadRequest(ModelState);
 
-            if (!pokemonInterface.PokemonExists(pokeId))
+            if (!pokemonInterface.PokemonExists(pokemonId))
                 return NotFound();
 
             // pokemonun olup olmadığını kontrol eder
             var existingPokemon = pokemonInterface.GetPokemons()                               /*şu an güncellenen pokemon hariç(category değişecekse buraya takılmamak için)*/
-                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != pokeId).FirstOrDefault(); // DEĞİŞİKLİK: updatedpokemon.Id yerine pokeId kullanıldı
+                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != pokemonId).FirstOrDefault(); // DEĞİŞİKLİK: updatedpokemon.Id yerine pokemonId kullanıldı
 
             if (existingPokemon != null)
             {
@@ -158,7 +158,7 @@ namespace PokemonReviewApp.Controllers
 
             var pokemonMap = this.mapper.Map<Pokemon>(updatedpokemon);
 
-            pokemonMap.Id = pokeId;
+            pokemonMap.Id = pokemonId;
 
             if (!pokemonInterface.UpdatePokemon(updatedpokemon.OwnerId, updatedpokemon.CategoryId, pokemonMap))
             {

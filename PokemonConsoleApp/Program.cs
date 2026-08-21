@@ -33,8 +33,8 @@ namespace PokemonConsoleApp
                 Console.WriteLine("3 - Food");
                 Console.WriteLine("4 - Owner");
                 Console.WriteLine("5 - Pokemon");
-                Console.WriteLine("6 - Review");
-                Console.WriteLine("7 - Reviewer");
+                Console.WriteLine("6 - Reviewer");
+                Console.WriteLine("7 - Review");
                 Console.WriteLine("0 - Exit");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -66,11 +66,11 @@ namespace PokemonConsoleApp
                         break;
                     
                     case "6":
-                        await ReviewMenu();
+                        await ReviewerMenu();
                         break;
                     
                     case "7":
-                        await ReviewerMenu();
+                        await ReviewMenu();
                         break;
                     
                     case "0":
@@ -96,11 +96,16 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Category");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Pokemons By Category");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -130,6 +135,10 @@ namespace PokemonConsoleApp
                     case "5":
                         await categoryMenu.DeleteCategory();
                         break;
+                    
+                    case "6":
+                        await categoryMenu.GetPokemonsByCategory();
+                        break;
 
                     case "0":
                         backToMain = true;
@@ -152,11 +161,16 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Country");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Country Of An Owner");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -187,6 +201,10 @@ namespace PokemonConsoleApp
                         await countryMenu.DeleteCountry();
                         break;
 
+                    case "6":
+                        await countryMenu.GetCountryOfAnOwner();
+                        break;
+
                     case "0":
                         backToMain = true;
                         break;
@@ -209,11 +227,18 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Food");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Foods By Pokemon");
+                Console.WriteLine("7 - Add Food To Pokemon");
+                Console.WriteLine("8 - Remove Food From Pokemon");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -243,6 +268,18 @@ namespace PokemonConsoleApp
                     case "5":
                         await foodMenu.DeleteFood();
                         break;
+                    
+                    case "6":
+                        await foodMenu.GetFoodsByPokemon();
+                        break;
+                    
+                    case "7":
+                        await foodMenu.AddFoodToPokemon();
+                        break;
+                    
+                    case "8":
+                        await foodMenu.RemoveFoodFromPokemon();
+                        break;
 
                     case "0":
                         backToMain = true;
@@ -266,11 +303,16 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Owner");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Pokemons By Owner");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -300,6 +342,10 @@ namespace PokemonConsoleApp
                     case "5":
                         await ownerMenu.DeleteOwner();
                         break;
+                    
+                    case "6":
+                        await ownerMenu.GetPokemonsByOwner();
+                        break;
 
                     case "0":
                         backToMain = true;
@@ -323,11 +369,16 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Pokemon");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Pokemon Rating");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -357,6 +408,10 @@ namespace PokemonConsoleApp
                     case "5":
                         await pokemonMenu.DeletePokemon();
                         break;
+                    
+                    case "6":
+                        await pokemonMenu.GetPokemonRating();
+                        break;
 
                     case "0":
                         backToMain = true;
@@ -380,11 +435,16 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Reviewer");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Reviews By A Reviewer");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -414,6 +474,10 @@ namespace PokemonConsoleApp
                     case "5":
                         await reviewerMenu.DeleteReviewer();
                         break;
+                    
+                    case "6":
+                        await reviewerMenu.GetReviewsByAReviewer();
+                        break;
 
                     case "0":
                         backToMain = true;
@@ -437,11 +501,16 @@ namespace PokemonConsoleApp
             {
                 Console.Clear();
                 Console.WriteLine("//Review");
-                Console.WriteLine("1 - GetAll");
-                Console.WriteLine("2 - GetById");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get All");
+                Console.WriteLine("2 - Get By Id");
                 Console.WriteLine("3 - Create");
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("6 - Get Reviews For A Pokemon");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -470,6 +539,10 @@ namespace PokemonConsoleApp
 
                     case "5":
                         await reviewMenu.DeleteReview();
+                        break;
+                    
+                    case "6":
+                        await reviewMenu.GetReviewsForAPokemon();
                         break;
 
                     case "0":

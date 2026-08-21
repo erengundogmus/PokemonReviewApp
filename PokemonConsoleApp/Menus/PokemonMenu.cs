@@ -296,7 +296,52 @@ namespace PokemonConsoleApp
 
 
 
+        public async Task GetPokemonRating()
+        {
+            Console.Clear();
+            Console.WriteLine("// Get Pokemon Rating\n");
 
+            Console.Write("Enter the Pokemon ID: ");
+            string pokemon = Console.ReadLine();
+
+            try
+            {
+                int pokemonId = Convert.ToInt32(pokemon);
+                HttpResponseMessage response = await client.GetAsync(baseUrl + $"Pokemon/{pokemonId}/rating");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    decimal rating = await response.Content.ReadFromJsonAsync<decimal>();
+                    Console.WriteLine($"\n--- RATING ---");
+                    Console.WriteLine($"Pokemon (ID: {pokemonId}) has an average rating of: {rating}");
+                    Console.WriteLine("-----------------------");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"\nPokemon with ID {pokemonId} could not be found or has no ratings.");
+                }
+                else
+                {
+                    Console.WriteLine($"\nError: Received an unsuccessful response from API. Status Code: {response.StatusCode}");
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("\nInvalid Input: Please enter a valid number.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine("\nConnection Error: Could not reach the API.");
+                Console.WriteLine($"{ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\nAn unexpected error occurred: {ex.Message}");
+            }
+
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+        }
 
 
 
