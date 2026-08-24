@@ -1,4 +1,5 @@
 ﻿using PokemonConsoleApp.InputDtos;
+using PokemonConsoleApp.Menus;
 using System;
 using System.Buffers.Text;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace PokemonConsoleApp
         static PokemonMenu pokemonMenu = new PokemonMenu(client, baseUrl);
         static ReviewerMenu reviewerMenu = new ReviewerMenu(client, baseUrl);
         static ReviewMenu reviewMenu = new ReviewMenu(client, baseUrl);
+        static FoodAddDropMenu foodAddDropMenu = new FoodAddDropMenu(client,baseUrl);
         static async Task Main(string[] args)
         {
             bool exit = false;
@@ -35,6 +37,7 @@ namespace PokemonConsoleApp
                 Console.WriteLine("5 - Pokemon");
                 Console.WriteLine("6 - Reviewer");
                 Console.WriteLine("7 - Review");
+                Console.WriteLine("8 - Food Add Drop");
                 Console.WriteLine("0 - Exit");
                 Console.WriteLine();
                 Console.WriteLine("----------------------------------");
@@ -71,6 +74,10 @@ namespace PokemonConsoleApp
                     
                     case "7":
                         await ReviewMenu();
+                        break;
+                    
+                    case "8":
+                        await FoodAddDropMenu();
                         break;
                     
                     case "0":
@@ -234,10 +241,6 @@ namespace PokemonConsoleApp
                 Console.WriteLine("4 - Update");
                 Console.WriteLine("5 - Delete");
                 Console.WriteLine("----------------------------------");
-                Console.WriteLine("6 - Get Foods By Pokemon");
-                Console.WriteLine("7 - Add Food To Pokemon");
-                Console.WriteLine("8 - Remove Food From Pokemon");
-                Console.WriteLine("----------------------------------");
                 Console.WriteLine();
                 Console.WriteLine("0 - Exit to Main Menu");
                 Console.WriteLine();
@@ -267,18 +270,6 @@ namespace PokemonConsoleApp
 
                     case "5":
                         await foodMenu.DeleteFood();
-                        break;
-                    
-                    case "6":
-                        await foodMenu.GetFoodsByPokemon();
-                        break;
-                    
-                    case "7":
-                        await foodMenu.AddFoodToPokemon();
-                        break;
-                    
-                    case "8":
-                        await foodMenu.RemoveFoodFromPokemon();
                         break;
 
                     case "0":
@@ -558,7 +549,53 @@ namespace PokemonConsoleApp
         }
 
 
+        static async Task FoodAddDropMenu()
+        {
+            bool backToMain = false;
 
+            while (!backToMain)
+            {
+                Console.Clear();
+                Console.WriteLine("//Food Add Drop");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine("1 - Get Foods By Pokemon");
+                Console.WriteLine("2 - Add Food To Pokemon");
+                Console.WriteLine("3 - Remove Food From Pokemon");
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
+                Console.WriteLine("0 - Exit to Main Menu");
+                Console.WriteLine();
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine();
+                Console.Write("Please choose the process you want to continue: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        await foodAddDropMenu.GetFoodsByPokemon();
+                        break;
+
+                    case "2":
+                        await foodAddDropMenu.AddFoodToPokemon();
+                        break;
+
+                    case "3":
+                        await foodAddDropMenu.RemoveFoodFromPokemon();
+                        break;
+
+                    case "0":
+                        backToMain = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice, press a key to continue.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+        }
 
     }
 }

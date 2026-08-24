@@ -27,17 +27,24 @@ namespace PokemonConsoleApp
 
                 if (response.IsSuccessStatusCode)
                 {
-                    //json dosyasını dönüştürüyoruz
-                    List<Review> reviewList = await response.Content.ReadFromJsonAsync<List<Review>>();
+                    //json dosyasını element listesi olarak okuyoruz (Rating hatasını aşmak için)
+                    var reviewList = await response.Content.ReadFromJsonAsync<List<System.Text.Json.JsonElement>>();
 
                     Console.WriteLine("--- REVIEW LİST ---");
 
                     //foreach ile döndürüyoruz
                     if (reviewList != null && reviewList.Count > 0)
                     {
-                        foreach (Review r in reviewList)
+                        foreach (var r in reviewList)
                         {
-                            Console.WriteLine($"{r.Id} - Title: {r.Title} Text: {r.Text} Rating: {r.Rating}");
+                            int id = r.GetProperty("id").GetInt32();
+                            string title = r.GetProperty("title").GetString();
+                            string text = r.GetProperty("text").GetString();
+
+                            //rating'i ondalıklı alıp int'e çeviriyoruz
+                            int rating = (int)r.GetProperty("rating").GetDecimal();
+
+                            Console.WriteLine($"{id} - Title: {title} Text: {text} Rating: {rating}");
                         }
                     }
                     else
@@ -85,13 +92,19 @@ namespace PokemonConsoleApp
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Review r = await response.Content.ReadFromJsonAsync<Review>();
+                    // json dosyasını element olarak okuyoruz
+                    var r = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+
+                    int id = r.GetProperty("id").GetInt32();
+                    string title = r.GetProperty("title").GetString();
+                    string text = r.GetProperty("text").GetString();
+                    int rating = (int)r.GetProperty("rating").GetDecimal();
 
                     Console.WriteLine("\n--- REVIEW DETAILS ---");
-                    Console.WriteLine($"ID: {r.Id}");
-                    Console.WriteLine($"Title: {r.Title}");
-                    Console.WriteLine($"Text: {r.Text}");
-                    Console.WriteLine($"Rating: {r.Rating}");
+                    Console.WriteLine($"ID: {id}");
+                    Console.WriteLine($"Title: {title}");
+                    Console.WriteLine($"Text: {text}");
+                    Console.WriteLine($"Rating: {rating}");
                     Console.WriteLine("-----------------------");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

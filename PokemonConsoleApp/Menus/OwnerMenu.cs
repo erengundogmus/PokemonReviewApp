@@ -133,10 +133,14 @@ namespace PokemonConsoleApp
                 Console.Write("Please enter the gym of the owner: ");
                 string gym = Console.ReadLine();
 
+                Console.Write("Please enter the country of the owner: ");
+                int countryId = Convert.ToInt32(Console.ReadLine());
+
                 OwnerInputDto newOwner = new OwnerInputDto
                 {
                     Name = name,
-                    Gym = gym
+                    Gym = gym,
+                    CountryId = countryId
                 };
 
                 HttpResponseMessage response = await client.PostAsJsonAsync(baseUrl + "Owner", newOwner);
@@ -192,10 +196,14 @@ namespace PokemonConsoleApp
                 Console.Write("Please enter the gym of the owner: ");
                 string gym = Console.ReadLine();
 
+                Console.Write("Please enter the country of the owner: ");
+                int countryId = Convert.ToInt32(Console.ReadLine());
+
                 OwnerInputDto updatedOwner = new OwnerInputDto
                 {
                     Name = name,
-                    Gym = gym
+                    Gym = gym,
+                    CountryId = countryId
                 };
 
                 HttpResponseMessage response = await client.PutAsJsonAsync(baseUrl + $"Owner/{ownerId}", updatedOwner);

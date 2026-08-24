@@ -144,7 +144,10 @@ namespace PokemonReviewApp.Controllers
             ownerMap.Id = ownerId;
 
             //eğer güncellemede country ilişkisi de güncellenecekse
-            ownerMap.Country = countryInterface.GetCountry(updatedowner.CountryId);
+            var country = countryInterface.GetCountry(updatedowner.CountryId);
+            country.Owners = new List<Owner>();
+
+            ownerMap.Country = country;
 
             if (!ownerInterface.UpdateOwner(ownerMap))
             {
