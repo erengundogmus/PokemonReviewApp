@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="PokemonConsoleApp/PokemonConsoleApp.csproj" Id="b3af919e-44ff-4aad-b719-d0c908e42035" />
   <Project Path="PokemonReviewApp/PokemonReviewApp.csproj" />
+  <Project Path="PokemonWinFormsApp/PokemonWinFormsApp.csproj" Id="be6884e6-0e5c-4a75-b093-7f0868e5e86a" />
 </Solution>
