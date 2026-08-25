@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
 
 namespace PokemonReviewApp.Data
@@ -22,11 +23,13 @@ namespace PokemonReviewApp.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder); //base çağrısının başta olması gerekiyormuş
+
             modelBuilder.Entity<PokemonCategory>()
                     .HasKey(pc => new { pc.PokemonId, pc.CategoryId });
             modelBuilder.Entity<PokemonCategory>()
                     .HasOne(p => p.Pokemon)
-                    .WithMany(pc =>pc.PokemonCategories)
+                    .WithMany(pc => pc.PokemonCategories)
                     .HasForeignKey(p => p.PokemonId);
             modelBuilder.Entity<PokemonCategory>()
                     .HasOne(p => p.Category)
@@ -59,6 +62,21 @@ namespace PokemonReviewApp.Data
                     .WithMany(pf => pf.PokemonFoods)
                     .HasForeignKey(p => p.FoodId);
 
+            //ISoftDelete uygulayan tüm sınıflara otomatik olarak "IsDeleted == false" filtresi uygular
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
+                {
+                    var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+                    var property = System.Linq.Expressions.Expression.Property(parameter, nameof(ISoftDelete.IsDeleted));
+                    var condition = System.Linq.Expressions.Expression.Lambda(
+                        System.Linq.Expressions.Expression.Equal(property, System.Linq.Expressions.Expression.Constant(false)),
+                        parameter
+                    );
+
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(condition);
+                }
+            }
         }
 
         internal object GetReviewer(int reviewerId)

@@ -49,7 +49,8 @@ namespace PokemonReviewApp.Repository
 
         public bool DeletePokemon(Pokemon pokemon)
         {
-            this.context.Remove(pokemon);
+            pokemon.IsDeleted = true;
+            pokemon.DeletedAt = DateTime.UtcNow;
             return Save();
 
         }

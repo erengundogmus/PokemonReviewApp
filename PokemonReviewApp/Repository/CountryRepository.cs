@@ -28,7 +28,8 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteCountry(Country country)
         {
-            this.context.Remove(country);
+            country.IsDeleted = true;
+            country.DeletedAt = DateTime.UtcNow;
             return Save();
         }
 

@@ -32,7 +32,8 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteFood(Food food)
         {
-            this.context.Remove(food);
+            food.IsDeleted = true;
+            food.DeletedAt = DateTime.UtcNow;
             return Save();
         }
 

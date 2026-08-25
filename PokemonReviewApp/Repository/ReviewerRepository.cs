@@ -25,7 +25,8 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteReviewer(Reviewer reviewer)
         {
-            this.context.Remove(reviewer);
+            reviewer.IsDeleted = true;
+            reviewer.DeletedAt = DateTime.UtcNow;
             return Save();
         }
 

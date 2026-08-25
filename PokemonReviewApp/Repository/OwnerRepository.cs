@@ -21,7 +21,8 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteOwner(Owner owner)
         {
-            this.context.Remove(owner);
+            owner.IsDeleted = true;
+            owner.DeletedAt = DateTime.UtcNow;
             return Save();
         }
 

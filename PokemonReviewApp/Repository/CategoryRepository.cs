@@ -27,7 +27,8 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteCategory(Category category)
         {
-            this.context.Remove(category);
+            category.IsDeleted = true;
+            category.DeletedAt = DateTime.UtcNow; ;
             return Save();
         }
 
