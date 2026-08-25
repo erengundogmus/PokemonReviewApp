@@ -1,6 +1,6 @@
-﻿namespace PokemonWinFormsApp.Food
+﻿namespace PokemonWinFormsApp.Reviewer
 {
-    partial class FoodCreateForm
+    partial class ReviewerCreateForm
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -17,8 +17,8 @@
         {
             label1 = new Label();
             label2 = new Label();
-            textName = new TextBox();
-            textHp = new TextBox();
+            textFirstName = new TextBox();
+            textLastName = new TextBox();
             buttonCreate = new Button();
             SuspendLayout();
             // 
@@ -27,8 +27,8 @@
             label1.Location = new Point(20, 25);
             label1.Name = "label1";
             label1.Size = new Size(100, 23);
-            label1.TabIndex = 4;
-            label1.Text = "Name :";
+            label1.TabIndex = 2;
+            label1.Text = "First Name :";
             // 
             // label2
             // 
@@ -36,53 +36,53 @@
             label2.Name = "label2";
             label2.Size = new Size(100, 23);
             label2.TabIndex = 3;
-            label2.Text = "Hp :";
+            label2.Text = "Last Name :";
             // 
-            // textName
+            // textFirstName
             // 
-            textName.Location = new Point(130, 20);
-            textName.Name = "textName";
-            textName.Size = new Size(130, 23);
-            textName.TabIndex = 2;
+            textFirstName.Location = new Point(130, 20);
+            textFirstName.Name = "textFirstName";
+            textFirstName.Size = new Size(130, 23);
+            textFirstName.TabIndex = 0;
             // 
-            // textHp
+            // textLastName
             // 
-            textHp.Location = new Point(130, 70);
-            textHp.Name = "textHp";
-            textHp.Size = new Size(130, 23);
-            textHp.TabIndex = 1;
+            textLastName.Location = new Point(130, 70);
+            textLastName.Name = "textLastName";
+            textLastName.Size = new Size(130, 23);
+            textLastName.TabIndex = 1;
             // 
             // buttonCreate
             // 
             buttonCreate.Location = new Point(130, 120);
             buttonCreate.Name = "buttonCreate";
             buttonCreate.Size = new Size(130, 30);
-            buttonCreate.TabIndex = 0;
+            buttonCreate.TabIndex = 4;
             buttonCreate.Text = "Create";
             buttonCreate.UseVisualStyleBackColor = true;
             buttonCreate.Click += buttonCreate_Click;
             // 
-            // FoodCreateForm
+            // ReviewerCreateForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(284, 161);
             Controls.Add(buttonCreate);
-            Controls.Add(textHp);
-            Controls.Add(textName);
+            Controls.Add(textLastName);
+            Controls.Add(textFirstName);
             Controls.Add(label2);
             Controls.Add(label1);
-            Name = "FoodCreateForm";
-            Text = "Create New Food";
-            Load += FoodCreateForm_Load;
+            Name = "ReviewerCreateForm";
+            Text = "Create New Reviewer";
+            Load += ReviewerCreateForm_Load;
             ResumeLayout(false);
             PerformLayout();
         }
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textName;
-        private System.Windows.Forms.TextBox textHp;
+        private System.Windows.Forms.TextBox textFirstName;
+        private System.Windows.Forms.TextBox textLastName;
         private System.Windows.Forms.Button buttonCreate;
     }
 }

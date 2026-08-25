@@ -1,33 +1,32 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
 using System.Net.Http.Json;
-
-namespace PokemonWinFormsApp.Food
+namespace PokemonWinFormsApp.Owner
 {
-    public partial class FoodUpdateForm : Form
+    public partial class OwnerUpdateForm : Form
     {
-        private readonly int _foodId;
-        private readonly string apiUrl = "https://localhost:7013/api/food/";
+        private readonly int _ownerId;
+        private readonly string apiUrl = "https://localhost:7013/api/owner/";
         private readonly HttpClient client = new HttpClient();
 
-        public FoodUpdateForm(int foodId)
+        public OwnerUpdateForm(int ownerId)
         {
             InitializeComponent();
-            _foodId = foodId;
+            _ownerId = ownerId;
 
             //form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadFoodDataAsync();
+            _ = LoadOwnerDataAsync();
         }
 
-        private async Task LoadFoodDataAsync()
+        private async Task LoadOwnerDataAsync()
         {
             try
             {
-                var food = await client.GetFromJsonAsync<FoodOutputDto>(apiUrl + _foodId);
-                if (food != null)
+                var owner = await client.GetFromJsonAsync<OwnerOutputDto>(apiUrl + _ownerId);
+                if (owner != null)
                 {
-                    textName.Text = food.Name;
-                    textHp.Text = food.Hp.ToString();
+                    textName.Text = owner.Name;
+                    textGym.Text = owner.Gym;
                 }
             }
             catch (Exception ex)
@@ -38,25 +37,26 @@ namespace PokemonWinFormsApp.Food
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
-            var updatedFood = new FoodInputDto
+            var updatedOwner = new OwnerInputDto
             {
                 Name = textName.Text,
-                Hp = int.TryParse(textHp.Text, out int hp) ? hp : 0
+                Gym = textGym.Text,
+                CountryId = int.TryParse(textCountryId.Text, out int countryId) ? countryId : 0
             };
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _foodId, updatedFood);
+                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _ownerId, updatedOwner);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Food successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Owner successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
                     string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update owner: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

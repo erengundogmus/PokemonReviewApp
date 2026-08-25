@@ -46,6 +46,7 @@
             buttonPokemon.TabIndex = 0;
             buttonPokemon.Text = "Pokemon";
             buttonPokemon.UseVisualStyleBackColor = true;
+            buttonPokemon.Click += buttonPokemon_Click;
             // 
             // button2
             // 
@@ -55,6 +56,7 @@
             button2.TabIndex = 1;
             button2.Text = "Category";
             button2.UseVisualStyleBackColor = true;
+            button2.Click += buttonCategory_Click;
             // 
             // buttonFood
             // 
@@ -74,6 +76,7 @@
             button4.TabIndex = 3;
             button4.Text = "Pokemon Food";
             button4.UseVisualStyleBackColor = true;
+            button4.Click += buttonPokemonFood_Click;
             // 
             // button5
             // 
@@ -83,6 +86,7 @@
             button5.TabIndex = 4;
             button5.Text = "Owner";
             button5.UseVisualStyleBackColor = true;
+            button5.Click += buttonOwner_Click;
             // 
             // button6
             // 
@@ -92,6 +96,7 @@
             button6.TabIndex = 5;
             button6.Text = "Country";
             button6.UseVisualStyleBackColor = true;
+            button6.Click += buttonCountry_Click;
             // 
             // button7
             // 
@@ -101,6 +106,7 @@
             button7.TabIndex = 6;
             button7.Text = "Review";
             button7.UseVisualStyleBackColor = true;
+            button7.Click += buttonReview_Click;
             // 
             // button8
             // 
@@ -110,6 +116,7 @@
             button8.TabIndex = 7;
             button8.Text = "Reviewer";
             button8.UseVisualStyleBackColor = true;
+            button8.Click += buttonReviewer_Click;
             // 
             // MainForm
             // 

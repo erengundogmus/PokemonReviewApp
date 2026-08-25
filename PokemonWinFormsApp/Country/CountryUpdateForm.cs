@@ -2,32 +2,31 @@
 using PokemonReviewApp.OutputDtos;
 using System.Net.Http.Json;
 
-namespace PokemonWinFormsApp.Food
+namespace PokemonWinFormsApp.Country
 {
-    public partial class FoodUpdateForm : Form
+    public partial class CountryUpdateForm : Form
     {
-        private readonly int _foodId;
-        private readonly string apiUrl = "https://localhost:7013/api/food/";
+        private readonly int _countryId;
+        private readonly string apiUrl = "https://localhost:7013/api/country/";
         private readonly HttpClient client = new HttpClient();
 
-        public FoodUpdateForm(int foodId)
+        public CountryUpdateForm(int countryId)
         {
             InitializeComponent();
-            _foodId = foodId;
+            _countryId = countryId;
 
             //form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadFoodDataAsync();
+            _ = LoadCountryDataAsync();
         }
 
-        private async Task LoadFoodDataAsync()
+        private async Task LoadCountryDataAsync()
         {
             try
             {
-                var food = await client.GetFromJsonAsync<FoodOutputDto>(apiUrl + _foodId);
-                if (food != null)
+                var country = await client.GetFromJsonAsync<CountryOutputDto>(apiUrl + _countryId);
+                if (country != null)
                 {
-                    textName.Text = food.Name;
-                    textHp.Text = food.Hp.ToString();
+                    textName.Text = country.Name;
                 }
             }
             catch (Exception ex)
@@ -38,25 +37,24 @@ namespace PokemonWinFormsApp.Food
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
-            var updatedFood = new FoodInputDto
+            var updatedCountry = new CountryInputDto
             {
                 Name = textName.Text,
-                Hp = int.TryParse(textHp.Text, out int hp) ? hp : 0
             };
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _foodId, updatedFood);
+                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _countryId, updatedCountry);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Food successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Country successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
                     string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update country: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

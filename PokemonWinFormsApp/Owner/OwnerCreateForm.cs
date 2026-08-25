@@ -1,40 +1,39 @@
 ﻿using PokemonReviewApp.InputDtos;
 using System.Net.Http.Json;
-
-
-namespace PokemonWinFormsApp.Food
+namespace PokemonWinFormsApp.Owner
 {
-    public partial class FoodCreateForm : Form
+    public partial class OwnerCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/food";
+        private readonly string apiUrl = "https://localhost:7013/api/owner";
         private readonly HttpClient client = new HttpClient();
 
-        public FoodCreateForm()
+        public OwnerCreateForm()
         {
             InitializeComponent();
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
-            var newFood = new FoodInputDto
+            var newOwner = new OwnerInputDto
             {
                 Name = textName.Text,
-                Hp = int.TryParse(textHp.Text, out int hp) ? hp : 0
+                Gym = textGym.Text,
+                CountryId = int.TryParse(textCountryId.Text, out int countryId) ? countryId : 0
             };
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newFood);
+                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newOwner);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Food successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Owner successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
                     string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create owner: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
@@ -43,7 +42,7 @@ namespace PokemonWinFormsApp.Food
             }
         }
 
-        private void FoodCreateForm_Load(object sender, EventArgs e)
+        private void OwnerCreateForm_Load(object sender, EventArgs e)
         {
 
         }

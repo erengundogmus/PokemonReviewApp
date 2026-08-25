@@ -1,6 +1,6 @@
-﻿namespace PokemonWinFormsApp
+﻿namespace PokemonWinFormsApp.Pokemon
 {
-    partial class FoodForm
+    partial class PokemonForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             dataGridView1 = new DataGridView();
-            buttonList = new Button();
+            button1 = new Button();
             button2 = new Button();
             button3 = new Button();
             button4 = new Button();
@@ -45,15 +45,15 @@
             dataGridView1.Size = new Size(700, 200);
             dataGridView1.TabIndex = 0;
             // 
-            // buttonList
+            // button1
             // 
-            buttonList.Location = new Point(40, 300);
-            buttonList.Name = "buttonList";
-            buttonList.Size = new Size(120, 60);
-            buttonList.TabIndex = 1;
-            buttonList.Text = "List";
-            buttonList.UseVisualStyleBackColor = true;
-            buttonList.Click += buttonList_Click;
+            button1.Location = new Point(40, 300);
+            button1.Name = "button1";
+            button1.Size = new Size(120, 60);
+            button1.TabIndex = 1;
+            button1.Text = "List";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += buttonList_Click;
             // 
             // button2
             // 
@@ -95,7 +95,7 @@
             button5.UseVisualStyleBackColor = true;
             button5.Click += buttonDelete_Click;
             // 
-            // FoodForm
+            // PokemonForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -104,10 +104,10 @@
             Controls.Add(button4);
             Controls.Add(button3);
             Controls.Add(button2);
-            Controls.Add(buttonList);
+            Controls.Add(button1);
             Controls.Add(dataGridView1);
-            Name = "FoodForm";
-            Text = "Food";
+            Name = "PokemonForm";
+            Text = "PokemonForm";
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }
@@ -115,7 +115,7 @@
         #endregion
 
         private DataGridView dataGridView1;
-        private Button buttonList;
+        private Button button1;
         private Button button2;
         private Button button3;
         private Button button4;

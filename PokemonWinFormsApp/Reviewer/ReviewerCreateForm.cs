@@ -1,40 +1,39 @@
 ﻿using PokemonReviewApp.InputDtos;
 using System.Net.Http.Json;
 
-
-namespace PokemonWinFormsApp.Food
+namespace PokemonWinFormsApp.Reviewer
 {
-    public partial class FoodCreateForm : Form
+    public partial class ReviewerCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/food";
+        private readonly string apiUrl = "https://localhost:7013/api/reviewer";
         private readonly HttpClient client = new HttpClient();
 
-        public FoodCreateForm()
+        public ReviewerCreateForm()
         {
             InitializeComponent();
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
-            var newFood = new FoodInputDto
+            var newReviewer = new ReviewerInputDto
             {
-                Name = textName.Text,
-                Hp = int.TryParse(textHp.Text, out int hp) ? hp : 0
+                FirstName = textFirstName.Text,
+                LastName = textLastName.Text
             };
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newFood);
+                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newReviewer);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Food successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Reviewer successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
                     string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create reviewer: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
@@ -43,7 +42,7 @@ namespace PokemonWinFormsApp.Food
             }
         }
 
-        private void FoodCreateForm_Load(object sender, EventArgs e)
+        private void ReviewerCreateForm_Load(object sender, EventArgs e)
         {
 
         }

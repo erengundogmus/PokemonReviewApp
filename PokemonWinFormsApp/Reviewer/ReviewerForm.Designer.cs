@@ -1,6 +1,6 @@
 ﻿namespace PokemonWinFormsApp
 {
-    partial class FoodForm
+    partial class ReviewerForm
     {
         /// <summary>
         /// Required designer variable.
@@ -95,7 +95,7 @@
             button5.UseVisualStyleBackColor = true;
             button5.Click += buttonDelete_Click;
             // 
-            // FoodForm
+            // ReviewerForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -106,8 +106,8 @@
             Controls.Add(button2);
             Controls.Add(buttonList);
             Controls.Add(dataGridView1);
-            Name = "FoodForm";
-            Text = "Food";
+            Name = "ReviewerForm";
+            Text = "Reviewer";
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }

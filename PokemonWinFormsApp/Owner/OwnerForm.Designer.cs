@@ -1,6 +1,9 @@
-﻿namespace PokemonWinFormsApp
+﻿using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
+
+namespace PokemonWinFormsApp
 {
-    partial class FoodForm
+    partial class OwnerForm
     {
         /// <summary>
         /// Required designer variable.
@@ -95,7 +98,7 @@
             button5.UseVisualStyleBackColor = true;
             button5.Click += buttonDelete_Click;
             // 
-            // FoodForm
+            // OwnerForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -106,8 +109,8 @@
             Controls.Add(button2);
             Controls.Add(buttonList);
             Controls.Add(dataGridView1);
-            Name = "FoodForm";
-            Text = "Food";
+            Name = "OwnerForm";
+            Text = "Owner";
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }
