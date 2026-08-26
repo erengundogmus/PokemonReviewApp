@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace PokemonReviewApp.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,7 +17,9 @@ namespace PokemonReviewApp.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -30,7 +32,9 @@ namespace PokemonReviewApp.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -38,17 +42,54 @@ namespace PokemonReviewApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Pokemons",
+                name: "FoodLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FoodId = table.Column<int>(type: "int", nullable: false),
+                    OldName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OldHp = table.Column<int>(type: "int", nullable: true),
+                    NewName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NewHp = table.Column<int>(type: "int", nullable: true),
+                    LoggedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FoodLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Foods",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Hp = table.Column<int>(type: "int", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Pokemons", x => x.Id);
+                    table.PrimaryKey("PK_Foods", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Pokemon",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pokemon", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -58,7 +99,9 @@ namespace PokemonReviewApp.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -73,6 +116,8 @@ namespace PokemonReviewApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Gym = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CountryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -103,9 +148,33 @@ namespace PokemonReviewApp.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PokemonCategories_Pokemons_PokemonId",
+                        name: "FK_PokemonCategories_Pokemon_PokemonId",
                         column: x => x.PokemonId,
-                        principalTable: "Pokemons",
+                        principalTable: "Pokemon",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PokemonFoods",
+                columns: table => new
+                {
+                    PokemonId = table.Column<int>(type: "int", nullable: false),
+                    FoodId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PokemonFoods", x => new { x.PokemonId, x.FoodId });
+                    table.ForeignKey(
+                        name: "FK_PokemonFoods_Foods_FoodId",
+                        column: x => x.FoodId,
+                        principalTable: "Foods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PokemonFoods_Pokemon_PokemonId",
+                        column: x => x.PokemonId,
+                        principalTable: "Pokemon",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -118,6 +187,9 @@ namespace PokemonReviewApp.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Rating = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ReviewerId = table.Column<int>(type: "int", nullable: false),
                     PokemonId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -125,9 +197,9 @@ namespace PokemonReviewApp.Migrations
                 {
                     table.PrimaryKey("PK_Reviews", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reviews_Pokemons_PokemonId",
+                        name: "FK_Reviews_Pokemon_PokemonId",
                         column: x => x.PokemonId,
-                        principalTable: "Pokemons",
+                        principalTable: "Pokemon",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -155,9 +227,9 @@ namespace PokemonReviewApp.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PokemonsOwners_Pokemons_PokemonId",
+                        name: "FK_PokemonsOwners_Pokemon_PokemonId",
                         column: x => x.PokemonId,
-                        principalTable: "Pokemons",
+                        principalTable: "Pokemon",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -171,6 +243,11 @@ namespace PokemonReviewApp.Migrations
                 name: "IX_PokemonCategories_CategoryId",
                 table: "PokemonCategories",
                 column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PokemonFoods_FoodId",
+                table: "PokemonFoods",
+                column: "FoodId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PokemonsOwners_OwnerId",
@@ -192,7 +269,13 @@ namespace PokemonReviewApp.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "FoodLogs");
+
+            migrationBuilder.DropTable(
                 name: "PokemonCategories");
+
+            migrationBuilder.DropTable(
+                name: "PokemonFoods");
 
             migrationBuilder.DropTable(
                 name: "PokemonsOwners");
@@ -204,10 +287,13 @@ namespace PokemonReviewApp.Migrations
                 name: "Categories");
 
             migrationBuilder.DropTable(
+                name: "Foods");
+
+            migrationBuilder.DropTable(
                 name: "Owners");
 
             migrationBuilder.DropTable(
-                name: "Pokemons");
+                name: "Pokemon");
 
             migrationBuilder.DropTable(
                 name: "Reviewers");

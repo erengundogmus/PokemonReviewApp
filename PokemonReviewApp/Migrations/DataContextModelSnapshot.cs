@@ -94,6 +94,41 @@ namespace PokemonReviewApp.Migrations
                     b.ToTable("Foods");
                 });
 
+            modelBuilder.Entity("PokemonReviewApp.Models.Logs.FoodLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FoodId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LoggedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("NewHp")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NewName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("OldHp")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OldName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FoodLogs");
+                });
+
             modelBuilder.Entity("PokemonReviewApp.Models.Owner", b =>
                 {
                     b.Property<int>("Id")

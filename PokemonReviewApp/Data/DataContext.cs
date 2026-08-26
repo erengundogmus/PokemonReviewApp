@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using PokemonReviewApp.Models.Logs;
 
 namespace PokemonReviewApp.Data
 {
@@ -20,6 +21,8 @@ namespace PokemonReviewApp.Data
         public DbSet<Reviewer> Reviewers { get; set; }
         public DbSet<Food> Foods { get; set; }
         public DbSet<PokemonFood> PokemonFoods { get; set; }
+        public DbSet<FoodLog> FoodLogs { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -63,45 +66,67 @@ namespace PokemonReviewApp.Data
                     .HasForeignKey(p => p.FoodId);
 
             //ISoftDelete uygulayan tüm sınıflara otomatik olarak "IsDeleted == false" filtresi uygular
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes()) //tüm tabloları tarar
             {
-                if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
+                if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType)) //model ISoftDelete yapabiliyor mu kontrol eder
                 {
-                    var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
-                    var property = System.Linq.Expressions.Expression.Property(parameter, nameof(ISoftDelete.IsDeleted));
-                    var condition = System.Linq.Expressions.Expression.Lambda(
-                        System.Linq.Expressions.Expression.Equal(property, System.Linq.Expressions.Expression.Constant(false)),
-                        parameter
-                    );
-
+                    var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e"); //e adında geçici bir parametre oluşturur
+                    var property = System.Linq.Expressions.Expression.Property(parameter, nameof(ISoftDelete.IsDeleted)); //incelenen modelin IsoftDelete özelliğini yakalar
+                    //e => e.IsDeleted == false silinmiş olarak işaretlenmeyenler
+                    var condition = System.Linq.Expressions.Expression.Lambda(System.Linq.Expressions.Expression.Equal(property, System.Linq.Expressions.Expression.Constant(false)),parameter);
+                    //filtreyi kullanmamızı sağlar
                     modelBuilder.Entity(entityType.ClrType).HasQueryFilter(condition);
                 }
             }
         }
 
-        internal object GetReviewer(int reviewerId)
+        /*        LOG SİSTEMİ İÇİN TEK BİR KONTROL MERKEZİ DENEMESİ
+         
+        //log sistemi için 
+        public override int SaveChanges()
         {
-            throw new NotImplementedException();
-        }
+            var modifiedEntries = ChangeTracker.Entries().Where(e => e.Entity is ILoggable &&(e.State == EntityState.Added || e.State == EntityState.Modified)).ToList(); //listenin kopyası
 
-        internal object GetReviewers()
-        {
-            throw new NotImplementedException();
-        }
+            var logsToAdd = new List<Log>(); //geçici olarak burada tutuyor
 
-        internal object GetReviewsByReviewer(int reviewerId)
-        {
-            throw new NotImplementedException();
-        }
+            foreach (var entry in modifiedEntries)
+            {
+                var entityName = entry.Entity.GetType().Name;
+                string action = entry.State == EntityState.Added ? "POST" : "PUT";
 
-        internal bool ReviewerExists(int reviewerId)
-        {
-            throw new NotImplementedException();
-        }
+                string? oldValues = null;
+                if (entry.State == EntityState.Modified)
+                {
+                    var databaseValues = entry.GetDatabaseValues();
+                    if (databaseValues != null)
+                    {
+                        var originalObj = databaseValues.ToObject();
+                        oldValues = System.Text.Json.JsonSerializer.Serialize(originalObj);
+                    }
+                }
 
-        internal bool ReviewersExist(Func<object, bool> value)
-        {
-            throw new NotImplementedException();
-        }
+                var newValues = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
+
+                var log = new Log
+                {
+                    Action = action,
+                    TableName = entityName,
+                    OldValues = oldValues,
+                    NewValues = newValues,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                logsToAdd.Add(log); //geçici listeye ekliyoruz
+            }
+
+            //döngüden çıkınca kalıcı olarak ekliyor
+            if (logsToAdd.Any())
+            {
+                Logs.AddRange(logsToAdd);
+            }
+
+            return base.SaveChanges();
+        } */
+
     }
 }

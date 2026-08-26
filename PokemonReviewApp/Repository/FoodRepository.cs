@@ -1,6 +1,8 @@
-﻿using PokemonReviewApp.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using PokemonReviewApp.Models.Logs;
 
 namespace PokemonReviewApp.Repository
 {
@@ -27,8 +29,22 @@ namespace PokemonReviewApp.Repository
         public bool CreateFood(Food food)
         {
             this.context.Add(food);
+            
+            //log için
+            var foodLog = new FoodLog
+            {
+                Action = "POST",
+                FoodId = food.Id,
+                NewName = food.Name,
+                NewHp = food.Hp,
+                LoggedAt = DateTime.UtcNow
+            };
+            this.context.FoodLogs.Add(foodLog);
+            //log için
+
             return Save();
         }
+        
 
         public bool DeleteFood(Food food)
         {
@@ -82,10 +98,29 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateFood(Food food)
         {
-            this.context.ChangeTracker.Clear();
+            var existingFood = this.context.Foods.FirstOrDefault(f => f.Id == food.Id);
 
-            this.context.Update(food);
+            if (existingFood != null)
+            {
+                var foodLog = new FoodLog
+                {
+                    Action = "PUT",
+                    FoodId = food.Id,
+                    OldName = existingFood.Name,
+                    OldHp = existingFood.Hp,
+                    NewName = food.Name,
+                    NewHp = food.Hp,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.FoodLogs.Add(foodLog);
+
+                existingFood.Name = food.Name;
+                existingFood.Hp = food.Hp;
+            }
+
             return Save();
         }
-    }
+
+    }    
 }
