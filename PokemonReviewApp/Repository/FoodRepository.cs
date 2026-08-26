@@ -1,8 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PokemonReviewApp.Data;
+﻿using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using PokemonReviewApp.Models.Logs;
+using PokemonReviewApp.AuditLogs;
 
 namespace PokemonReviewApp.Repository
 {
@@ -29,22 +28,26 @@ namespace PokemonReviewApp.Repository
         public bool CreateFood(Food food)
         {
             this.context.Add(food);
-            
-            //log için
-            var foodLog = new FoodLog
-            {
-                Action = "POST",
-                FoodId = food.Id,
-                NewName = food.Name,
-                NewHp = food.Hp,
-                LoggedAt = DateTime.UtcNow
-            };
-            this.context.FoodLogs.Add(foodLog);
-            //log için
+            bool isFoodSaved = this.context.SaveChanges() > 0;
 
-            return Save();
+            if (isFoodSaved)
+            {
+                var foodLog = new FoodLog
+                {
+                    Action = "POST",
+                    FoodId = food.Id,
+                    NewName = food.Name,
+                    NewHp = food.Hp,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.FoodLog.Add(foodLog);
+                return Save();
+            }
+
+            return false;
         }
-        
+
 
         public bool DeleteFood(Food food)
         {
@@ -57,7 +60,7 @@ namespace PokemonReviewApp.Repository
         {
             return this.context.Foods.Any(f => f.Id == foodId);
         }
-        
+
         public Food GetFood(int foodId)
         {
             return this.context.Foods.Where(f => f.Id == foodId).FirstOrDefault();
@@ -113,7 +116,7 @@ namespace PokemonReviewApp.Repository
                     LoggedAt = DateTime.UtcNow
                 };
 
-                this.context.FoodLogs.Add(foodLog);
+                this.context.FoodLog.Add(foodLog);
 
                 existingFood.Name = food.Name;
                 existingFood.Hp = food.Hp;
@@ -122,5 +125,5 @@ namespace PokemonReviewApp.Repository
             return Save();
         }
 
-    }    
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
@@ -23,7 +24,23 @@ namespace PokemonReviewApp.Repository
         public bool CreateCountry(Country country)
         {
             this.context.Add(country);
-            return Save();
+            bool isCountrySaved = this.context.SaveChanges() > 0;
+
+            if (isCountrySaved)
+            {
+                var countryLog = new CountryLog
+                {
+                    Action = "POST",
+                    CountryId = country.Id,
+                    NewName = country.Name,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.CountryLog.Add(countryLog);
+                return Save();
+            }
+
+            return false;
         }
 
         public bool DeleteCountry(Country country)
@@ -61,9 +78,24 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateCountry(Country country)
         {
-            this.context.ChangeTracker.Clear();
+            var existingCountry = this.context.Countries.FirstOrDefault(c => c.Id == country.Id);
 
-            this.context.Update(country);
+            if (existingCountry != null)
+            {
+                var countryLog = new CountryLog
+                {
+                    Action = "PUT",
+                    CountryId = country.Id,
+                    OldName = existingCountry.Name,
+                    NewName = country.Name,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.CountryLog.Add(countryLog);
+
+                existingCountry.Name = country.Name;
+            }
+
             return Save();
         }
     }

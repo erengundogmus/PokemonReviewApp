@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using PokemonReviewApp.Models.Logs;
 
 namespace PokemonReviewApp.Data
 {
@@ -14,14 +14,18 @@ namespace PokemonReviewApp.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Country> Countries { get; set; }
         public DbSet<Owner> Owners { get; set; }
-        public DbSet<Pokemon> Pokemon { get; set; }
+        public DbSet<Pokemon> Pokemons { get; set; }
         public DbSet<PokemonOwner> PokemonsOwners { get; set; }
         public DbSet<PokemonCategory> PokemonCategories { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Reviewer> Reviewers { get; set; }
         public DbSet<Food> Foods { get; set; }
         public DbSet<PokemonFood> PokemonFoods { get; set; }
-        public DbSet<FoodLog> FoodLogs { get; set; }
+        public DbSet<FoodLog> FoodLog { get; set; }
+        public DbSet<CategoryLog> CategoryLog { get; set; }
+        public DbSet<CountryLog> CountryLog { get; set; }
+        public DbSet<OwnerLog> OwnerLog { get; set; }
+        public DbSet<PokemonLog> PokemonLog { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

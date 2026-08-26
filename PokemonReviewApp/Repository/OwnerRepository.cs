@@ -1,6 +1,9 @@
-﻿using PokemonReviewApp.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.AuditLogs;
+using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using System.Diagnostics.Metrics;
 
 namespace PokemonReviewApp.Repository
 {
@@ -16,7 +19,24 @@ namespace PokemonReviewApp.Repository
         public bool CreateOwner(Owner owner)
         {
             this.context.Add(owner);
-            return Save();
+            bool isOwnerSaved = this.context.SaveChanges() > 0;
+
+            if (isOwnerSaved)
+            {
+                var ownerLog = new OwnerLog
+                {
+                    Action = "POST",
+                    OwnerId = owner.Id,
+                    NewName = owner.Name,
+                    NewGym = owner.Gym,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.OwnerLog.Add(ownerLog);
+                return Save();
+            }
+
+            return false;
         }
 
         public bool DeleteOwner(Owner owner)
@@ -61,7 +81,26 @@ namespace PokemonReviewApp.Repository
         {
             this.context.ChangeTracker.Clear();
 
+            var existingOwnerForLog = this.context.Owners.AsNoTracking().FirstOrDefault(c => c.Id == owner.Id);
+
+            if (existingOwnerForLog != null)
+            {
+                var ownerLog = new OwnerLog
+                {
+                    Action = "PUT",
+                    OwnerId = owner.Id,
+                    OldName = existingOwnerForLog.Name,
+                    NewName = owner.Name,
+                    OldGym = existingOwnerForLog.Gym,
+                    NewGym = owner.Gym,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.OwnerLog.Add(ownerLog);
+            }
+
             this.context.Update(owner);
+
             return Save();
         }
     }

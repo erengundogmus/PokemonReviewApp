@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
@@ -22,7 +23,23 @@ namespace PokemonReviewApp.Repository
         public bool CreateCategory(Category category)
         {
             this.context.Add(category);
-            return Save();
+            bool isCategorySaved = this.context.SaveChanges() > 0;
+
+            if (isCategorySaved)
+            {
+                var categoryLog = new CategoryLog
+                {
+                    Action = "POST",
+                    CategoryId = category.Id,
+                    NewName = category.Name,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.CategoryLog.Add(categoryLog);
+                return Save();
+            }
+
+            return false;
         }
 
         public bool DeleteCategory(Category category)
@@ -43,9 +60,33 @@ namespace PokemonReviewApp.Repository
         }
         public ICollection<Pokemon> GetPokemonByCategory(int categoryId)
         {
-            return this.context.Pokemon.Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Where(p => p.PokemonCategories.Any(pc => pc.CategoryId == categoryId)).ToList();
         }
+
+        public bool UpdateCategory(Category category)
+        {
+            var existingCategory = this.context.Categories.FirstOrDefault(c => c.Id == category.Id);
+
+            if (existingCategory != null)
+            {
+                var categoryLog = new CategoryLog
+                {
+                    Action = "PUT",
+                    CategoryId = category.Id,
+                    OldName = existingCategory.Name,
+                    NewName = category.Name,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.CategoryLog.Add(categoryLog);
+
+                existingCategory.Name = category.Name;
+            }
+
+            return Save();
+        }
+
 
         public bool Save()
         {
@@ -53,12 +94,6 @@ namespace PokemonReviewApp.Repository
             return saved > 0 ? true : false;
         }
 
-        public bool UpdateCategory(Category category)
-        {
-            this.context.ChangeTracker.Clear();
 
-            this.context.Update(category);
-            return Save();
-        }
     }
 }

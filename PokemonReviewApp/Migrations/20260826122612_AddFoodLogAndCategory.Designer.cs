@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokemonReviewApp.Data;
 
@@ -11,9 +12,11 @@ using PokemonReviewApp.Data;
 namespace PokemonReviewApp.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260826122612_AddFoodLogAndCategory")]
+    partial class AddFoodLogAndCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,35 +54,6 @@ namespace PokemonReviewApp.Migrations
                     b.ToTable("CategoryLog");
                 });
 
-            modelBuilder.Entity("PokemonReviewApp.AuditLogs.CountryLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("CountryId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LoggedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NewName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CountryLog");
-                });
-
             modelBuilder.Entity("PokemonReviewApp.AuditLogs.FoodLog", b =>
                 {
                     b.Property<int>("Id")
@@ -113,88 +87,6 @@ namespace PokemonReviewApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("FoodLog");
-                });
-
-            modelBuilder.Entity("PokemonReviewApp.AuditLogs.OwnerLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LoggedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NewGym")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NewName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldGym")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OwnerLog");
-                });
-
-            modelBuilder.Entity("PokemonReviewApp.AuditLogs.PokemonLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LoggedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("NewBirthDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("NewCategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NewName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("NewOwnerId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("OldBirthDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("OldCategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OldName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("OldOwnerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PokemonId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PokemonLog");
                 });
 
             modelBuilder.Entity("PokemonReviewApp.Models.Category", b =>
@@ -324,7 +216,7 @@ namespace PokemonReviewApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pokemons");
+                    b.ToTable("Pokemon");
                 });
 
             modelBuilder.Entity("PokemonReviewApp.Models.PokemonCategory", b =>

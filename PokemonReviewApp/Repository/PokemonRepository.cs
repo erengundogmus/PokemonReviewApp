@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
@@ -14,37 +15,48 @@ namespace PokemonReviewApp.Repository
             this.context = context;
         }
 
-        public bool CreatePokemon(Pokemon pokemon)
-        {
-            this.context.Add(pokemon);
-            return Save();
-        }
-
         public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
-            var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
-            var category = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
-            //join table için ekledik
-            var pokemonOwner = new PokemonOwner()
-            {
-                Owner = pokemonOwnerEntity,
-                Pokemon = pokemon,
-            };
-
-            this.context.Add(pokemonOwner);
-
-            //join table için ekledik
-            var pokemonCategory = new PokemonCategory()
-            {
-                Category = category,
-                Pokemon = pokemon,
-            };
-
-            this.context.Add(pokemonCategory);
-
             this.context.Add(pokemon);
+            bool isPokemonSaved = this.context.SaveChanges() > 0;
 
-            return Save();
+            if (isPokemonSaved)
+            {
+                var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+                var category = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+
+                var pokemonOwner = new PokemonOwner()
+                {
+                    Owner = pokemonOwnerEntity,
+                    Pokemon = pokemon,
+                };
+
+                this.context.Add(pokemonOwner);
+
+                var pokemonCategory = new PokemonCategory()
+                {
+                    Category = category,
+                    Pokemon = pokemon,
+                };
+
+                this.context.Add(pokemonCategory);
+
+                var pokemonLog = new PokemonLog
+                {
+                    Action = "POST",
+                    PokemonId = pokemon.Id,
+                    NewName = pokemon.Name,
+                    NewBirthDate = pokemon.BirthDate,
+                    NewOwnerId = ownerId,
+                    NewCategoryId = categoryId,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.PokemonLog.Add(pokemonLog);
+                return Save();
+            }
+
+            return false;
         }
 
         public bool DeletePokemon(Pokemon pokemon)
@@ -58,13 +70,13 @@ namespace PokemonReviewApp.Repository
         public Pokemon GetPokemon(int id)
         {
             //lazy loading kapalı olduğu için veritabanından yüklenmiyor include kullanıyoruz
-            return this.context.Pokemon.Where(p => p.Id == id).Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Where(p => p.Id == id).Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).FirstOrDefault();
         }
 
         public Pokemon GetPokemon(string name)
         {
-            return this.context.Pokemon.Where(p => p.Name == name).Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Where(p => p.Name == name).Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).FirstOrDefault();
         }
 
@@ -80,13 +92,13 @@ namespace PokemonReviewApp.Repository
 
         public ICollection<Pokemon> GetPokemons()
         {
-            return this.context.Pokemon.Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).OrderBy(p => p.Id).ToList();
         }
 
         public bool PokemonExists(int pokeId)
         {
-            return this.context.Pokemon.Any(p => p.Id == pokeId);
+            return this.context.Pokemons.Any(p => p.Id == pokeId);
         }
 
         public bool Save()
@@ -97,18 +109,41 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
+            // Hafızadaki takipleri sıfırlar ve tracking çakışmasını önler
             this.context.ChangeTracker.Clear();
-            //eski kategori ve sahip
-            var existingOwner = this.context.PokemonsOwners.Where(po => po.PokemonId == pokemon.Id).FirstOrDefault();
-            var existingCategory = this.context.PokemonCategories.Where(pc => pc.PokemonId == pokemon.Id).FirstOrDefault();
 
-            //eski kayıtları sil
-            if (existingOwner != null)
-                this.context.Remove(existingOwner);
-            if (existingCategory != null)
-                this.context.Remove(existingCategory);
+            var existingOwnerRelation = this.context.PokemonsOwners.Where(po => po.PokemonId == pokemon.Id).FirstOrDefault();
+            var existingCategoryRelation = this.context.PokemonCategories.Where(pc => pc.PokemonId == pokemon.Id).FirstOrDefault();
 
-            //yeni owner ve category nesnelerini buluyor
+            var existingPokemon = this.context.Pokemons.AsNoTracking().FirstOrDefault(p => p.Id == pokemon.Id);
+
+            if (existingPokemon != null)
+            {
+                var pokemonLog = new PokemonLog
+                {
+                    Action = "PUT",
+                    PokemonId = pokemon.Id,
+                    OldName = existingPokemon.Name,
+                    OldBirthDate = existingPokemon.BirthDate,
+                    OldOwnerId = existingOwnerRelation?.OwnerId,
+                    OldCategoryId = existingCategoryRelation?.CategoryId,
+
+                    NewName = pokemon.Name,
+                    NewBirthDate = pokemon.BirthDate,
+                    NewOwnerId = ownerId,
+                    NewCategoryId = categoryId,
+
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.PokemonLog.Add(pokemonLog);
+            }
+
+            if (existingOwnerRelation != null)
+                this.context.Remove(existingOwnerRelation);
+            if (existingCategoryRelation != null)
+                this.context.Remove(existingCategoryRelation);
+
             var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
             var categoryEntity = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
 
