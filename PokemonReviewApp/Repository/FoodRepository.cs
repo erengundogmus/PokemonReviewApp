@@ -16,12 +16,26 @@ namespace PokemonReviewApp.Repository
 
         public bool AddFoodToPokemon(int pokeId, int foodId)
         {
+            this.context.ChangeTracker.Clear();
+
             var pokemonFood = new PokemonFood
             {
                 PokemonId = pokeId,
                 FoodId = foodId
             };
+
             this.context.Add(pokemonFood);
+
+            var pokemonFoodLog = new PokemonFoodLog
+            {
+                Action = "POST",
+                PokemonId = pokeId,
+                FoodId = foodId,
+                LoggedAt = DateTime.UtcNow
+            };
+
+            this.context.PokemonFoodLog.Add(pokemonFoodLog);
+
             return Save();
         }
 
@@ -83,6 +97,8 @@ namespace PokemonReviewApp.Repository
 
         public bool RemoveFoodFromPokemon(int pokeId, int foodId)
         {
+            this.context.ChangeTracker.Clear();
+
             var pokemonFood = this.context.PokemonFoods.FirstOrDefault(pf => pf.PokemonId == pokeId && pf.FoodId == foodId);
 
             if (pokemonFood != null)

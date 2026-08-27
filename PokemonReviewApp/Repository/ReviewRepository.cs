@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+
 namespace PokemonReviewApp.Repository
 {
     public class ReviewRepository : IReviewInterface
@@ -16,7 +18,6 @@ namespace PokemonReviewApp.Repository
             this.mapper = mapper;
         }
 
-        // Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
         public Review GetReview(int reviewId)
         {
             return this.context.Reviews.Where(r => r.Id == reviewId).Include(r => r.Pokemon).Include(r => r.Reviewer).FirstOrDefault();
@@ -24,13 +25,11 @@ namespace PokemonReviewApp.Repository
 
         public ICollection<Review> GetReviewsOfAPokemon(int pokeId)
         {
-            // Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
             return this.context.Reviews.Where(r => r.Pokemon.Id == pokeId).Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
         }
 
         public ICollection<Review> GetReviews()
         {
-            // Include(r => r.Pokemon) sayesinde pokemonun adını direk idsinden alabiliyoruz
             return this.context.Reviews.Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
         }
 
@@ -42,7 +41,27 @@ namespace PokemonReviewApp.Repository
         public bool CreateReview(Review review)
         {
             this.context.Add(review);
-            return Save();
+            bool isReviewSaved = this.context.SaveChanges() > 0;
+
+            if (isReviewSaved)
+            {
+                var reviewLog = new ReviewLog
+                {
+                    Action = "POST",
+                    ReviewId = review.Id,
+                    NewTitle = review.Title,
+                    NewText = review.Text,
+                    NewRating = (int?)review.Rating,
+                    NewReviewerId = review.Reviewer?.Id,
+                    NewPokemonId = review.Pokemon?.Id,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.ReviewLog.Add(reviewLog);
+                return Save();
+            }
+
+            return false;
         }
 
         public bool Save()
@@ -59,8 +78,43 @@ namespace PokemonReviewApp.Repository
         public bool UpdateReview(Review review)
         {
             this.context.ChangeTracker.Clear();
+            var existingReview = this.context.Reviews
+                .AsNoTracking()
+                .Include(r => r.Reviewer)
+                .Include(r => r.Pokemon)
+                .FirstOrDefault(r => r.Id == review.Id);
 
-            this.context.Entry(review).State = EntityState.Modified;
+            if (existingReview != null)
+            {
+                var reviewLog = new ReviewLog
+                {
+                    Action = "PUT",
+                    ReviewId = review.Id,
+                    OldTitle = existingReview.Title,
+                    OldText = existingReview.Text,
+                    OldRating = (int?)existingReview.Rating,
+                    OldReviewerId = existingReview.Reviewer?.Id,
+                    OldPokemonId = existingReview.Pokemon?.Id,
+
+                    NewTitle = review.Title,
+                    NewText = review.Text,
+                    NewRating = (int?)review.Rating,
+                    NewReviewerId = review.Reviewer?.Id ?? existingReview.Reviewer?.Id,
+                    NewPokemonId = review.Pokemon?.Id ?? existingReview.Pokemon?.Id,
+
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.ReviewLog.Add(reviewLog);
+            }
+
+            var reviewToUpdate = this.context.Reviews.FirstOrDefault(r => r.Id == review.Id);
+            if (reviewToUpdate != null)
+            {
+                reviewToUpdate.Title = review.Title;
+                reviewToUpdate.Text = review.Text;
+                reviewToUpdate.Rating = review.Rating;
+            }
 
             return Save();
         }
@@ -77,6 +131,5 @@ namespace PokemonReviewApp.Repository
             this.context.RemoveRange(reviews);
             return Save();
         }
-
     }
 }

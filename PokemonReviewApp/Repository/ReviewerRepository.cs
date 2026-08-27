@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
@@ -20,7 +21,24 @@ namespace PokemonReviewApp.Repository
         public bool CreateReviewer(Reviewer reviewer)
         {
             this.context.Add(reviewer);
-            return Save();
+            bool isReviewerSaved = this.context.SaveChanges() > 0;
+
+            if (isReviewerSaved)
+            {
+                var reviewerLog = new ReviewerLog
+                {
+                    Action = "POST",
+                    ReviewerId = reviewer.Id,
+                    NewFirstName = reviewer.FirstName,
+                    NewLastName = reviewer.LastName,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.ReviewerLog.Add(reviewerLog);
+                return Save();
+            }
+
+            return false;
         }
 
         public bool DeleteReviewer(Reviewer reviewer)
@@ -60,7 +78,27 @@ namespace PokemonReviewApp.Repository
         {
             this.context.ChangeTracker.Clear();
 
-            this.context.Update(reviewer);
+            var existingReviewer = this.context.Reviewers.FirstOrDefault(r => r.Id == reviewer.Id);
+
+            if (existingReviewer != null)
+            {
+                var reviewerLog = new ReviewerLog
+                {
+                    Action = "PUT",
+                    ReviewerId = reviewer.Id,
+                    OldFirstName = existingReviewer.FirstName,
+                    NewFirstName = reviewer.FirstName,
+                    OldLastName = existingReviewer.LastName,
+                    NewLastName = reviewer.LastName,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.ReviewerLog.Add(reviewerLog);
+
+                existingReviewer.FirstName = reviewer.FirstName;
+                existingReviewer.LastName = reviewer.LastName;
+            }
+
             return Save();
         }
     }

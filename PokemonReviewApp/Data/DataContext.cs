@@ -26,6 +26,9 @@ namespace PokemonReviewApp.Data
         public DbSet<CountryLog> CountryLog { get; set; }
         public DbSet<OwnerLog> OwnerLog { get; set; }
         public DbSet<PokemonLog> PokemonLog { get; set; }
+        public DbSet<ReviewLog> ReviewLog { get; set; }
+        public DbSet<ReviewerLog> ReviewerLog { get; set; }
+        public DbSet<PokemonFoodLog> PokemonFoodLog { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

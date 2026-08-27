@@ -2,5 +2,10 @@
 {
     public class PokemonFoodLog
     {
+        public int Id { get; set; }
+        public string Action { get; set; }
+        public int PokemonId { get; set; }
+        public int FoodId { get; set; }
+        public DateTime LoggedAt { get; set; }
     }
 }
