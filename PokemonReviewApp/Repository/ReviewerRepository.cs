@@ -20,32 +20,83 @@ namespace PokemonReviewApp.Repository
 
         public bool CreateReviewer(Reviewer reviewer)
         {
-            this.context.Add(reviewer);
-            bool isReviewerSaved = this.context.SaveChanges() > 0;
-
-            if (isReviewerSaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var reviewerLog = new ReviewerLog
+                this.context.ChangeTracker.Clear();
+
+                this.context.Reviewers.Add(reviewer);
+
+                if (Save())
                 {
-                    Action = "POST",
-                    ReviewerId = reviewer.Id,
-                    NewFirstName = reviewer.FirstName,
-                    NewLastName = reviewer.LastName,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var reviewerLog = new ReviewerLog
+                    {
+                        Action = "POST",
+                        ReviewerId = reviewer.Id,
+                        NewFirstName = reviewer.FirstName,
+                        NewLastName = reviewer.LastName,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.ReviewerLog.Add(reviewerLog);
-                return Save();
+                    this.context.ReviewerLog.Add(reviewerLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool DeleteReviewer(Reviewer reviewer)
         {
-            reviewer.IsDeleted = true;
-            reviewer.DeletedAt = DateTime.UtcNow;
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                this.context.ChangeTracker.Clear();
+
+                var existingReviewer = this.context.Reviewers.FirstOrDefault(r => r.Id == reviewer.Id);
+
+                if (existingReviewer != null)
+                {
+                    var reviewerLog = new ReviewerLog
+                    {
+                        Action = "DELETE",
+                        ReviewerId = reviewer.Id,
+                        NewFirstName = reviewer.FirstName,
+                        NewLastName = reviewer.LastName,
+                        LoggedAt = DateTime.UtcNow
+                    };
+
+                    this.context.ReviewerLog.Add(reviewerLog);
+
+                    existingReviewer.IsDeleted = true;
+                    existingReviewer.DeletedAt = DateTime.UtcNow;
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public Reviewer GetReviewer(int reviewerId)
@@ -76,30 +127,44 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateReviewer(Reviewer reviewer)
         {
-            this.context.ChangeTracker.Clear();
-
-            var existingReviewer = this.context.Reviewers.FirstOrDefault(r => r.Id == reviewer.Id);
-
-            if (existingReviewer != null)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var reviewerLog = new ReviewerLog
+                this.context.ChangeTracker.Clear();
+
+                var existingReviewer = this.context.Reviewers.FirstOrDefault(r => r.Id == reviewer.Id);
+
+                if (existingReviewer != null)
                 {
-                    Action = "PUT",
-                    ReviewerId = reviewer.Id,
-                    OldFirstName = existingReviewer.FirstName,
-                    NewFirstName = reviewer.FirstName,
-                    OldLastName = existingReviewer.LastName,
-                    NewLastName = reviewer.LastName,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var reviewerLog = new ReviewerLog
+                    {
+                        Action = "PUT",
+                        ReviewerId = reviewer.Id,
+                        NewFirstName = reviewer.FirstName,
+                        NewLastName = reviewer.LastName,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.ReviewerLog.Add(reviewerLog);
+                    this.context.ReviewerLog.Add(reviewerLog);
 
-                existingReviewer.FirstName = reviewer.FirstName;
-                existingReviewer.LastName = reviewer.LastName;
+                    existingReviewer.FirstName = reviewer.FirstName;
+                    existingReviewer.LastName = reviewer.LastName;
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return Save();
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
     }
 }

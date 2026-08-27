@@ -40,28 +40,44 @@ namespace PokemonReviewApp.Repository
 
         public bool CreateReview(Review review)
         {
-            this.context.Add(review);
-            bool isReviewSaved = this.context.SaveChanges() > 0;
-
-            if (isReviewSaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var reviewLog = new ReviewLog
+                this.context.ChangeTracker.Clear();
+
+                this.context.Reviews.Add(review);
+
+                if (Save())
                 {
-                    Action = "POST",
-                    ReviewId = review.Id,
-                    NewTitle = review.Title,
-                    NewText = review.Text,
-                    NewRating = (int?)review.Rating,
-                    NewReviewerId = review.Reviewer?.Id,
-                    NewPokemonId = review.Pokemon?.Id,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var reviewLog = new ReviewLog
+                    {
+                        Action = "POST",
+                        ReviewId = review.Id,
+                        NewTitle = review.Title,
+                        NewText = review.Text,
+                        NewRating = (int?)review.Rating,
+                        NewReviewerId = review.Reviewer?.Id,
+                        NewPokemonId = review.Pokemon?.Id,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.ReviewLog.Add(reviewLog);
-                return Save();
+                    this.context.ReviewLog.Add(reviewLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool Save()
@@ -77,46 +93,55 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateReview(Review review)
         {
-            this.context.ChangeTracker.Clear();
-            var existingReview = this.context.Reviews
-                .AsNoTracking()
-                .Include(r => r.Reviewer)
-                .Include(r => r.Pokemon)
-                .FirstOrDefault(r => r.Id == review.Id);
-
-            if (existingReview != null)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var reviewLog = new ReviewLog
+                this.context.ChangeTracker.Clear();
+                var existingReview = this.context.Reviews
+                    .AsNoTracking()
+                    .Include(r => r.Reviewer)
+                    .Include(r => r.Pokemon)
+                    .FirstOrDefault(r => r.Id == review.Id);
+
+                if (existingReview != null)
                 {
-                    Action = "PUT",
-                    ReviewId = review.Id,
-                    OldTitle = existingReview.Title,
-                    OldText = existingReview.Text,
-                    OldRating = (int?)existingReview.Rating,
-                    OldReviewerId = existingReview.Reviewer?.Id,
-                    OldPokemonId = existingReview.Pokemon?.Id,
+                    var reviewLog = new ReviewLog
+                    {
+                        Action = "PUT",
+                        ReviewId = review.Id,
+                        NewTitle = review.Title,
+                        NewText = review.Text,
+                        NewRating = (int?)review.Rating,
+                        NewReviewerId = review.Reviewer?.Id ?? existingReview.Reviewer?.Id,
+                        NewPokemonId = review.Pokemon?.Id ?? existingReview.Pokemon?.Id,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                    NewTitle = review.Title,
-                    NewText = review.Text,
-                    NewRating = (int?)review.Rating,
-                    NewReviewerId = review.Reviewer?.Id ?? existingReview.Reviewer?.Id,
-                    NewPokemonId = review.Pokemon?.Id ?? existingReview.Pokemon?.Id,
+                    this.context.ReviewLog.Add(reviewLog);
+                }
 
-                    LoggedAt = DateTime.UtcNow
-                };
+                var reviewToUpdate = this.context.Reviews.FirstOrDefault(r => r.Id == review.Id);
+                if (reviewToUpdate != null)
+                {
+                    reviewToUpdate.Title = review.Title;
+                    reviewToUpdate.Text = review.Text;
+                    reviewToUpdate.Rating = review.Rating;
 
-                this.context.ReviewLog.Add(reviewLog);
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            var reviewToUpdate = this.context.Reviews.FirstOrDefault(r => r.Id == review.Id);
-            if (reviewToUpdate != null)
+            catch (Exception)
             {
-                reviewToUpdate.Title = review.Title;
-                reviewToUpdate.Text = review.Text;
-                reviewToUpdate.Rating = review.Rating;
+                transaction.Rollback();
+                throw;
             }
-
-            return Save();
         }
 
         public bool DeleteReview(Review review)

@@ -18,25 +18,41 @@ namespace PokemonReviewApp.Repository
 
         public bool CreateOwner(Owner owner)
         {
-            this.context.Add(owner);
-            bool isOwnerSaved = this.context.SaveChanges() > 0;
-
-            if (isOwnerSaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var ownerLog = new OwnerLog
+                this.context.ChangeTracker.Clear();
+
+                this.context.Owners.Add(owner);
+
+                if (Save())
                 {
-                    Action = "POST",
-                    OwnerId = owner.Id,
-                    NewName = owner.Name,
-                    NewGym = owner.Gym,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var ownerLog = new OwnerLog
+                    {
+                        Action = "POST",
+                        OwnerId = owner.Id,
+                        NewName = owner.Name,
+                        NewGym = owner.Gym,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.OwnerLog.Add(ownerLog);
-                return Save();
+                    this.context.OwnerLog.Add(ownerLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool DeleteOwner(Owner owner)
@@ -79,29 +95,44 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateOwner(Owner owner)
         {
-            this.context.ChangeTracker.Clear();
-
-            var existingOwnerForLog = this.context.Owners.AsNoTracking().FirstOrDefault(c => c.Id == owner.Id);
-
-            if (existingOwnerForLog != null)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var ownerLog = new OwnerLog
+                this.context.ChangeTracker.Clear();
+
+                var existingOwner = this.context.Owners.FirstOrDefault(c => c.Id == owner.Id);
+
+                if (existingOwner != null)
                 {
-                    Action = "PUT",
-                    OwnerId = owner.Id,
-                    OldName = existingOwnerForLog.Name,
-                    NewName = owner.Name,
-                    OldGym = existingOwnerForLog.Gym,
-                    NewGym = owner.Gym,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var ownerLog = new OwnerLog
+                    {
+                        Action = "PUT",
+                        OwnerId = owner.Id,
+                        NewName = owner.Name,
+                        NewGym = owner.Gym,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.OwnerLog.Add(ownerLog);
+                    this.context.OwnerLog.Add(ownerLog);
+
+                    existingOwner.Name = owner.Name;
+                    existingOwner.Gym = owner.Gym;
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            this.context.Update(owner);
-
-            return Save();
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
     }
 }

@@ -23,24 +23,40 @@ namespace PokemonReviewApp.Repository
 
         public bool CreateCountry(Country country)
         {
-            this.context.Add(country);
-            bool isCountrySaved = this.context.SaveChanges() > 0;
-
-            if (isCountrySaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var countryLog = new CountryLog
+                this.context.ChangeTracker.Clear();
+
+                this.context.Countries.Add(country);
+
+                if (Save())
                 {
-                    Action = "POST",
-                    CountryId = country.Id,
-                    NewName = country.Name,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var countryLog = new CountryLog
+                    {
+                        Action = "POST",
+                        CountryId = country.Id,
+                        NewName = country.Name,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.CountryLog.Add(countryLog);
-                return Save();
+                    this.context.CountryLog.Add(countryLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool DeleteCountry(Country country)
@@ -78,25 +94,42 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateCountry(Country country)
         {
-            var existingCountry = this.context.Countries.FirstOrDefault(c => c.Id == country.Id);
-
-            if (existingCountry != null)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var countryLog = new CountryLog
+                this.context.ChangeTracker.Clear();
+
+                var existingCountry = this.context.Countries.FirstOrDefault(c => c.Id == country.Id);
+
+                if (existingCountry != null)
                 {
-                    Action = "PUT",
-                    CountryId = country.Id,
-                    OldName = existingCountry.Name,
-                    NewName = country.Name,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var countryLog = new CountryLog
+                    {
+                        Action = "PUT",
+                        CountryId = country.Id,
+                        NewName = country.Name,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.CountryLog.Add(countryLog);
+                    this.context.CountryLog.Add(countryLog);
 
-                existingCountry.Name = country.Name;
+                    existingCountry.Name = country.Name;
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return Save();
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
     }
 }

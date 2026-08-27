@@ -22,24 +22,38 @@ namespace PokemonReviewApp.Repository
 
         public bool CreateCategory(Category category)
         {
-            this.context.Add(category);
-            bool isCategorySaved = this.context.SaveChanges() > 0;
-
-            if (isCategorySaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var categoryLog = new CategoryLog
+                this.context.Categories.Add(category);
+
+                if (Save())
                 {
-                    Action = "POST",
-                    CategoryId = category.Id,
-                    NewName = category.Name,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var categoryLog = new CategoryLog
+                    {
+                        Action = "POST",
+                        CategoryId = category.Id,
+                        NewName = category.Name,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.CategoryLog.Add(categoryLog);
-                return Save();
+                    this.context.CategoryLog.Add(categoryLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool DeleteCategory(Category category)
@@ -66,25 +80,47 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateCategory(Category category)
         {
-            var existingCategory = this.context.Categories.FirstOrDefault(c => c.Id == category.Id);
-
-            if (existingCategory != null)
+            // transaction başlatma
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var categoryLog = new CategoryLog
+                this.context.ChangeTracker.Clear();
+
+                var existingCategory = this.context.Categories.FirstOrDefault(c => c.Id == category.Id);
+
+                if (existingCategory != null)
                 {
-                    Action = "PUT",
-                    CategoryId = category.Id,
-                    OldName = existingCategory.Name,
-                    NewName = category.Name,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var categoryLog = new CategoryLog
+                    {
+                        Action = "PUT",
+                        CategoryId = category.Id,
+                        NewName = category.Name,
+                        LoggedAt = DateTime.UtcNow
+                    };
+                    this.context.CategoryLog.Add(categoryLog);
 
-                this.context.CategoryLog.Add(categoryLog);
+                    existingCategory.Name = category.Name;
 
-                existingCategory.Name = category.Name;
+                    bool isSaved = Save();
+
+                    if (isSaved)
+                    {
+                        //hata yoksa onaylanıyor
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                //hata varsa eskiye döndürüyor
+                transaction.Rollback();
+                return false;
             }
-
-            return Save();
+            catch (Exception)
+            {
+                //tüm işlemleri iptal ediyor (Rollback)
+                transaction.Rollback();
+                throw; //hatayı dönderiyor
+            }
         }
 
 

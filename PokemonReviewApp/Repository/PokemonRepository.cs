@@ -17,46 +17,62 @@ namespace PokemonReviewApp.Repository
 
         public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
-            this.context.Add(pokemon);
-            bool isPokemonSaved = this.context.SaveChanges() > 0;
-
-            if (isPokemonSaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
-                var category = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+                this.context.ChangeTracker.Clear();
 
-                var pokemonOwner = new PokemonOwner()
+                this.context.Pokemons.Add(pokemon);
+
+                if (Save())
                 {
-                    Owner = pokemonOwnerEntity,
-                    Pokemon = pokemon,
-                };
+                    var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+                    var category = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
 
-                this.context.Add(pokemonOwner);
+                    var pokemonOwner = new PokemonOwner()
+                    {
+                        Owner = pokemonOwnerEntity,
+                        Pokemon = pokemon,
+                    };
 
-                var pokemonCategory = new PokemonCategory()
-                {
-                    Category = category,
-                    Pokemon = pokemon,
-                };
+                    this.context.Add(pokemonOwner);
 
-                this.context.Add(pokemonCategory);
+                    var pokemonCategory = new PokemonCategory()
+                    {
+                        Category = category,
+                        Pokemon = pokemon,
+                    };
 
-                var pokemonLog = new PokemonLog
-                {
-                    Action = "POST",
-                    PokemonId = pokemon.Id,
-                    NewName = pokemon.Name,
-                    NewBirthDate = pokemon.BirthDate,
-                    NewOwnerId = ownerId,
-                    NewCategoryId = categoryId,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    this.context.Add(pokemonCategory);
 
-                this.context.PokemonLog.Add(pokemonLog);
-                return Save();
+                    var pokemonLog = new PokemonLog
+                    {
+                        Action = "POST",
+                        PokemonId = pokemon.Id,
+                        NewName = pokemon.Name,
+                        NewBirthDate = pokemon.BirthDate,
+                        NewOwnerId = ownerId,
+                        NewCategoryId = categoryId,
+                        LoggedAt = DateTime.UtcNow
+                    };
+
+                    this.context.PokemonLog.Add(pokemonLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool DeletePokemon(Pokemon pokemon)
@@ -109,60 +125,69 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
         {
-            // Hafızadaki takipleri sıfırlar ve tracking çakışmasını önler
-            this.context.ChangeTracker.Clear();
-
-            var existingOwnerRelation = this.context.PokemonsOwners.Where(po => po.PokemonId == pokemon.Id).FirstOrDefault();
-            var existingCategoryRelation = this.context.PokemonCategories.Where(pc => pc.PokemonId == pokemon.Id).FirstOrDefault();
-
-            var existingPokemon = this.context.Pokemons.AsNoTracking().FirstOrDefault(p => p.Id == pokemon.Id);
-
-            if (existingPokemon != null)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var pokemonLog = new PokemonLog
+                this.context.ChangeTracker.Clear();
+
+                var existingOwnerRelation = this.context.PokemonsOwners.Where(po => po.PokemonId == pokemon.Id).FirstOrDefault();
+                var existingCategoryRelation = this.context.PokemonCategories.Where(pc => pc.PokemonId == pokemon.Id).FirstOrDefault();
+
+                var existingPokemon = this.context.Pokemons.FirstOrDefault(p => p.Id == pokemon.Id);
+
+                if (existingPokemon != null)
                 {
-                    Action = "PUT",
-                    PokemonId = pokemon.Id,
-                    OldName = existingPokemon.Name,
-                    OldBirthDate = existingPokemon.BirthDate,
-                    OldOwnerId = existingOwnerRelation?.OwnerId,
-                    OldCategoryId = existingCategoryRelation?.CategoryId,
+                    var pokemonLog = new PokemonLog
+                    {
+                        Action = "PUT",
+                        PokemonId = pokemon.Id,
+                        NewName = pokemon.Name,
+                        NewBirthDate = pokemon.BirthDate,
+                        NewOwnerId = ownerId,
+                        NewCategoryId = categoryId,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                    NewName = pokemon.Name,
-                    NewBirthDate = pokemon.BirthDate,
-                    NewOwnerId = ownerId,
-                    NewCategoryId = categoryId,
+                    this.context.PokemonLog.Add(pokemonLog);
+                }
 
-                    LoggedAt = DateTime.UtcNow
+                if (existingOwnerRelation != null)
+                    this.context.Remove(existingOwnerRelation);
+                if (existingCategoryRelation != null)
+                    this.context.Remove(existingCategoryRelation);
+
+                var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
+                var categoryEntity = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
+
+                var pokemonOwner = new PokemonOwner()
+                {
+                    Owner = pokemonOwnerEntity,
+                    Pokemon = pokemon,
                 };
+                this.context.Add(pokemonOwner);
 
-                this.context.PokemonLog.Add(pokemonLog);
+                var pokemonCategory = new PokemonCategory()
+                {
+                    Category = categoryEntity,
+                    Pokemon = pokemon,
+                };
+                this.context.Add(pokemonCategory);
+                this.context.Update(pokemon);
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            if (existingOwnerRelation != null)
-                this.context.Remove(existingOwnerRelation);
-            if (existingCategoryRelation != null)
-                this.context.Remove(existingCategoryRelation);
-
-            var pokemonOwnerEntity = this.context.Owners.Where(a => a.Id == ownerId).FirstOrDefault();
-            var categoryEntity = this.context.Categories.Where(a => a.Id == categoryId).FirstOrDefault();
-
-            var pokemonOwner = new PokemonOwner()
+            catch (Exception)
             {
-                Owner = pokemonOwnerEntity,
-                Pokemon = pokemon,
-            };
-            this.context.Add(pokemonOwner);
-
-            var pokemonCategory = new PokemonCategory()
-            {
-                Category = categoryEntity,
-                Pokemon = pokemon,
-            };
-            this.context.Add(pokemonCategory);
-            this.context.Update(pokemon);
-
-            return Save();
+                transaction.Rollback();
+                throw;
+            }
         }
 
 

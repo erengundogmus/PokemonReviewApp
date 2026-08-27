@@ -5,10 +5,6 @@
         public int Id { get; set; }
         public string Action { get; set; }
         public int PokemonId { get; set; }
-        public string? OldName { get; set; }
-        public DateTime? OldBirthDate { get; set; }
-        public int? OldOwnerId { get; set; }
-        public int? OldCategoryId { get; set; }
         public string? NewName { get; set; }
         public DateTime? NewBirthDate { get; set; }
         public int? NewOwnerId { get; set; }

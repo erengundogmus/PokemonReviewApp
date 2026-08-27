@@ -16,50 +16,82 @@ namespace PokemonReviewApp.Repository
 
         public bool AddFoodToPokemon(int pokeId, int foodId)
         {
-            this.context.ChangeTracker.Clear();
-
-            var pokemonFood = new PokemonFood
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                PokemonId = pokeId,
-                FoodId = foodId
-            };
+                this.context.ChangeTracker.Clear();
 
-            this.context.Add(pokemonFood);
+                var pokemonFood = new PokemonFood
+                {
+                    PokemonId = pokeId,
+                    FoodId = foodId
+                };
 
-            var pokemonFoodLog = new PokemonFoodLog
+                this.context.Add(pokemonFood);
+
+                var pokemonFoodLog = new PokemonFoodLog
+                {
+                    Action = "POST",
+                    PokemonId = pokeId,
+                    FoodId = foodId,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.PokemonFoodLog.Add(pokemonFoodLog);
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
             {
-                Action = "POST",
-                PokemonId = pokeId,
-                FoodId = foodId,
-                LoggedAt = DateTime.UtcNow
-            };
-
-            this.context.PokemonFoodLog.Add(pokemonFoodLog);
-
-            return Save();
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool CreateFood(Food food)
         {
-            this.context.Add(food);
-            bool isFoodSaved = this.context.SaveChanges() > 0;
-
-            if (isFoodSaved)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var foodLog = new FoodLog
+                this.context.ChangeTracker.Clear();
+
+                this.context.Foods.Add(food);
+
+                if (Save())
                 {
-                    Action = "POST",
-                    FoodId = food.Id,
-                    NewName = food.Name,
-                    NewHp = food.Hp,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var foodLog = new FoodLog
+                    {
+                        Action = "POST",
+                        FoodId = food.Id,
+                        NewName = food.Name,
+                        NewHp = food.Hp,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.FoodLog.Add(foodLog);
-                return Save();
+                    this.context.FoodLog.Add(foodLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return false;
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
 
@@ -117,28 +149,44 @@ namespace PokemonReviewApp.Repository
 
         public bool UpdateFood(Food food)
         {
-            var existingFood = this.context.Foods.FirstOrDefault(f => f.Id == food.Id);
-
-            if (existingFood != null)
+            using var transaction = this.context.Database.BeginTransaction();
+            try
             {
-                var foodLog = new FoodLog
+                this.context.ChangeTracker.Clear();
+
+                var existingFood = this.context.Foods.FirstOrDefault(f => f.Id == food.Id);
+
+                if (existingFood != null)
                 {
-                    Action = "PUT",
-                    FoodId = food.Id,
-                    OldName = existingFood.Name,
-                    OldHp = existingFood.Hp,
-                    NewName = food.Name,
-                    NewHp = food.Hp,
-                    LoggedAt = DateTime.UtcNow
-                };
+                    var foodLog = new FoodLog
+                    {
+                        Action = "PUT",
+                        FoodId = food.Id,
+                        NewName = food.Name,
+                        NewHp = food.Hp,
+                        LoggedAt = DateTime.UtcNow
+                    };
 
-                this.context.FoodLog.Add(foodLog);
+                    this.context.FoodLog.Add(foodLog);
 
-                existingFood.Name = food.Name;
-                existingFood.Hp = food.Hp;
+                    existingFood.Name = food.Name;
+                    existingFood.Hp = food.Hp;
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
             }
-
-            return Save();
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
     }

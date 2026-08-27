@@ -72,6 +72,37 @@ namespace PokemonReviewApp.Data
                     .WithMany(pf => pf.PokemonFoods)
                     .HasForeignKey(p => p.FoodId);
 
+            modelBuilder.Entity<CategoryLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+            modelBuilder.Entity<CountryLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+            modelBuilder.Entity<FoodLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+            modelBuilder.Entity<OwnerLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+            modelBuilder.Entity<PokemonLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+            modelBuilder.Entity<ReviewerLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+            modelBuilder.Entity<ReviewLog>()
+                    .Property(c => c.LoggedAt)
+                    .HasColumnName("LoggedAt");
+
+
+
+
             //ISoftDelete uygulayan tüm sınıflara otomatik olarak "IsDeleted == false" filtresi uygular
             foreach (var entityType in modelBuilder.Model.GetEntityTypes()) //tüm tabloları tarar
             {
@@ -86,6 +117,35 @@ namespace PokemonReviewApp.Data
                 }
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         /*        LOG SİSTEMİ İÇİN TEK BİR KONTROL MERKEZİ DENEMESİ
          
