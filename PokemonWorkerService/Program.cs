@@ -1,11 +1,19 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using PokemonWorkerService;
+using Serilog;
+
+//PokemonLogs adında bir klasör rotası çıkıyor
+string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+string logFilePath = @"C:\PokemonLogs\worker_log_.txt";
+//hem konsola hem de günde bir yeni dosya açacak şekilde masaüstüne ayarlıyor
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// appsettings.json'dan BaseUrl'i okuyup HttpClient'a veriyoruz
+builder.Services.AddSerilog();
+
 builder.Services.AddHttpClient<PokemonApiClient>(client =>
 {
     var baseUrl = builder.Configuration.GetSection("PokemonApiSettings:BaseUrl").Value;
@@ -13,6 +21,12 @@ builder.Services.AddHttpClient<PokemonApiClient>(client =>
     {
         client.BaseAddress = new Uri(baseUrl);
     }
+});
+
+//işletim sistemine servis olarak tanıtır
+builder.Services.AddWindowsService(options =>
+{
+    options.ServiceName = "Pokemon API Worker Service";
 });
 
 builder.Services.AddHostedService<Worker>();

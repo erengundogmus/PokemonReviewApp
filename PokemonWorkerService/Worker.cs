@@ -36,8 +36,8 @@ public class Worker : BackgroundService
     {
         try
         {
-            string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            Console.WriteLine($"\n[{timestamp}] API'ye istek atildi ve pokemonlar listeleniyor");
+            // Serilog saat bilgisini otomatik eklediği için manuel timestamp'i sildik
+            _logger.LogInformation("API'ye istek atildi ve pokemonlar listeleniyor...");
 
             var pokemons = await _pokemonApiClient.GetPokemonsAsync(cancellationToken);
 
@@ -46,18 +46,20 @@ public class Worker : BackgroundService
                 int index = 1;
                 foreach (var pokemon in pokemons)
                 {
-                    Console.WriteLine($"  {index++}. ID: {pokemon.Id,-5} | Ad: {pokemon.Name,-10} | Kategori: {pokemon.CategoryName,-8} | Sahip: {pokemon.OwnerName} (ID: {pokemon.OwnerId}) | Tarih: {pokemon.BirthDate:dd.MM.yyyy HH:mm}");
+                    // ILogger'ın parametrik loglama (Structured Logging) yapısını kullanıyoruz
+                    _logger.LogInformation("  {Index}. ID: {Id,-5} | Ad: {Name,-10} | Kategori: {Category,-8} | Sahip: {Owner} | Tarih: {Date}",
+                        index++, pokemon.Id, pokemon.Name, pokemon.CategoryName, pokemon.OwnerName, pokemon.BirthDate.ToString("dd.MM.yyyy HH:mm"));
                 }
-                Console.WriteLine("----------------------------------------------------------------------------------------------------");
+                _logger.LogInformation(new string('-', 100));
             }
             else
             {
-                Console.WriteLine($"[{timestamp}] API'den bos veri geldi.");
+                _logger.LogWarning("API'den bos veri geldi.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[HATA] {ex.Message}");
+            _logger.LogError(ex, "API istegi sirasinda hata olustu.");
         }
     }
 }

@@ -10,7 +10,6 @@ public class PokemonApiClient
     public PokemonApiClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        // BaseAddress atamasını buradan kaldırdık, artık Program.cs hallediyor.
     }
 
     public async Task<List<PokemonItem>?> GetPokemonsAsync(CancellationToken cancellationToken)
