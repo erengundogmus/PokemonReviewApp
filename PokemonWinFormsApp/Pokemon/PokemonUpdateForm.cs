@@ -1,5 +1,6 @@
 ﻿using PokemonReviewApp.Dto;
 using PokemonReviewApp.OutputDtos;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Pokemon
@@ -34,7 +35,7 @@ namespace PokemonWinFormsApp.Pokemon
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Veriler yüklenirken hata oluştu: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error occurred while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -50,6 +51,8 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", UserSession.Token);
+
                 HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _pokemonId, updatedPokemon);
 
                 if (response.IsSuccessStatusCode)

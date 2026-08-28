@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.Dto;
 using PokemonReviewApp.Interfaces;
@@ -73,6 +74,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(rating);
         }
 
+        [Authorize]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -118,6 +120,7 @@ namespace PokemonReviewApp.Controllers
 
 
 
+        [Authorize]
         [HttpPut("{pokemonId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -172,6 +175,7 @@ namespace PokemonReviewApp.Controllers
         }
 
 
+        [Authorize]
         [HttpDelete("{pokemonId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]

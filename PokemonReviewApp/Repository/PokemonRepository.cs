@@ -137,6 +137,10 @@ namespace PokemonReviewApp.Repository
 
                 if (existingPokemon != null)
                 {
+                    // Dışarıdan gelen yeni değerleri mevcut entity'ye aktarıyoruz (Tracking çakışmasını önlemek için)
+                    existingPokemon.Name = pokemon.Name;
+                    existingPokemon.BirthDate = pokemon.BirthDate;
+
                     var pokemonLog = new PokemonLog
                     {
                         Action = "PUT",
@@ -162,17 +166,18 @@ namespace PokemonReviewApp.Repository
                 var pokemonOwner = new PokemonOwner()
                 {
                     Owner = pokemonOwnerEntity,
-                    Pokemon = pokemon,
+                    Pokemon = existingPokemon,
                 };
                 this.context.Add(pokemonOwner);
 
                 var pokemonCategory = new PokemonCategory()
                 {
                     Category = categoryEntity,
-                    Pokemon = pokemon,
+                    Pokemon = existingPokemon,
                 };
                 this.context.Add(pokemonCategory);
-                this.context.Update(pokemon);
+
+                // existingPokemon zaten context tarafından takip edildiği için ekstra Update çağrısına gerek kalmıyor
 
                 if (Save())
                 {

@@ -1,4 +1,5 @@
 ﻿using PokemonReviewApp.Dto;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Pokemon
@@ -25,6 +26,8 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", UserSession.Token);
+
                 HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newPokemon);
 
                 if (response.IsSuccessStatusCode)

@@ -29,6 +29,7 @@ namespace PokemonReviewApp.Data
         public DbSet<ReviewLog> ReviewLog { get; set; }
         public DbSet<ReviewerLog> ReviewerLog { get; set; }
         public DbSet<PokemonFoodLog> PokemonFoodLog { get; set; }
+        public DbSet<User> Users { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -117,25 +118,6 @@ namespace PokemonReviewApp.Data
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
