@@ -1,16 +1,16 @@
 ﻿using PokemonReviewApp.InputDtos;
-using System.Net.Http.Json;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Country
 {
     public partial class CountryCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/country";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
 
-        public CountryCreateForm()
+        public CountryCreateForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService)
         {
             InitializeComponent();
+            _countryService = countryService;
         }
 
         private async void CountryCreate_Click(object sender, EventArgs e)
@@ -22,17 +22,16 @@ namespace PokemonWinFormsApp.Country
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newCountry);
+                bool isSuccess = await _countryService.CreateAsync("country", newCountry);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Country successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create country: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create country.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
@@ -40,8 +39,5 @@ namespace PokemonWinFormsApp.Country
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
-
     }
 }

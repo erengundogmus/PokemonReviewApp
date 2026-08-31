@@ -1,15 +1,20 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Windows.Forms;
 
 namespace PokemonWinFormsApp
 {
     public partial class LoginForm : Form
     {
-        public LoginForm()
+        private readonly IAuthService _authService;
+        private readonly IServiceProvider _serviceProvider;
+
+        // Constructor Injection ile IAuthService ve DI Provider'ı alıyoruz
+        public LoginForm(IAuthService authService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _authService = authService;
+            _serviceProvider = serviceProvider;
         }
 
         private async void BtnLogin_Click(object sender, EventArgs e)
@@ -20,47 +25,34 @@ namespace PokemonWinFormsApp
                 Password = txtPassword.Text
             };
 
-            using (var client = new HttpClient())
+            try
             {
-                try
+                //istek doğrudan servise devredildi. 
+                var result = await _authService.LoginAsync("user/login", loginData);
+
+                if (result != null)
                 {
-                    var response = await client.PostAsJsonAsync("https://localhost:7013/api/user/login", loginData);
+                    //tokenı global sınıfa kaydediyoruz
+                    UserSession.Token = result.Token;
+                    UserSession.Username = result.Username;
 
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
+                    MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                        if (result != null)
-                        {
-                            // Token'ı global sınıfa kaydediyoruz
-                            UserSession.Token = result.Token;
-                            UserSession.Username = result.Username;
+                    this.Hide();
 
-                            MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                            this.Hide();
-                            MainForm mainForm = new MainForm();
-                            mainForm.FormClosed += (s, args) => this.Close();
-                            mainForm.Show();
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid username or password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    var mainForm = _serviceProvider.GetRequiredService<MainForm>();
+                    mainForm.FormClosed += (s, args) => this.Close();
+                    mainForm.Show();
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show("Connection error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Invalid username or password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Connection error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
-    }
-
-    public class LoginResponseDto
-    {
-        public string Token { get; set; }
-        public string Message { get; set; }
-        public string Username { get; set; }
     }
 }

@@ -1,27 +1,25 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+
 namespace PokemonWinFormsApp.Owner
 {
     public partial class OwnerDetailForm : Form
     {
-        private readonly int _ownerId;
-        private readonly string apiUrl = "https://localhost:7013/api/owner/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private int _ownerId;
 
-        public OwnerDetailForm(int ownerId)
+        public OwnerDetailForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService)
         {
             InitializeComponent();
-            _ownerId = ownerId;
-
-            //kesin çalışması için load olayını beklemeden constructor içinde tetikleyelim
-            _ = LoadOwnerDetailDirectlyAsync();
+            _ownerService = ownerService;
         }
 
-        private async Task LoadOwnerDetailDirectlyAsync()
+        public async Task LoadOwnerDetailAsync(int ownerId)
         {
+            _ownerId = ownerId;
             try
             {
-                var owner = await client.GetFromJsonAsync<OwnerOutputDto>(apiUrl + _ownerId);
+                var owner = await _ownerService.GetByIdAsync("owner", _ownerId);
 
                 if (owner != null)
                 {

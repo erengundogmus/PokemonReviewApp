@@ -1,60 +1,68 @@
+using Microsoft.Extensions.DependencyInjection;
 using PokemonWinFormsApp.Category;
 using PokemonWinFormsApp.Country;
 using PokemonWinFormsApp.Pokemon;
 using PokemonWinFormsApp.PokemonFood;
+using System;
+using System.Windows.Forms;
 
 namespace PokemonWinFormsApp
 {
     public partial class MainForm : Form
     {
-        public MainForm()
+        private readonly IServiceProvider _serviceProvider;
+
+        public MainForm(IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _serviceProvider = serviceProvider;
         }
-        //pop up menüyü açar
+
         private void buttonFood_Click(object sender, EventArgs e)
         {
-            FoodForm foodForm = new FoodForm();
+            var foodForm = _serviceProvider.GetRequiredService<FoodForm>();
             foodForm.ShowDialog();
         }
 
         private void buttonCountry_Click(object sender, EventArgs e)
         {
-            CountryForm countryForm = new CountryForm();
+            var countryForm = _serviceProvider.GetRequiredService<CountryForm>();
             countryForm.ShowDialog();
         }
 
         private void buttonCategory_Click(object sender, EventArgs e)
         {
-            CategoryForm categoryForm = new CategoryForm();
+            var categoryForm = _serviceProvider.GetRequiredService<CategoryForm>();
             categoryForm.ShowDialog();
         }
 
         private void buttonOwner_Click(object sender, EventArgs e)
         {
-            OwnerForm ownerForm = new OwnerForm();
+            var ownerForm = _serviceProvider.GetRequiredService<OwnerForm>();
             ownerForm.ShowDialog();
         }
+
         private void buttonReview_Click(object sender, EventArgs e)
         {
-            ReviewForm reviewForm = new ReviewForm();
+            var reviewForm = _serviceProvider.GetRequiredService<ReviewForm>();
             reviewForm.ShowDialog();
         }
+
         private void buttonReviewer_Click(object sender, EventArgs e)
         {
-            ReviewerForm reviewerForm = new ReviewerForm();
+            var reviewerForm = _serviceProvider.GetRequiredService<ReviewerForm>();
             reviewerForm.ShowDialog();
         }
-        
+
         private void buttonPokemon_Click(object sender, EventArgs e)
         {
-            PokemonForm pokemonForm = new PokemonForm();
+            var pokemonForm = _serviceProvider.GetRequiredService<PokemonForm>();
             pokemonForm.ShowDialog();
         }
-        
+
         private void buttonPokemonFood_Click(object sender, EventArgs e)
         {
-            PokemonFoodForm pokemonFoodForm = new PokemonFoodForm();
+            var pokemonFoodForm = _serviceProvider.GetRequiredService<PokemonFoodForm>();
             pokemonFoodForm.ShowDialog();
         }
     }

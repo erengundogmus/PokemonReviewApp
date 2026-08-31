@@ -1,29 +1,25 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Food
 {
     public partial class FoodUpdateForm : Form
     {
-        private readonly int _foodId;
-        private readonly string apiUrl = "https://localhost:7013/api/food/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private int _foodId;
 
-        public FoodUpdateForm(int foodId)
+        public FoodUpdateForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService)
         {
             InitializeComponent();
-            _foodId = foodId;
-
-            //form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadFoodDataAsync();
+            _foodService = foodService;
         }
 
-        private async Task LoadFoodDataAsync()
+        public async Task LoadFoodForUpdateAsync(int foodId)
         {
+            _foodId = foodId;
             try
             {
-                var food = await client.GetFromJsonAsync<FoodOutputDto>(apiUrl + _foodId);
+                var food = await _foodService.GetByIdAsync("food", _foodId);
                 if (food != null)
                 {
                     textName.Text = food.Name;
@@ -46,17 +42,16 @@ namespace PokemonWinFormsApp.Food
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _foodId, updatedFood);
+                bool isSuccess = await _foodService.UpdateAsync("food", _foodId, updatedFood);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Food successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update food.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

@@ -1,22 +1,27 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+using PokemonWinFormsApp.Owner;
+
 namespace PokemonWinFormsApp
 {
     public partial class OwnerForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/owner";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public OwnerForm()
+        public OwnerForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _ownerService = ownerService;
+            _serviceProvider = serviceProvider;
         }
+
         private async void OwnerForm_Load(object sender, EventArgs e)
         {
             await LoadOwnersAsync();
         }
 
-        //list butonuna basıldığında verileri çekecek metod
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await LoadOwnersAsync();
@@ -26,11 +31,11 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var owners = await client.GetFromJsonAsync<List<OwnerOutputDto>>(apiUrl);
+                var owners = await _ownerService.GetAllAsync("owner");
 
                 if (owners != null)
                 {
-                    dataGridView1.DataSource = owners;
+                    dataGridView1.DataSource = owners.ToList();
                 }
             }
             catch (Exception ex)
@@ -39,15 +44,15 @@ namespace PokemonWinFormsApp
             }
         }
 
-
-        private void buttonDetail_Click(object sender, EventArgs e)
+        private async void buttonDetail_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;
                 if (selectedOwner != null)
                 {
-                    PokemonWinFormsApp.Owner.OwnerDetailForm detailForm = new PokemonWinFormsApp.Owner.OwnerDetailForm(selectedOwner.Id);
+                    var detailForm = _serviceProvider.GetRequiredService<OwnerDetailForm>();
+                    await detailForm.LoadOwnerDetailAsync(selectedOwner.Id);
                     detailForm.ShowDialog();
                 }
                 else
@@ -65,9 +70,8 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                PokemonWinFormsApp.Owner.OwnerCreateForm createForm = new PokemonWinFormsApp.Owner.OwnerCreateForm();
+                var createForm = _serviceProvider.GetRequiredService<OwnerCreateForm>();
                 createForm.ShowDialog();
-                //işlemden sonra otomatik listeyi yeniler
                 await LoadOwnersAsync();
             }
             catch (Exception ex)
@@ -76,18 +80,18 @@ namespace PokemonWinFormsApp
             }
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;
                 if (selectedOwner != null)
                 {
-                    //gridden seçilen ownerın idsini alıyoruz
-                    PokemonWinFormsApp.Owner.OwnerUpdateForm updateForm = new PokemonWinFormsApp.Owner.OwnerUpdateForm(selectedOwner.Id);
+                    var updateForm = _serviceProvider.GetRequiredService<OwnerUpdateForm>();
+                    await updateForm.LoadOwnerForUpdateAsync(selectedOwner.Id);
                     updateForm.ShowDialog();
 
-                    _ = LoadOwnersAsync();
+                    await LoadOwnersAsync();
                 }
                 else
                 {
@@ -99,9 +103,6 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select an owner item from the list to update.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
@@ -120,17 +121,16 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(apiUrl + "/" + selectedOwner.Id);
+                            bool isSuccess = await _ownerService.DeleteAsync("owner", selectedOwner.Id);
 
-                            if (response.IsSuccessStatusCode)
+                            if (isSuccess)
                             {
                                 MessageBox.Show("Owner successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 await LoadOwnersAsync();
                             }
                             else
                             {
-                                string errorMessage = await response.Content.ReadAsStringAsync();
-                                MessageBox.Show("Failed to delete owner: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Failed to delete owner.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
@@ -149,6 +149,5 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select an owner item from the list to delete.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
     }
 }

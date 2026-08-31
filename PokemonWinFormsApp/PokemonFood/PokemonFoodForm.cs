@@ -1,18 +1,37 @@
-﻿using PokemonReviewApp.OutputDtos;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PokemonWinFormsApp.PokemonFood
 {
     public partial class PokemonFoodForm : Form
     {
-        private readonly string pokemonApiUrl = "https://localhost:7013/api/pokemon";
-        private readonly string foodApiUrl = "https://localhost:7013/api/food";
-        private readonly string pokemonFoodApiUrl = "https://localhost:7013/api/pokemonfood";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _client;
 
-        public PokemonFoodForm()
+        // Sabit URL yerine HttpClient'ın BaseAddress'ine uygun relative path kullanıyoruz
+        private readonly string pokemonFoodApiUrl = "pokemonfood";
+
+        public PokemonFoodForm(
+            IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService,
+            IGenericApiService<FoodInputDto, FoodOutputDto> foodService,
+            IHttpClientFactory httpClientFactory)
         {
             InitializeComponent();
+            _pokemonService = pokemonService;
+            _foodService = foodService;
+            _httpClientFactory = httpClientFactory;
+            _client = _httpClientFactory.CreateClient("ApiClient");
         }
 
         private async void PokemonFoodForm_Load(object sender, EventArgs e)
@@ -29,16 +48,16 @@ namespace PokemonWinFormsApp.PokemonFood
         {
             try
             {
-                var pokemons = await client.GetFromJsonAsync<List<PokemonOutputDto>>(pokemonApiUrl);
+                var pokemons = await _pokemonService.GetAllAsync("pokemon");
                 if (pokemons != null)
                 {
-                    dataGridView1.DataSource = pokemons;
+                    dataGridView1.DataSource = pokemons.ToList();
                 }
 
-                var foods = await client.GetFromJsonAsync<List<FoodOutputDto>>(foodApiUrl);
+                var foods = await _foodService.GetAllAsync("food");
                 if (foods != null)
                 {
-                    dataGridView2.DataSource = foods;
+                    dataGridView2.DataSource = foods.ToList();
                 }
 
                 dataGridView3.DataSource = null;
@@ -58,9 +77,11 @@ namespace PokemonWinFormsApp.PokemonFood
                 {
                     try
                     {
-                        //3. grid'e pokemonun menüsünü getirmek için
-                        var menuFoods = await client.GetFromJsonAsync<List<FoodOutputDto>>($"{pokemonFoodApiUrl}/pokemon/{selectedPokemon.Id}");
-                        dataGridView3.DataSource = menuFoods;
+                        var menuFoods = await _client.GetFromJsonAsync<List<FoodOutputDto>>($"{pokemonFoodApiUrl}/pokemon/{selectedPokemon.Id}");
+                        if (menuFoods != null)
+                        {
+                            dataGridView3.DataSource = menuFoods.ToList();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -76,7 +97,6 @@ namespace PokemonWinFormsApp.PokemonFood
 
         private async void buttonAddToMenu_Click(object sender, EventArgs e)
         {
-            //pokemon ve eklenecek yemeği seçmek için
             if (dataGridView1.CurrentRow != null && dataGridView2.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -86,12 +106,11 @@ namespace PokemonWinFormsApp.PokemonFood
                 {
                     try
                     {
-                        HttpResponseMessage response = await client.PostAsync($"{pokemonFoodApiUrl}/{selectedFood.Id}/pokemon/{selectedPokemon.Id}", null);
+                        HttpResponseMessage response = await _client.PostAsync($"{pokemonFoodApiUrl}/{selectedFood.Id}/pokemon/{selectedPokemon.Id}", null);
 
                         if (response.IsSuccessStatusCode)
                         {
                             MessageBox.Show("Food successfully added to pokemon's menu!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            //menüyü işlemden sonra tekrar getirmek için
                             buttonPokemonsMenu_Click(sender, e);
                         }
                         else
@@ -114,7 +133,6 @@ namespace PokemonWinFormsApp.PokemonFood
 
         private async void buttonRemoveFromMenu_Click(object sender, EventArgs e)
         {
-            //pokemon ve menüsünden yemek seçmek için
             if (dataGridView1.CurrentRow != null && dataGridView3.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -124,7 +142,7 @@ namespace PokemonWinFormsApp.PokemonFood
                 {
                     try
                     {
-                        HttpResponseMessage response = await client.DeleteAsync($"{pokemonFoodApiUrl}/{selectedFood.Id}/pokemon/{selectedPokemon.Id}");
+                        HttpResponseMessage response = await _client.DeleteAsync($"{pokemonFoodApiUrl}/{selectedFood.Id}/pokemon/{selectedPokemon.Id}");
 
                         if (response.IsSuccessStatusCode)
                         {

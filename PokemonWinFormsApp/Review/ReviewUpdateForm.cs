@@ -1,29 +1,25 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Review
 {
     public partial class ReviewUpdateForm : Form
     {
-        private readonly int _reviewId;
-        private readonly string apiUrl = "https://localhost:7013/api/review/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewInputDto, ReviewOutputDto> _reviewService;
+        private int _reviewId;
 
-        public ReviewUpdateForm(int reviewId)
+        public ReviewUpdateForm(IGenericApiService<ReviewInputDto, ReviewOutputDto> reviewService)
         {
             InitializeComponent();
-            _reviewId = reviewId;
-
-            // form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadReviewDataAsync();
+            _reviewService = reviewService;
         }
 
-        private async Task LoadReviewDataAsync()
+        public async Task LoadReviewForUpdateAsync(int reviewId)
         {
+            _reviewId = reviewId;
             try
             {
-                var review = await client.GetFromJsonAsync<ReviewOutputDto>(apiUrl + _reviewId);
+                var review = await _reviewService.GetByIdAsync("review", _reviewId);
                 if (review != null)
                 {
                     textTitle.Text = review.Title;
@@ -52,17 +48,16 @@ namespace PokemonWinFormsApp.Review
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _reviewId, updatedReview);
+                bool isSuccess = await _reviewService.UpdateAsync("review", _reviewId, updatedReview);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Review successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update review: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update review.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

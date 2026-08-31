@@ -1,28 +1,25 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
-using static System.Net.Mime.MediaTypeNames;
+﻿using PokemonReviewApp.Dto;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonDetailForm : Form
     {
-        private readonly int _pokemonId;
-        private readonly string apiUrl = "https://localhost:7013/api/pokemon/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private int _pokemonId;
 
-        public PokemonDetailForm(int pokemonId)
+        public PokemonDetailForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService)
         {
             InitializeComponent();
-            _pokemonId = pokemonId;
-
-            _ = LoadPokemonDetailDirectlyAsync();
+            _pokemonService = pokemonService;
         }
 
-        private async Task LoadPokemonDetailDirectlyAsync()
+        public async Task LoadPokemonDetailAsync(int pokemonId)
         {
+            _pokemonId = pokemonId;
             try
             {
-                var pokemon = await client.GetFromJsonAsync<PokemonOutputDto>(apiUrl + _pokemonId);
+                var pokemon = await _pokemonService.GetByIdAsync("pokemon", _pokemonId);
 
                 if (pokemon != null)
                 {

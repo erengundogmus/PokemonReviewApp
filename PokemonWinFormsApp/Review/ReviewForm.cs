@@ -1,22 +1,27 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+using PokemonWinFormsApp.Review;
+
 namespace PokemonWinFormsApp
 {
     public partial class ReviewForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/review";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewInputDto, ReviewOutputDto> _reviewService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ReviewForm()
+        public ReviewForm(IGenericApiService<ReviewInputDto, ReviewOutputDto> reviewService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _reviewService = reviewService;
+            _serviceProvider = serviceProvider;
         }
+
         private async void ReviewForm_Load(object sender, EventArgs e)
         {
             await LoadReviewsAsync();
         }
 
-        //list butonuna basıldığında verileri çekecek metod
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await LoadReviewsAsync();
@@ -26,11 +31,11 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var reviews = await client.GetFromJsonAsync<List<ReviewOutputDto>>(apiUrl);
+                var reviews = await _reviewService.GetAllAsync("review");
 
                 if (reviews != null)
                 {
-                    dataGridView1.DataSource = reviews;
+                    dataGridView1.DataSource = reviews.ToList();
                 }
             }
             catch (Exception ex)
@@ -39,15 +44,15 @@ namespace PokemonWinFormsApp
             }
         }
 
-
-        private void buttonDetail_Click(object sender, EventArgs e)
+        private async void buttonDetail_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReview = dataGridView1.CurrentRow.DataBoundItem as ReviewOutputDto;
                 if (selectedReview != null)
                 {
-                    PokemonWinFormsApp.Review.ReviewDetailForm detailForm = new PokemonWinFormsApp.Review.ReviewDetailForm(selectedReview.Id);
+                    var detailForm = _serviceProvider.GetRequiredService<ReviewDetailForm>();
+                    await detailForm.LoadReviewDetailAsync(selectedReview.Id);
                     detailForm.ShowDialog();
                 }
                 else
@@ -65,9 +70,8 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                PokemonWinFormsApp.Review.ReviewCreateForm createForm = new PokemonWinFormsApp.Review.ReviewCreateForm();
+                var createForm = _serviceProvider.GetRequiredService<ReviewCreateForm>();
                 createForm.ShowDialog();
-                //işlemden sonra otomatik listeyi yeniler
                 await LoadReviewsAsync();
             }
             catch (Exception ex)
@@ -76,18 +80,18 @@ namespace PokemonWinFormsApp
             }
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReview = dataGridView1.CurrentRow.DataBoundItem as ReviewOutputDto;
                 if (selectedReview != null)
                 {
-                    //gridden seçilen reviewin idsini alıyoruz
-                    PokemonWinFormsApp.Review.ReviewUpdateForm updateForm = new PokemonWinFormsApp.Review.ReviewUpdateForm(selectedReview.Id);
+                    var updateForm = _serviceProvider.GetRequiredService<ReviewUpdateForm>();
+                    await updateForm.LoadReviewForUpdateAsync(selectedReview.Id);
                     updateForm.ShowDialog();
 
-                    _ = LoadReviewsAsync();
+                    await LoadReviewsAsync();
                 }
                 else
                 {
@@ -99,9 +103,6 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select a review item from the list to update.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
@@ -120,17 +121,16 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(apiUrl + "/" + selectedReview.Id);
+                            bool isSuccess = await _reviewService.DeleteAsync("review", selectedReview.Id);
 
-                            if (response.IsSuccessStatusCode)
+                            if (isSuccess)
                             {
                                 MessageBox.Show("Review successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 await LoadReviewsAsync();
                             }
                             else
                             {
-                                string errorMessage = await response.Content.ReadAsStringAsync();
-                                MessageBox.Show("Failed to delete review: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Failed to delete review.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
@@ -149,6 +149,5 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select a review item from the list to delete.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
     }
 }

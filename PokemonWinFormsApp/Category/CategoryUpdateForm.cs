@@ -1,28 +1,25 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+
 namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryUpdateForm : Form
     {
-        private readonly int _categoryId;
-        private readonly string apiUrl = "https://localhost:7013/api/category/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        private int _categoryId;
 
-        public CategoryUpdateForm(int categoryId)
+        public CategoryUpdateForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService)
         {
             InitializeComponent();
-            _categoryId = categoryId;
-
-            //form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadCategoryDataAsync();
+            _categoryService = categoryService;
         }
 
-        private async Task LoadCategoryDataAsync()
+        public async Task LoadCategoryForUpdateAsync(int categoryId)
         {
+            _categoryId = categoryId;
             try
             {
-                var category = await client.GetFromJsonAsync<CategoryOutputDto>(apiUrl + _categoryId);
+                var category = await _categoryService.GetByIdAsync("category", _categoryId);
                 if (category != null)
                 {
                     textName.Text = category.Name;
@@ -43,17 +40,16 @@ namespace PokemonWinFormsApp.Category
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _categoryId, updatedCategory);
+                bool isSuccess = await _categoryService.UpdateAsync("category", _categoryId, updatedCategory);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Category successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update category: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update category.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

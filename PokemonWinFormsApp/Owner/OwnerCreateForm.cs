@@ -1,15 +1,16 @@
 ﻿using PokemonReviewApp.InputDtos;
-using System.Net.Http.Json;
+using PokemonReviewApp.OutputDtos;
+
 namespace PokemonWinFormsApp.Owner
 {
     public partial class OwnerCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/owner";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
 
-        public OwnerCreateForm()
+        public OwnerCreateForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService)
         {
             InitializeComponent();
+            _ownerService = ownerService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -23,17 +24,16 @@ namespace PokemonWinFormsApp.Owner
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newOwner);
+                bool isSuccess = await _ownerService.CreateAsync("owner", newOwner);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Owner successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create owner: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create owner.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

@@ -1,17 +1,16 @@
 ﻿using PokemonReviewApp.Dto;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/pokemon";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
 
-        public PokemonCreateForm()
+        public PokemonCreateForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService)
         {
             InitializeComponent();
+            _pokemonService = pokemonService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -26,19 +25,16 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", UserSession.Token);
+                bool isSuccess = await _pokemonService.CreateAsync("pokemon", newPokemon);
 
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newPokemon);
-
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Pokemon successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create pokemon: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create pokemon.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

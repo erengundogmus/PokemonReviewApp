@@ -1,29 +1,25 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Country
-
 {
     public partial class CountryDetailForm : Form
     {
-        private readonly int _countryId;
-        private readonly string apiUrl = "https://localhost:7013/api/country/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
+        private int _countryId;
 
-        public CountryDetailForm(int countryId)
+        public CountryDetailForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService)
         {
             InitializeComponent();
-            _countryId = countryId;
-
-            //kesin çalışması için load olayını beklemeden constructor içinde tetikleyelim
-            _ = LoadCountryDetailDirectlyAsync();
+            _countryService = countryService;
         }
 
-        private async Task LoadCountryDetailDirectlyAsync()
+        public async Task LoadCountryDetailAsync(int countryId)
         {
+            _countryId = countryId;
             try
             {
-                var country = await client.GetFromJsonAsync<CountryOutputDto>(apiUrl + _countryId);
+                var country = await _countryService.GetByIdAsync("country", _countryId);
 
                 if (country != null)
                 {

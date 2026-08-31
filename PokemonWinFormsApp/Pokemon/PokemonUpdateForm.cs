@@ -1,29 +1,25 @@
 ﻿using PokemonReviewApp.Dto;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonUpdateForm : Form
     {
-        private readonly int _pokemonId;
-        private readonly string apiUrl = "https://localhost:7013/api/pokemon/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private int _pokemonId;
 
-        public PokemonUpdateForm(int pokemonId)
+        public PokemonUpdateForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService)
         {
             InitializeComponent();
-            _pokemonId = pokemonId;
-
-            _ = LoadPokemonDataAsync();
+            _pokemonService = pokemonService;
         }
 
-        private async Task LoadPokemonDataAsync()
+        public async Task LoadPokemonForUpdateAsync(int pokemonId)
         {
+            _pokemonId = pokemonId;
             try
             {
-                var pokemon = await client.GetFromJsonAsync<PokemonOutputDto>(apiUrl + _pokemonId);
+                var pokemon = await _pokemonService.GetByIdAsync("pokemon", _pokemonId);
                 if (pokemon != null)
                 {
                     textName.Text = pokemon.Name;
@@ -50,19 +46,16 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", UserSession.Token);
+                bool isSuccess = await _pokemonService.UpdateAsync("pokemon", _pokemonId, updatedPokemon);
 
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _pokemonId, updatedPokemon);
-
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Pokemon successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update pokemon: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update pokemon.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

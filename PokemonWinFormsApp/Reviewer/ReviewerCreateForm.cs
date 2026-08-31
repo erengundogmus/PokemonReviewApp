@@ -1,16 +1,16 @@
 ﻿using PokemonReviewApp.InputDtos;
-using System.Net.Http.Json;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Reviewer
 {
     public partial class ReviewerCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/reviewer";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewerInputDto, ReviewerOutputDto> _reviewerService;
 
-        public ReviewerCreateForm()
+        public ReviewerCreateForm(IGenericApiService<ReviewerInputDto, ReviewerOutputDto> reviewerService)
         {
             InitializeComponent();
+            _reviewerService = reviewerService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -23,17 +23,16 @@ namespace PokemonWinFormsApp.Reviewer
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newReviewer);
+                bool isSuccess = await _reviewerService.CreateAsync("reviewer", newReviewer);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Reviewer successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create reviewer: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create reviewer.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

@@ -1,16 +1,18 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+
 namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryForm : Form
     {
-
-        private readonly string apiUrl = "https://localhost:7013/api/category";
-        private readonly HttpClient client = new HttpClient();
-
-        public CategoryForm()
+        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        private readonly IServiceProvider _serviceProvider;
+        public CategoryForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _categoryService = categoryService;
+            _serviceProvider = serviceProvider;
         }
 
         private async void CategoryForm_Load(object sender, EventArgs e)
@@ -18,7 +20,6 @@ namespace PokemonWinFormsApp.Category
             await LoadCategoriesAsync();
         }
 
-        //list butonuna basıldığında verileri çekecek metod
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await LoadCategoriesAsync();
@@ -28,11 +29,11 @@ namespace PokemonWinFormsApp.Category
         {
             try
             {
-                var categories = await client.GetFromJsonAsync<List<CategoryOutputDto>>(apiUrl);
+                var categories = await _categoryService.GetAllAsync("category");
 
                 if (categories != null)
                 {
-                    dataGridView1.DataSource = categories;
+                    dataGridView1.DataSource = categories.ToList();
                 }
             }
             catch (Exception ex)
@@ -41,16 +42,15 @@ namespace PokemonWinFormsApp.Category
             }
         }
 
-
-
-        private void buttonDetail_Click(object sender, EventArgs e)
+        private async void buttonDetail_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
                 if (selectedCategory != null)
                 {
-                    PokemonWinFormsApp.Category.CategoryDetailForm detailForm = new PokemonWinFormsApp.Category.CategoryDetailForm(selectedCategory.Id);
+                    var detailForm = _serviceProvider.GetRequiredService<CategoryDetailForm>();
+                    await detailForm.LoadCategoryDetailAsync(selectedCategory.Id);
                     detailForm.ShowDialog();
                 }
                 else
@@ -64,15 +64,13 @@ namespace PokemonWinFormsApp.Category
             }
         }
 
-
-
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
             try
             {
-                PokemonWinFormsApp.Category.CategoryCreateForm createForm = new PokemonWinFormsApp.Category.CategoryCreateForm();
+                var createForm = _serviceProvider.GetRequiredService<CategoryCreateForm>();
                 createForm.ShowDialog();
-                //işlemden sonra otomatik listeyi yeniler
+
                 await LoadCategoriesAsync();
             }
             catch (Exception ex)
@@ -81,20 +79,18 @@ namespace PokemonWinFormsApp.Category
             }
         }
 
-
-
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
                 if (selectedCategory != null)
                 {
-                    //gridden id alıyor
-                    PokemonWinFormsApp.Category.CategoryUpdateForm updateForm = new PokemonWinFormsApp.Category.CategoryUpdateForm(selectedCategory.Id);
+                    var updateForm = _serviceProvider.GetRequiredService<CategoryUpdateForm>();
+                    await updateForm.LoadCategoryForUpdateAsync(selectedCategory.Id);
                     updateForm.ShowDialog();
 
-                    _ = LoadCategoriesAsync();
+                    await LoadCategoriesAsync();
                 }
                 else
                 {
@@ -106,9 +102,6 @@ namespace PokemonWinFormsApp.Category
                 MessageBox.Show("Please select a category item from the list to update.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
@@ -127,17 +120,16 @@ namespace PokemonWinFormsApp.Category
                     {
                         try
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(apiUrl + "/" + selectedCategory.Id);
+                            bool isSuccess = await _categoryService.DeleteAsync("category", selectedCategory.Id);
 
-                            if (response.IsSuccessStatusCode)
+                            if (isSuccess)
                             {
                                 MessageBox.Show("Category successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 await LoadCategoriesAsync();
                             }
                             else
                             {
-                                string errorMessage = await response.Content.ReadAsStringAsync();
-                                MessageBox.Show("Failed to delete category: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Failed to delete category.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
@@ -156,17 +148,5 @@ namespace PokemonWinFormsApp.Category
                 MessageBox.Show("Please select a category item from the list to delete.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

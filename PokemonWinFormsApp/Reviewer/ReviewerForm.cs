@@ -1,22 +1,27 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+using PokemonWinFormsApp.Reviewer;
+
 namespace PokemonWinFormsApp
 {
     public partial class ReviewerForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/reviewer";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewerInputDto, ReviewerOutputDto> _reviewerService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ReviewerForm()
+        public ReviewerForm(IGenericApiService<ReviewerInputDto, ReviewerOutputDto> reviewerService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _reviewerService = reviewerService;
+            _serviceProvider = serviceProvider;
         }
+
         private async void ReviewerForm_Load(object sender, EventArgs e)
         {
             await LoadReviewersAsync();
         }
 
-        //list butonuna basıldığında verileri çekecek metod
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await LoadReviewersAsync();
@@ -26,11 +31,11 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var reviewers = await client.GetFromJsonAsync<List<ReviewerOutputDto>>(apiUrl);
+                var reviewers = await _reviewerService.GetAllAsync("reviewer");
 
                 if (reviewers != null)
                 {
-                    dataGridView1.DataSource = reviewers;
+                    dataGridView1.DataSource = reviewers.ToList();
                 }
             }
             catch (Exception ex)
@@ -39,15 +44,15 @@ namespace PokemonWinFormsApp
             }
         }
 
-
-        private void buttonDetail_Click(object sender, EventArgs e)
+        private async void buttonDetail_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;
                 if (selectedReviewer != null)
                 {
-                    PokemonWinFormsApp.Reviewer.ReviewerDetailForm detailForm = new PokemonWinFormsApp.Reviewer.ReviewerDetailForm(selectedReviewer.Id);
+                    var detailForm = _serviceProvider.GetRequiredService<ReviewerDetailForm>();
+                    await detailForm.LoadReviewerDetailAsync(selectedReviewer.Id);
                     detailForm.ShowDialog();
                 }
                 else
@@ -65,9 +70,8 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                PokemonWinFormsApp.Reviewer.ReviewerCreateForm createForm = new PokemonWinFormsApp.Reviewer.ReviewerCreateForm();
+                var createForm = _serviceProvider.GetRequiredService<ReviewerCreateForm>();
                 createForm.ShowDialog();
-                //işlemden sonra otomatik listeyi yeniler
                 await LoadReviewersAsync();
             }
             catch (Exception ex)
@@ -76,18 +80,18 @@ namespace PokemonWinFormsApp
             }
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;
                 if (selectedReviewer != null)
                 {
-                    //gridden seçilen reviewer'ın id'sini alıyoruz
-                    PokemonWinFormsApp.Reviewer.ReviewerUpdateForm updateForm = new PokemonWinFormsApp.Reviewer.ReviewerUpdateForm(selectedReviewer.Id);
+                    var updateForm = _serviceProvider.GetRequiredService<ReviewerUpdateForm>();
+                    await updateForm.LoadReviewerForUpdateAsync(selectedReviewer.Id);
                     updateForm.ShowDialog();
 
-                    _ = LoadReviewersAsync();
+                    await LoadReviewersAsync();
                 }
                 else
                 {
@@ -99,9 +103,6 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select a reviewer item from the list to update.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
@@ -120,17 +121,16 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(apiUrl + "/" + selectedReviewer.Id);
+                            bool isSuccess = await _reviewerService.DeleteAsync("reviewer", selectedReviewer.Id);
 
-                            if (response.IsSuccessStatusCode)
+                            if (isSuccess)
                             {
                                 MessageBox.Show("Reviewer successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 await LoadReviewersAsync();
                             }
                             else
                             {
-                                string errorMessage = await response.Content.ReadAsStringAsync();
-                                MessageBox.Show("Failed to delete reviewer: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Failed to delete reviewer.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
@@ -149,6 +149,5 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select a reviewer item from the list to delete.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
     }
 }

@@ -1,29 +1,25 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Country
 {
     public partial class CountryUpdateForm : Form
     {
-        private readonly int _countryId;
-        private readonly string apiUrl = "https://localhost:7013/api/country/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
+        private int _countryId;
 
-        public CountryUpdateForm(int countryId)
+        public CountryUpdateForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService)
         {
             InitializeComponent();
-            _countryId = countryId;
-
-            //form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadCountryDataAsync();
+            _countryService = countryService;
         }
 
-        private async Task LoadCountryDataAsync()
+        public async Task LoadCountryForUpdateAsync(int countryId)
         {
+            _countryId = countryId;
             try
             {
-                var country = await client.GetFromJsonAsync<CountryOutputDto>(apiUrl + _countryId);
+                var country = await _countryService.GetByIdAsync("country", _countryId);
                 if (country != null)
                 {
                     textName.Text = country.Name;
@@ -44,17 +40,16 @@ namespace PokemonWinFormsApp.Country
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _countryId, updatedCountry);
+                bool isSuccess = await _countryService.UpdateAsync("country", _countryId, updatedCountry);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Country successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update country: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update country.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

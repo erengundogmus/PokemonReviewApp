@@ -1,27 +1,25 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+
 namespace PokemonWinFormsApp.Review
 {
     public partial class ReviewDetailForm : Form
     {
-        private readonly int _reviewId;
-        private readonly string apiUrl = "https://localhost:7013/api/review/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewInputDto, ReviewOutputDto> _reviewService;
+        private int _reviewId;
 
-        public ReviewDetailForm(int reviewId)
+        public ReviewDetailForm(IGenericApiService<ReviewInputDto, ReviewOutputDto> reviewService)
         {
             InitializeComponent();
-            _reviewId = reviewId;
-
-            //çalışması garanti olsun diye constructor içinde çalıştırdım
-            _ = LoadReviewDetailDirectlyAsync();
+            _reviewService = reviewService;
         }
 
-        private async Task LoadReviewDetailDirectlyAsync()
+        public async Task LoadReviewDetailAsync(int reviewId)
         {
+            _reviewId = reviewId;
             try
             {
-                var review = await client.GetFromJsonAsync<ReviewOutputDto>(apiUrl + _reviewId);
+                var review = await _reviewService.GetByIdAsync("review", _reviewId);
 
                 if (review != null)
                 {

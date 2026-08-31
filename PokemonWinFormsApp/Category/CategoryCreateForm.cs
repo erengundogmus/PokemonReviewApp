@@ -1,15 +1,15 @@
 ﻿using PokemonReviewApp.InputDtos;
-using System.Net.Http.Json;
+using PokemonReviewApp.OutputDtos;
+
 namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/category";
-        private readonly HttpClient client = new HttpClient();
-
-        public CategoryCreateForm()
+        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        public CategoryCreateForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService)
         {
             InitializeComponent();
+            _categoryService = categoryService;
         }
 
         private async void CategoryCreate_Click(object sender, EventArgs e)
@@ -21,17 +21,18 @@ namespace PokemonWinFormsApp.Category
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newCategory);
+                //httpclient ve baseurl yok sadece endpoint ismini veriyoruz
+                bool isSuccess = await _categoryService.CreateAsync("category", newCategory);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Category successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create category: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // Generic servis bool döndüğü için hata mesajını genel tutuyoruz
+                    MessageBox.Show("Failed to create category.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
@@ -39,8 +40,5 @@ namespace PokemonWinFormsApp.Category
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-
-
     }
 }

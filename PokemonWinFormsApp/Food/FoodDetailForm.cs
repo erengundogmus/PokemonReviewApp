@@ -1,28 +1,25 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Food
 {
     public partial class FoodDetailForm : Form
     {
-        private readonly int _foodId;
-        private readonly string apiUrl = "https://localhost:7013/api/food/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private int _foodId;
 
-        public FoodDetailForm(int foodId)
+        public FoodDetailForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService)
         {
             InitializeComponent();
-            _foodId = foodId;
-
-            //kesin çalışması için load olayını beklemeden constructor içinde tetikleyelim
-            _ = LoadFoodDetailDirectlyAsync();
+            _foodService = foodService;
         }
 
-        private async Task LoadFoodDetailDirectlyAsync()
+        public async Task LoadFoodDetailAsync(int foodId)
         {
+            _foodId = foodId;
             try
             {
-                var food = await client.GetFromJsonAsync<FoodOutputDto>(apiUrl + _foodId);
+                var food = await _foodService.GetByIdAsync("food", _foodId);
 
                 if (food != null)
                 {

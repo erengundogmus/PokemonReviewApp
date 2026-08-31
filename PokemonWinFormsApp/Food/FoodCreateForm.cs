@@ -1,17 +1,16 @@
 ﻿using PokemonReviewApp.InputDtos;
-using System.Net.Http.Json;
-
+using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Food
 {
     public partial class FoodCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/food";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
 
-        public FoodCreateForm()
+        public FoodCreateForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService)
         {
             InitializeComponent();
+            _foodService = foodService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -24,17 +23,16 @@ namespace PokemonWinFormsApp.Food
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newFood);
+                bool isSuccess = await _foodService.CreateAsync("food", newFood);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Food successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create food.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

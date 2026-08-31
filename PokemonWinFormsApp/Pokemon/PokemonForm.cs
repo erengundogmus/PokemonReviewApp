@@ -1,42 +1,47 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using PokemonWinFormsApp;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.Dto;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+using PokemonWinFormsApp.Pokemon;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/pokemon";
+        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public PokemonForm()
+        public PokemonForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _pokemonService = pokemonService;
+            _serviceProvider = serviceProvider;
         }
 
         private async void PokemonForm_Load(object sender, EventArgs e)
         {
-            await LoadCountriesAsync();
+            await LoadPokemonsAsync();
         }
 
-        //list butonuna basıldığında verileri çekecek metod
         private async void buttonList_Click(object sender, EventArgs e)
         {
-            await LoadCountriesAsync();
+            await LoadPokemonsAsync();
         }
 
-        private async Task LoadCountriesAsync()
+        private async Task LoadPokemonsAsync()
         {
             try
             {
-                using (var client = new HttpClient())
-                {
-                    var countries = await client.GetFromJsonAsync<List<PokemonOutputDto>>(apiUrl);
+                var pokemons = await _pokemonService.GetAllAsync("pokemon");
 
-                    if (countries != null)
-                    {
-                        dataGridView1.DataSource = countries;
-                    }
+                if (pokemons != null)
+                {
+                    dataGridView1.DataSource = pokemons.ToList();
                 }
             }
             catch (Exception ex)
@@ -45,14 +50,15 @@ namespace PokemonWinFormsApp.Pokemon
             }
         }
 
-        private void buttonDetail_Click(object sender, EventArgs e)
+        private async void buttonDetail_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
                 if (selectedPokemon != null)
                 {
-                    PokemonWinFormsApp.Pokemon.PokemonDetailForm detailForm = new PokemonWinFormsApp.Pokemon.PokemonDetailForm(selectedPokemon.Id);
+                    var detailForm = _serviceProvider.GetRequiredService<PokemonDetailForm>();
+                    await detailForm.LoadPokemonDetailAsync(selectedPokemon.Id);
                     detailForm.ShowDialog();
                 }
                 else
@@ -70,10 +76,9 @@ namespace PokemonWinFormsApp.Pokemon
         {
             try
             {
-                PokemonWinFormsApp.Pokemon.PokemonCreateForm createForm = new PokemonWinFormsApp.Pokemon.PokemonCreateForm();
+                var createForm = _serviceProvider.GetRequiredService<PokemonCreateForm>();
                 createForm.ShowDialog();
-                //işlemden sonra otomatik listeyi yeniler
-                await LoadCountriesAsync();
+                await LoadPokemonsAsync();
             }
             catch (Exception ex)
             {
@@ -81,18 +86,18 @@ namespace PokemonWinFormsApp.Pokemon
             }
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
                 if (selectedPokemon != null)
                 {
-                    //gridden id alıyor
-                    PokemonWinFormsApp.Pokemon.PokemonUpdateForm updateForm = new PokemonWinFormsApp.Pokemon.PokemonUpdateForm(selectedPokemon.Id);
+                    var updateForm = _serviceProvider.GetRequiredService<PokemonUpdateForm>();
+                    await updateForm.LoadPokemonForUpdateAsync(selectedPokemon.Id);
                     updateForm.ShowDialog();
 
-                    _ = LoadCountriesAsync();
+                    await LoadPokemonsAsync();
                 }
                 else
                 {
@@ -122,22 +127,16 @@ namespace PokemonWinFormsApp.Pokemon
                     {
                         try
                         {
-                            using (var client = new HttpClient())
+                            bool isSuccess = await _pokemonService.DeleteAsync("pokemon", selectedPokemon.Id);
+
+                            if (isSuccess)
                             {
-                                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", UserSession.Token);
-
-                                HttpResponseMessage response = await client.DeleteAsync(apiUrl + "/" + selectedPokemon.Id);
-
-                                if (response.IsSuccessStatusCode)
-                                {
-                                    MessageBox.Show("Pokemon successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                    await LoadCountriesAsync();
-                                }
-                                else
-                                {
-                                    string errorMessage = await response.Content.ReadAsStringAsync();
-                                    MessageBox.Show("Failed to delete pokemon: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                }
+                                MessageBox.Show("Pokemon successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                await LoadPokemonsAsync();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Failed to delete pokemon.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)

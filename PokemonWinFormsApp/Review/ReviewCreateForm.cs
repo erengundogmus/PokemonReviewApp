@@ -1,15 +1,16 @@
 ﻿using PokemonReviewApp.InputDtos;
-using System.Net.Http.Json;
+using PokemonReviewApp.OutputDtos;
+
 namespace PokemonWinFormsApp.Review
 {
     public partial class ReviewCreateForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/review";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewInputDto, ReviewOutputDto> _reviewService;
 
-        public ReviewCreateForm()
+        public ReviewCreateForm(IGenericApiService<ReviewInputDto, ReviewOutputDto> reviewService)
         {
             InitializeComponent();
+            _reviewService = reviewService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -25,17 +26,16 @@ namespace PokemonWinFormsApp.Review
 
             try
             {
-                HttpResponseMessage response = await client.PostAsJsonAsync(apiUrl, newReview);
+                bool isSuccess = await _reviewService.CreateAsync("review", newReview);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Review successfully created!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to create review: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to create review.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

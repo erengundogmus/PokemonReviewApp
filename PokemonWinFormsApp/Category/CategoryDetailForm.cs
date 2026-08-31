@@ -1,28 +1,24 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
-namespace PokemonWinFormsApp.Category
+﻿using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
 
+namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryDetailForm : Form
     {
-        private readonly int _categoryId;
-        private readonly string apiUrl = "https://localhost:7013/api/category/";
-        private readonly HttpClient client = new HttpClient();
-
-        public CategoryDetailForm(int categoryId)
+        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        private int _categoryId;
+        public CategoryDetailForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService)
         {
             InitializeComponent();
-            _categoryId = categoryId;
-
-            //kesin çalışması için load olayını beklemeden constructor içinde tetikleyelim
-            _ = LoadCategoryDetailDirectlyAsync();
+            _categoryService = categoryService;
         }
 
-        private async Task LoadCategoryDetailDirectlyAsync()
+        public async Task LoadCategoryDetailAsync(int categoryId)
         {
+            _categoryId = categoryId;
             try
             {
-                var category = await client.GetFromJsonAsync<CategoryOutputDto>(apiUrl + _categoryId);
+                var category = await _categoryService.GetByIdAsync("category", _categoryId);
 
                 if (category != null)
                 {

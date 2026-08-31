@@ -1,28 +1,25 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+
 namespace PokemonWinFormsApp.Owner
 {
     public partial class OwnerUpdateForm : Form
     {
-        private readonly int _ownerId;
-        private readonly string apiUrl = "https://localhost:7013/api/owner/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private int _ownerId;
 
-        public OwnerUpdateForm(int ownerId)
+        public OwnerUpdateForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService)
         {
             InitializeComponent();
-            _ownerId = ownerId;
-
-            //form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadOwnerDataAsync();
+            _ownerService = ownerService;
         }
 
-        private async Task LoadOwnerDataAsync()
+        public async Task LoadOwnerForUpdateAsync(int ownerId)
         {
+            _ownerId = ownerId;
             try
             {
-                var owner = await client.GetFromJsonAsync<OwnerOutputDto>(apiUrl + _ownerId);
+                var owner = await _ownerService.GetByIdAsync("owner", _ownerId);
                 if (owner != null)
                 {
                     textName.Text = owner.Name;
@@ -46,17 +43,16 @@ namespace PokemonWinFormsApp.Owner
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _ownerId, updatedOwner);
+                bool isSuccess = await _ownerService.UpdateAsync("owner", _ownerId, updatedOwner);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Owner successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update owner: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update owner.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)

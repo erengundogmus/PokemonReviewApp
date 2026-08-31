@@ -1,23 +1,27 @@
-﻿using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
+﻿using Microsoft.Extensions.DependencyInjection;
+using PokemonReviewApp.InputDtos;
+using PokemonReviewApp.OutputDtos;
+using PokemonWinFormsApp.Food;
 
 namespace PokemonWinFormsApp
 {
     public partial class FoodForm : Form
     {
-        private readonly string apiUrl = "https://localhost:7013/api/food";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private readonly IServiceProvider _serviceProvider;
 
-        public FoodForm()
+        public FoodForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _foodService = foodService;
+            _serviceProvider = serviceProvider;
         }
+
         private async void FoodForm_Load(object sender, EventArgs e)
         {
             await LoadFoodsAsync();
         }
 
-        //list butonuna basıldığında verileri çekecek metod
         private async void buttonList_Click(object sender, EventArgs e)
         {
             await LoadFoodsAsync();
@@ -27,11 +31,11 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var foods = await client.GetFromJsonAsync<List<FoodOutputDto>>(apiUrl);
+                var foods = await _foodService.GetAllAsync("food");
 
                 if (foods != null)
                 {
-                    dataGridView1.DataSource = foods;
+                    dataGridView1.DataSource = foods.ToList();
                 }
             }
             catch (Exception ex)
@@ -40,15 +44,15 @@ namespace PokemonWinFormsApp
             }
         }
 
-
-        private void buttonDetail_Click(object sender, EventArgs e)
+        private async void buttonDetail_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedFood = dataGridView1.CurrentRow.DataBoundItem as FoodOutputDto;
                 if (selectedFood != null)
                 {
-                    PokemonWinFormsApp.Food.FoodDetailForm detailForm = new PokemonWinFormsApp.Food.FoodDetailForm(selectedFood.Id);
+                    var detailForm = _serviceProvider.GetRequiredService<FoodDetailForm>();
+                    await detailForm.LoadFoodDetailAsync(selectedFood.Id);
                     detailForm.ShowDialog();
                 }
                 else
@@ -66,9 +70,8 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                PokemonWinFormsApp.Food.FoodCreateForm createForm = new PokemonWinFormsApp.Food.FoodCreateForm();
+                var createForm = _serviceProvider.GetRequiredService<FoodCreateForm>();
                 createForm.ShowDialog();
-                //işlemden sonra otomatik listeyi yeniler
                 await LoadFoodsAsync();
             }
             catch (Exception ex)
@@ -77,18 +80,18 @@ namespace PokemonWinFormsApp
             }
         }
 
-        private void buttonUpdate_Click(object sender, EventArgs e)
+        private async void buttonUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedFood = dataGridView1.CurrentRow.DataBoundItem as FoodOutputDto;
                 if (selectedFood != null)
                 {
-                    //gridden seçilen yemeğin idsini alıyoruz
-                    PokemonWinFormsApp.Food.FoodUpdateForm updateForm = new PokemonWinFormsApp.Food.FoodUpdateForm(selectedFood.Id);
+                    var updateForm = _serviceProvider.GetRequiredService<FoodUpdateForm>();
+                    await updateForm.LoadFoodForUpdateAsync(selectedFood.Id);
                     updateForm.ShowDialog();
 
-                    _ = LoadFoodsAsync();
+                    await LoadFoodsAsync();
                 }
                 else
                 {
@@ -100,9 +103,6 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select a food item from the list to update.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-
-
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
@@ -121,17 +121,16 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            HttpResponseMessage response = await client.DeleteAsync(apiUrl + "/" + selectedFood.Id);
+                            bool isSuccess = await _foodService.DeleteAsync("food", selectedFood.Id);
 
-                            if (response.IsSuccessStatusCode)
+                            if (isSuccess)
                             {
                                 MessageBox.Show("Food successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 await LoadFoodsAsync();
                             }
                             else
                             {
-                                string errorMessage = await response.Content.ReadAsStringAsync();
-                                MessageBox.Show("Failed to delete food: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show("Failed to delete food.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
@@ -150,6 +149,5 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Please select a food item from the list to delete.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
     }
 }

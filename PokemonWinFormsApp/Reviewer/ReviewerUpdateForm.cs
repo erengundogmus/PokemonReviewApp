@@ -1,29 +1,25 @@
 ﻿using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using System.Net.Http.Json;
 
 namespace PokemonWinFormsApp.Reviewer
 {
     public partial class ReviewerUpdateForm : Form
     {
-        private readonly int _reviewerId;
-        private readonly string apiUrl = "https://localhost:7013/api/reviewer/";
-        private readonly HttpClient client = new HttpClient();
+        private readonly IGenericApiService<ReviewerInputDto, ReviewerOutputDto> _reviewerService;
+        private int _reviewerId;
 
-        public ReviewerUpdateForm(int reviewerId)
+        public ReviewerUpdateForm(IGenericApiService<ReviewerInputDto, ReviewerOutputDto> reviewerService)
         {
             InitializeComponent();
-            _reviewerId = reviewerId;
-
-            // form açıldığı an mevcut bilgileri form kutularına doldurur
-            _ = LoadReviewerDataAsync();
+            _reviewerService = reviewerService;
         }
 
-        private async Task LoadReviewerDataAsync()
+        public async Task LoadReviewerForUpdateAsync(int reviewerId)
         {
+            _reviewerId = reviewerId;
             try
             {
-                var reviewer = await client.GetFromJsonAsync<ReviewerOutputDto>(apiUrl + _reviewerId);
+                var reviewer = await _reviewerService.GetByIdAsync("reviewer", _reviewerId);
                 if (reviewer != null)
                 {
                     textFirstName.Text = reviewer.FirstName;
@@ -46,17 +42,16 @@ namespace PokemonWinFormsApp.Reviewer
 
             try
             {
-                HttpResponseMessage response = await client.PutAsJsonAsync(apiUrl + _reviewerId, updatedReviewer);
+                bool isSuccess = await _reviewerService.UpdateAsync("reviewer", _reviewerId, updatedReviewer);
 
-                if (response.IsSuccessStatusCode)
+                if (isSuccess)
                 {
                     MessageBox.Show("Reviewer successfully updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.Close();
                 }
                 else
                 {
-                    string errorMessage = await response.Content.ReadAsStringAsync();
-                    MessageBox.Show("Failed to update reviewer: " + errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Failed to update reviewer.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
