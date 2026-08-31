@@ -65,26 +65,20 @@ namespace PokemonReviewApp.Controllers
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
-{
-    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-    new Claim(ClaimTypes.Name, user.Username)
-};
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username)
+        };
 
             var secret = _configuration
                 .GetSection("AppSettings:Token")
                 .Value!;
 
-            using var sha256 = SHA256.Create();
-
-            var keyBytes = sha256.ComputeHash(
-                Encoding.UTF8.GetBytes(secret)
-            );
-
-            var key = new SymmetricSecurityKey(keyBytes);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
             var creds = new SigningCredentials(
                 key,
-                SecurityAlgorithms.HmacSha256Signature
+                SecurityAlgorithms.HmacSha512Signature
             );
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -95,12 +89,9 @@ namespace PokemonReviewApp.Controllers
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
-
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
-
-
         }
     }
 }
