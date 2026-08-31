@@ -15,7 +15,6 @@ namespace PokemonWinFormsApp.Pokemon
             InitializeComponent();
             _pokemonId = pokemonId;
 
-            // kesin çalışması için load olayını beklemeden constructor içinde tetikleyelim
             _ = LoadPokemonDetailDirectlyAsync();
         }
 

@@ -16,7 +16,6 @@ namespace PokemonWinFormsApp.Pokemon
             InitializeComponent();
             _pokemonId = pokemonId;
 
-            // form açıldığı an mevcut bilgileri form kutularına doldurur
             _ = LoadPokemonDataAsync();
         }
 

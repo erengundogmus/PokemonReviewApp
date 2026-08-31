@@ -38,8 +38,10 @@ namespace PokemonWinFormsApp
 
                             MessageBox.Show("Login successful!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                            this.DialogResult = DialogResult.OK;
-                            this.Close();
+                            this.Hide();
+                            MainForm mainForm = new MainForm();
+                            mainForm.FormClosed += (s, args) => this.Close();
+                            mainForm.Show();
                         }
                     }
                     else

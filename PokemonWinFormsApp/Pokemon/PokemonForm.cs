@@ -68,11 +68,6 @@ namespace PokemonWinFormsApp.Pokemon
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
-            LoginForm loginForm = new LoginForm();
-            if (loginForm.ShowDialog() != DialogResult.OK || string.IsNullOrEmpty(UserSession.Token))
-            {
-                return;
-            }
             try
             {
                 PokemonWinFormsApp.Pokemon.PokemonCreateForm createForm = new PokemonWinFormsApp.Pokemon.PokemonCreateForm();
@@ -88,11 +83,6 @@ namespace PokemonWinFormsApp.Pokemon
 
         private void buttonUpdate_Click(object sender, EventArgs e)
         {
-            LoginForm loginForm = new LoginForm();
-            if (loginForm.ShowDialog() != DialogResult.OK || string.IsNullOrEmpty(UserSession.Token))
-            {
-                return;
-            }
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -117,11 +107,6 @@ namespace PokemonWinFormsApp.Pokemon
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
-            LoginForm loginForm = new LoginForm();
-            if (loginForm.ShowDialog() != DialogResult.OK || string.IsNullOrEmpty(UserSession.Token))
-            {
-                return;
-            }
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
