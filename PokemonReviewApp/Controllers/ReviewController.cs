@@ -100,9 +100,8 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
 
             var reviewMap = mapper.Map<Review>(reviewCreate);
-            reviewMap.Pokemon = pokemon;
-            reviewMap.Reviewer = reviewer;
-
+            reviewMap.PokemonId = reviewCreate.PokemonId;
+            reviewMap.ReviewerId = reviewCreate.ReviewerId;
             if (!reviewInterface.CreateReview(reviewMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
@@ -144,8 +143,8 @@ namespace PokemonReviewApp.Controllers
             var reviewMap = this.mapper.Map<Review>(updatedreview);
             reviewMap.Id = reviewId;
 
-            reviewMap.Pokemon = pokemon;
-            reviewMap.Reviewer = reviewer;
+            reviewMap.PokemonId = updatedreview.PokemonId;
+            reviewMap.ReviewerId = updatedreview.ReviewerId;
 
             if (!reviewInterface.UpdateReview(reviewMap))
             {

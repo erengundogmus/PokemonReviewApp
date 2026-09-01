@@ -11,6 +11,7 @@ namespace PokemonReviewApp.Models
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
 
+        public int CountryId { get; set; }
         public Country Country { get; set; }
         public ICollection<PokemonOwner> PokemonOwners { get; set; }
     }

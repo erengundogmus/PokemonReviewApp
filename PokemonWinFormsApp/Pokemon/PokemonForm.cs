@@ -1,13 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using PokemonReviewApp.Dto;
-using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
-using PokemonWinFormsApp.Pokemon;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace PokemonWinFormsApp.Pokemon
 {

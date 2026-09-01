@@ -68,17 +68,6 @@ namespace PokemonReviewApp.Repository
 
                 if (existingReviewer != null)
                 {
-                    var reviewerLog = new ReviewerLog
-                    {
-                        Action = "DELETE",
-                        ReviewerId = reviewer.Id,
-                        NewFirstName = reviewer.FirstName,
-                        NewLastName = reviewer.LastName,
-                        LoggedAt = DateTime.UtcNow
-                    };
-
-                    this.context.ReviewerLog.Add(reviewerLog);
-
                     existingReviewer.IsDeleted = true;
                     existingReviewer.DeletedAt = DateTime.UtcNow;
 

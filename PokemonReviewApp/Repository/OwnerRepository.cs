@@ -117,6 +117,7 @@ namespace PokemonReviewApp.Repository
 
                     existingOwner.Name = owner.Name;
                     existingOwner.Gym = owner.Gym;
+                    existingOwner.CountryId = owner.CountryId;
 
                     if (Save())
                     {

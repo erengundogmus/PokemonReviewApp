@@ -98,7 +98,7 @@ namespace PokemonReviewApp.Controllers
                 return BadRequest(ModelState);
 
             var ownerMap = mapper.Map<Owner>(ownerCreate);
-            ownerMap.Country = countryInterface.GetCountry(ownerCreate.CountryId);
+            ownerMap.CountryId = ownerCreate.CountryId;
             if (!ownerInterface.CreateOwner(ownerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
@@ -142,14 +142,11 @@ namespace PokemonReviewApp.Controllers
 
             var ownerMap = this.mapper.Map<Owner>(updatedowner);
             ownerMap.Id = ownerId;
-
-            //eğer güncellemede country ilişkisi de güncellenecekse
-            var country = countryInterface.GetCountry(updatedowner.CountryId);
-            country.Owners = new List<Owner>();
-
-            ownerMap.Country = country;
+            ownerMap.CountryId = updatedowner.CountryId;
 
             if (!ownerInterface.UpdateOwner(ownerMap))
+
+                if (!ownerInterface.UpdateOwner(ownerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating owner.");
                 return StatusCode(500, ModelState);

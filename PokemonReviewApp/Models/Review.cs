@@ -11,8 +11,10 @@ namespace PokemonReviewApp.Models
 
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
-
+        
+        public int ReviewerId { get; set; }
         public Reviewer Reviewer { get; set; }
+        public int PokemonId { get; set; }
         public Pokemon Pokemon { get; set; }
     }
 }

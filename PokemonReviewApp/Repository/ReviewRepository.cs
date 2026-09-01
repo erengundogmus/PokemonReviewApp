@@ -56,8 +56,9 @@ namespace PokemonReviewApp.Repository
                         NewTitle = review.Title,
                         NewText = review.Text,
                         NewRating = (int?)review.Rating,
-                        NewReviewerId = review.Reviewer?.Id,
-                        NewPokemonId = review.Pokemon?.Id,
+                        NewReviewerId = review.ReviewerId,
+                        NewPokemonId = review.PokemonId,
+
                         LoggedAt = DateTime.UtcNow
                     };
 
@@ -126,6 +127,8 @@ namespace PokemonReviewApp.Repository
                     reviewToUpdate.Title = review.Title;
                     reviewToUpdate.Text = review.Text;
                     reviewToUpdate.Rating = review.Rating;
+                    reviewToUpdate.PokemonId = review.PokemonId;
+                    reviewToUpdate.ReviewerId = review.ReviewerId;
 
                     if (Save())
                     {
