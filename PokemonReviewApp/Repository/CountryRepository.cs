@@ -10,15 +10,23 @@ namespace PokemonReviewApp.Repository
     {
         private readonly DataContext context;
         private readonly IMapper mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CountryRepository(DataContext context, IMapper mapper)
+        public CountryRepository(DataContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             this.context = context;
             this.mapper = mapper;
+            this._httpContextAccessor = httpContextAccessor;
         }
+
+        private string GetCurrentUser()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
+        }
+
         public bool CountryExists(int id)
         {
-            return context.Countries.Any(c => c.Id == id);
+            return context.Countries.Any(c => c.Id == id && !c.IsDeleted);
         }
 
         public bool CreateCountry(Country country)
@@ -35,6 +43,8 @@ namespace PokemonReviewApp.Repository
                     var countryLog = new CountryLog
                     {
                         Action = "POST",
+                        Status = "Active",
+                        PerformedBy = GetCurrentUser(),
                         CountryId = country.Id,
                         NewName = country.Name,
                         LoggedAt = DateTime.UtcNow
@@ -61,29 +71,59 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteCountry(Country country)
         {
-            country.IsDeleted = true;
-            country.DeletedAt = DateTime.UtcNow;
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                country.IsDeleted = true;
+                country.DeletedAt = DateTime.UtcNow;
+                this.context.Countries.Update(country);
+
+                var countryLog = new CountryLog
+                {
+                    Action = "DELETE",
+                    Status = "Deleted",
+                    PerformedBy = GetCurrentUser(),
+                    CountryId = country.Id,
+                    NewName = country.Name,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.CountryLog.Add(countryLog);
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public ICollection<Country> GetCountries()
         {
-            return context.Countries.ToList();
+            return context.Countries.Where(c => !c.IsDeleted).ToList();
         }
 
         public Country GetCountry(int id)
         {
-            return context.Countries.Where(c => c.Id == id).FirstOrDefault();
+            return context.Countries.Where(c => c.Id == id && !c.IsDeleted).FirstOrDefault();
         }
 
         public Country GetCountryByOwner(int ownerId)
         {
-            return context.Owners.Where(o => o.Id == ownerId).Select(c => c.Country).FirstOrDefault();
+            return context.Owners.Where(o => o.Id == ownerId && !o.Country.IsDeleted).Select(c => c.Country).FirstOrDefault();
         }
 
         public ICollection<Owner> GetOwnersFromACountry(int countryId)
         {
-            return context.Owners.Where(c => c.Country.Id == countryId).ToList();
+            return context.Owners.Where(c => c.Country.Id == countryId && !c.Country.IsDeleted).ToList();
         }
 
         public bool Save()
@@ -106,6 +146,8 @@ namespace PokemonReviewApp.Repository
                     var countryLog = new CountryLog
                     {
                         Action = "PUT",
+                        Status = "Updated",
+                        PerformedBy = GetCurrentUser(),
                         CountryId = country.Id,
                         NewName = country.Name,
                         LoggedAt = DateTime.UtcNow

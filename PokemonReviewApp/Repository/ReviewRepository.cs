@@ -11,31 +11,38 @@ namespace PokemonReviewApp.Repository
     {
         private readonly DataContext context;
         private readonly IMapper mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ReviewRepository(DataContext context, IMapper mapper)
+        public ReviewRepository(DataContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             this.context = context;
             this.mapper = mapper;
+            this._httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetCurrentUser()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
         }
 
         public Review GetReview(int reviewId)
         {
-            return this.context.Reviews.Where(r => r.Id == reviewId).Include(r => r.Pokemon).Include(r => r.Reviewer).FirstOrDefault();
+            return this.context.Reviews.Where(r => r.Id == reviewId && !r.IsDeleted).Include(r => r.Pokemon).Include(r => r.Reviewer).FirstOrDefault();
         }
 
         public ICollection<Review> GetReviewsOfAPokemon(int pokeId)
         {
-            return this.context.Reviews.Where(r => r.Pokemon.Id == pokeId).Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
+            return this.context.Reviews.Where(r => r.Pokemon.Id == pokeId && !r.IsDeleted).Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
         }
 
         public ICollection<Review> GetReviews()
         {
-            return this.context.Reviews.Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
+            return this.context.Reviews.Where(r => !r.IsDeleted).Include(r => r.Pokemon).Include(r => r.Reviewer).ToList();
         }
 
         public bool ReviewExists(int reviewId)
         {
-            return this.context.Reviews.Any(r => r.Id == reviewId);
+            return this.context.Reviews.Any(r => r.Id == reviewId && !r.IsDeleted);
         }
 
         public bool CreateReview(Review review)
@@ -52,13 +59,14 @@ namespace PokemonReviewApp.Repository
                     var reviewLog = new ReviewLog
                     {
                         Action = "POST",
+                        Status = "Active",
+                        PerformedBy = GetCurrentUser(),
                         ReviewId = review.Id,
                         NewTitle = review.Title,
                         NewText = review.Text,
                         NewRating = (int?)review.Rating,
                         NewReviewerId = review.ReviewerId,
                         NewPokemonId = review.PokemonId,
-
                         LoggedAt = DateTime.UtcNow
                     };
 
@@ -89,7 +97,7 @@ namespace PokemonReviewApp.Repository
 
         public Reviewer GetReviewer(int reviewerId)
         {
-            return this.context.Reviewers.Where(r => r.Id == reviewerId).Include(e => e.Reviews).FirstOrDefault();
+            return this.context.Reviewers.Where(r => r.Id == reviewerId && !r.IsDeleted).Include(e => e.Reviews.Where(rv => !rv.IsDeleted)).FirstOrDefault();
         }
 
         public bool UpdateReview(Review review)
@@ -109,12 +117,14 @@ namespace PokemonReviewApp.Repository
                     var reviewLog = new ReviewLog
                     {
                         Action = "PUT",
+                        Status = "Updated",
+                        PerformedBy = GetCurrentUser(),
                         ReviewId = review.Id,
                         NewTitle = review.Title,
                         NewText = review.Text,
                         NewRating = (int?)review.Rating,
-                        NewReviewerId = review.Reviewer?.Id ?? existingReview.Reviewer?.Id,
-                        NewPokemonId = review.Pokemon?.Id ?? existingReview.Pokemon?.Id,
+                        NewReviewerId = review.ReviewerId,
+                        NewPokemonId = review.PokemonId,
                         LoggedAt = DateTime.UtcNow
                     };
 
@@ -149,15 +159,95 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteReview(Review review)
         {
-            review.IsDeleted = true;
-            review.DeletedAt = DateTime.UtcNow;
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                var reviewToUpdate = this.context.Reviews.FirstOrDefault(r => r.Id == review.Id);
+                if (reviewToUpdate != null)
+                {
+                    reviewToUpdate.IsDeleted = true;
+                    reviewToUpdate.DeletedAt = DateTime.UtcNow;
+                    this.context.Reviews.Update(reviewToUpdate);
+
+                    var reviewLog = new ReviewLog
+                    {
+                        Action = "DELETE",
+                        Status = "Deleted",
+                        PerformedBy = GetCurrentUser(),
+                        ReviewId = reviewToUpdate.Id,
+                        NewTitle = reviewToUpdate.Title,
+                        NewText = reviewToUpdate.Text,
+                        NewRating = (int?)reviewToUpdate.Rating,
+                        NewReviewerId = reviewToUpdate.ReviewerId,
+                        NewPokemonId = reviewToUpdate.PokemonId,
+                        LoggedAt = DateTime.UtcNow
+                    };
+
+                    this.context.ReviewLog.Add(reviewLog);
+
+                    if (Save())
+                    {
+                        transaction.Commit();
+                        return true;
+                    }
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public bool DeleteReviews(List<Review> reviews)
         {
-            this.context.RemoveRange(reviews);
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                foreach (var review in reviews)
+                {
+                    var reviewToUpdate = this.context.Reviews.FirstOrDefault(r => r.Id == review.Id);
+                    if (reviewToUpdate != null)
+                    {
+                        reviewToUpdate.IsDeleted = true;
+                        reviewToUpdate.DeletedAt = DateTime.UtcNow;
+                        this.context.Reviews.Update(reviewToUpdate);
+
+                        var reviewLog = new ReviewLog
+                        {
+                            Action = "DELETE",
+                            Status = "Deleted",
+                            PerformedBy = GetCurrentUser(),
+                            ReviewId = reviewToUpdate.Id,
+                            NewTitle = reviewToUpdate.Title,
+                            NewText = reviewToUpdate.Text,
+                            NewRating = (int?)reviewToUpdate.Rating,
+                            NewReviewerId = reviewToUpdate.ReviewerId,
+                            NewPokemonId = reviewToUpdate.PokemonId,
+                            LoggedAt = DateTime.UtcNow
+                        };
+
+                        this.context.ReviewLog.Add(reviewLog);
+                    }
+                }
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
     }
 }

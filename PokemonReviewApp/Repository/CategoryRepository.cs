@@ -9,15 +9,23 @@ namespace PokemonReviewApp.Repository
     public class CategoryRepository : ICategoryInterface
     {
         private readonly DataContext context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CategoryRepository(DataContext context)
+        public CategoryRepository(DataContext context, IHttpContextAccessor httpContextAccessor)
         {
             this.context = context;
+            this._httpContextAccessor = httpContextAccessor;
+        }
+
+        //loga kullanıcı eklemek için
+        private string GetCurrentUser()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
         }
 
         public bool CategoryExists(int id)
         {
-            return this.context.Categories.Any(c => c.Id == id);
+            return this.context.Categories.Any(c => c.Id == id && !c.IsDeleted);
         }
 
         public bool CreateCategory(Category category)
@@ -32,6 +40,8 @@ namespace PokemonReviewApp.Repository
                     var categoryLog = new CategoryLog
                     {
                         Action = "POST",
+                        Status = "Active",
+                        PerformedBy = GetCurrentUser(),
                         CategoryId = category.Id,
                         NewName = category.Name,
                         LoggedAt = DateTime.UtcNow
@@ -58,24 +68,58 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteCategory(Category category)
         {
-            category.IsDeleted = true;
-            category.DeletedAt = DateTime.UtcNow; ;
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                category.IsDeleted = true;
+                category.DeletedAt = DateTime.UtcNow;
+                this.context.Categories.Update(category);
+
+                var categoryLog = new CategoryLog
+                {
+                    Action = "DELETE",
+                    Status = "Deleted",
+                    PerformedBy = GetCurrentUser(),
+                    CategoryId = category.Id,
+                    NewName = category.Name,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.CategoryLog.Add(categoryLog);
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public ICollection<Category> GetCategories()
         {
-            return this.context.Categories.ToList();
+            return this.context.Categories.Where(c => !c.IsDeleted).ToList();
         }
 
         public Category GetCategory(int id)
         {
-            return this.context.Categories.Where(e => e.Id == id).FirstOrDefault();
+            return this.context.Categories.Where(e => e.Id == id && !e.IsDeleted).FirstOrDefault();
         }
+
         public ICollection<Pokemon> GetPokemonByCategory(int categoryId)
         {
-            return this.context.Pokemons.Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).Include(p => p.PokemonOwners)
-                .ThenInclude(po => po.Owner).Where(p => p.PokemonCategories.Any(pc => pc.CategoryId == categoryId)).ToList();
+            return this.context.Pokemons
+                .Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category)
+                .Include(p => p.PokemonOwners).ThenInclude(po => po.Owner)
+                .Where(p => p.PokemonCategories.Any(pc => pc.CategoryId == categoryId && !pc.Category.IsDeleted))
+                .ToList();
         }
 
         public bool UpdateCategory(Category category)
@@ -93,6 +137,8 @@ namespace PokemonReviewApp.Repository
                     var categoryLog = new CategoryLog
                     {
                         Action = "PUT",
+                        Status = "Updated",
+                        PerformedBy = GetCurrentUser(),
                         CategoryId = category.Id,
                         NewName = category.Name,
                         LoggedAt = DateTime.UtcNow
@@ -123,13 +169,10 @@ namespace PokemonReviewApp.Repository
             }
         }
 
-
         public bool Save()
         {
             var saved = this.context.SaveChanges();
             return saved > 0 ? true : false;
         }
-
-
     }
 }

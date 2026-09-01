@@ -145,8 +145,6 @@ namespace PokemonReviewApp.Controllers
             ownerMap.CountryId = updatedowner.CountryId;
 
             if (!ownerInterface.UpdateOwner(ownerMap))
-
-                if (!ownerInterface.UpdateOwner(ownerMap))
             {
                 ModelState.AddModelError("", "Something went wrong while updating owner.");
                 return StatusCode(500, ModelState);

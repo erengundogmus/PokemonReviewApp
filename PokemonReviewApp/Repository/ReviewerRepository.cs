@@ -11,11 +11,18 @@ namespace PokemonReviewApp.Repository
     {
         private DataContext context;
         private IMapper mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ReviewerRepository(DataContext context, IMapper mapper)
+        public ReviewerRepository(DataContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             this.context = context;
             this.mapper = mapper;
+            this._httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetCurrentUser()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
         }
 
         public bool CreateReviewer(Reviewer reviewer)
@@ -32,6 +39,8 @@ namespace PokemonReviewApp.Repository
                     var reviewerLog = new ReviewerLog
                     {
                         Action = "POST",
+                        Status = "Active",
+                        PerformedBy = GetCurrentUser(),
                         ReviewerId = reviewer.Id,
                         NewFirstName = reviewer.FirstName,
                         NewLastName = reviewer.LastName,
@@ -70,6 +79,20 @@ namespace PokemonReviewApp.Repository
                 {
                     existingReviewer.IsDeleted = true;
                     existingReviewer.DeletedAt = DateTime.UtcNow;
+                    this.context.Reviewers.Update(existingReviewer);
+
+                    var reviewerLog = new ReviewerLog
+                    {
+                        Action = "DELETE",
+                        Status = "Deleted",
+                        PerformedBy = GetCurrentUser(),
+                        ReviewerId = existingReviewer.Id,
+                        NewFirstName = existingReviewer.FirstName,
+                        NewLastName = existingReviewer.LastName,
+                        LoggedAt = DateTime.UtcNow
+                    };
+
+                    this.context.ReviewerLog.Add(reviewerLog);
 
                     if (Save())
                     {
@@ -90,22 +113,22 @@ namespace PokemonReviewApp.Repository
 
         public Reviewer GetReviewer(int reviewerId)
         {
-            return this.context.Reviewers.Where(r => r.Id == reviewerId).Include(e => e.Reviews).FirstOrDefault();
+            return this.context.Reviewers.Where(r => r.Id == reviewerId && !r.IsDeleted).Include(e => e.Reviews.Where(rv => !rv.IsDeleted)).FirstOrDefault();
         }
 
         public ICollection<Reviewer> GetReviewers()
         {
-            return this.context.Reviewers.ToList();
+            return this.context.Reviewers.Where(r => !r.IsDeleted).ToList();
         }
 
         public ICollection<Review> GetReviewsByReviewer(int reviewerId)
         {
-            return this.context.Reviews.Include(r => r.Pokemon).Where(r => r.Reviewer.Id == reviewerId).ToList();
+            return this.context.Reviews.Include(r => r.Pokemon).Where(r => r.Reviewer.Id == reviewerId && !r.IsDeleted && !r.Reviewer.IsDeleted).ToList();
         }
 
         public bool ReviewerExists(int reviewerId)
         {
-            return this.context.Reviewers.Any(r => r.Id == reviewerId);
+            return this.context.Reviewers.Any(r => r.Id == reviewerId && !r.IsDeleted);
         }
 
         public bool Save()
@@ -128,6 +151,8 @@ namespace PokemonReviewApp.Repository
                     var reviewerLog = new ReviewerLog
                     {
                         Action = "PUT",
+                        Status = "Updated",
+                        PerformedBy = GetCurrentUser(),
                         ReviewerId = reviewer.Id,
                         NewFirstName = reviewer.FirstName,
                         NewLastName = reviewer.LastName,

@@ -4,6 +4,8 @@
     {
         public int Id { get; set; }
         public string Action { get; set; }
+        public string Status { get; set; }
+        public string PerformedBy { get; set; }
         public int ReviewerId { get; set; }
         public string? NewFirstName { get; set; }
         public string? NewLastName { get; set; }

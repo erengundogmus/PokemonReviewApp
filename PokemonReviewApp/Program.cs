@@ -20,6 +20,9 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 
+//istekleri ve token'ı okuyabilmek için
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddTransient<Seed>();
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 

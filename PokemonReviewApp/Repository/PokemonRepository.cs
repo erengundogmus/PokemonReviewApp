@@ -9,10 +9,17 @@ namespace PokemonReviewApp.Repository
     public class PokemonRepository : IPokemonInterface
     {
         private readonly DataContext context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PokemonRepository(DataContext context)
+        public PokemonRepository(DataContext context, IHttpContextAccessor httpContextAccessor)
         {
             this.context = context;
+            this._httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetCurrentUser()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
         }
 
         public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
@@ -48,6 +55,8 @@ namespace PokemonReviewApp.Repository
                     var pokemonLog = new PokemonLog
                     {
                         Action = "POST",
+                        Status = "Active",
+                        PerformedBy = GetCurrentUser(),
                         PokemonId = pokemon.Id,
                         NewName = pokemon.Name,
                         NewBirthDate = pokemon.BirthDate,
@@ -77,22 +86,52 @@ namespace PokemonReviewApp.Repository
 
         public bool DeletePokemon(Pokemon pokemon)
         {
-            pokemon.IsDeleted = true;
-            pokemon.DeletedAt = DateTime.UtcNow;
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                pokemon.IsDeleted = true;
+                pokemon.DeletedAt = DateTime.UtcNow;
+                this.context.Pokemons.Update(pokemon);
 
+                var pokemonLog = new PokemonLog
+                {
+                    Action = "DELETE",
+                    Status = "Deleted",
+                    PerformedBy = GetCurrentUser(),
+                    PokemonId = pokemon.Id,
+                    NewName = pokemon.Name,
+                    NewBirthDate = pokemon.BirthDate,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.PokemonLog.Add(pokemonLog);
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public Pokemon GetPokemon(int id)
         {
             //lazy loading kapalı olduğu için veritabanından yüklenmiyor include kullanıyoruz
-            return this.context.Pokemons.Where(p => p.Id == id).Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Where(p => p.Id == id && !p.IsDeleted).Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).FirstOrDefault();
         }
 
         public Pokemon GetPokemon(string name)
         {
-            return this.context.Pokemons.Where(p => p.Name == name).Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Where(p => p.Name == name && !p.IsDeleted).Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).FirstOrDefault();
         }
 
@@ -108,13 +147,13 @@ namespace PokemonReviewApp.Repository
 
         public ICollection<Pokemon> GetPokemons()
         {
-            return this.context.Pokemons.Include(p => p.PokemonOwners)
+            return this.context.Pokemons.Where(p => !p.IsDeleted).Include(p => p.PokemonOwners)
                 .ThenInclude(po => po.Owner).Include(p => p.PokemonCategories).ThenInclude(pc => pc.Category).OrderBy(p => p.Id).ToList();
         }
 
         public bool PokemonExists(int pokeId)
         {
-            return this.context.Pokemons.Any(p => p.Id == pokeId);
+            return this.context.Pokemons.Any(p => p.Id == pokeId && !p.IsDeleted);
         }
 
         public bool Save()
@@ -144,6 +183,8 @@ namespace PokemonReviewApp.Repository
                     var pokemonLog = new PokemonLog
                     {
                         Action = "PUT",
+                        Status = "Updated",
+                        PerformedBy = GetCurrentUser(),
                         PokemonId = pokemon.Id,
                         NewName = pokemon.Name,
                         NewBirthDate = pokemon.BirthDate,
@@ -194,8 +235,5 @@ namespace PokemonReviewApp.Repository
                 throw;
             }
         }
-
-
-
     }
 }

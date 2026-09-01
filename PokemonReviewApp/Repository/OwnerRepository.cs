@@ -1,19 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PokemonReviewApp.AuditLogs;
+﻿using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
-using System.Diagnostics.Metrics;
 
 namespace PokemonReviewApp.Repository
 {
     public class OwnerRepository : IOwnerInterface
     {
         private readonly DataContext context;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public OwnerRepository(DataContext context) 
+        public OwnerRepository(DataContext context, IHttpContextAccessor httpContextAccessor)
         {
             this.context = context;
+            this._httpContextAccessor = httpContextAccessor;
+        }
+
+        private string GetCurrentUser()
+        {
+            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
         }
 
         public bool CreateOwner(Owner owner)
@@ -30,6 +35,8 @@ namespace PokemonReviewApp.Repository
                     var ownerLog = new OwnerLog
                     {
                         Action = "POST",
+                        Status = "Active",
+                        PerformedBy = GetCurrentUser(),
                         OwnerId = owner.Id,
                         NewName = owner.Name,
                         NewGym = owner.Gym,
@@ -57,34 +64,65 @@ namespace PokemonReviewApp.Repository
 
         public bool DeleteOwner(Owner owner)
         {
-            owner.IsDeleted = true;
-            owner.DeletedAt = DateTime.UtcNow;
-            return Save();
+            using var transaction = this.context.Database.BeginTransaction();
+            try
+            {
+                owner.IsDeleted = true;
+                owner.DeletedAt = DateTime.UtcNow;
+                this.context.Owners.Update(owner);
+
+                var ownerLog = new OwnerLog
+                {
+                    Action = "DELETE",
+                    Status = "Deleted",
+                    PerformedBy = GetCurrentUser(),
+                    OwnerId = owner.Id,
+                    NewName = owner.Name,
+                    NewGym = owner.Gym,
+                    LoggedAt = DateTime.UtcNow
+                };
+
+                this.context.OwnerLog.Add(ownerLog);
+
+                if (Save())
+                {
+                    transaction.Commit();
+                    return true;
+                }
+
+                transaction.Rollback();
+                return false;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         public Owner GetOwner(int ownerId)
         {
-            return this.context.Owners.Where(o => o.Id == ownerId).FirstOrDefault();
+            return this.context.Owners.Where(o => o.Id == ownerId && !o.IsDeleted).FirstOrDefault();
         }
 
         public ICollection<Owner> GetOwnerOfAPokemon(int pokeId)
         {
-            return this.context.PokemonsOwners.Where(p => p.Pokemon.Id == pokeId).Select(o => o.Owner).ToList();
+            return this.context.PokemonsOwners.Where(p => p.Pokemon.Id == pokeId && !p.Owner.IsDeleted).Select(o => o.Owner).ToList();
         }
 
         public ICollection<Owner> GetOwners()
         {
-            return this.context.Owners.OrderBy(o => o.Id).ToList();
+            return this.context.Owners.Where(o => !o.IsDeleted).OrderBy(o => o.Id).ToList();
         }
 
         public ICollection<Pokemon> GetPokemonByOwner(int ownerId)
         {
-            return this.context.PokemonsOwners.Where(p => p.Owner.Id == ownerId).Select(p => p.Pokemon).ToList();
+            return this.context.PokemonsOwners.Where(p => p.Owner.Id == ownerId && !p.Owner.IsDeleted).Select(p => p.Pokemon).ToList();
         }
 
         public bool OwnerExists(int ownerId)
         {
-            return this.context.Owners.Any(o => o.Id == ownerId);
+            return this.context.Owners.Any(o => o.Id == ownerId && !o.IsDeleted);
         }
 
         public bool Save()
@@ -107,6 +145,8 @@ namespace PokemonReviewApp.Repository
                     var ownerLog = new OwnerLog
                     {
                         Action = "PUT",
+                        Status = "Updated",
+                        PerformedBy = GetCurrentUser(),
                         OwnerId = owner.Id,
                         NewName = owner.Name,
                         NewGym = owner.Gym,

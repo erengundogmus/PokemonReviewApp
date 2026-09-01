@@ -7,9 +7,9 @@ namespace PokemonReviewApp.Data
 {
     public class DataContext : DbContext
     {
-        public DataContext(DbContextOptions<DataContext>options) : base(options)
+        public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
-            
+
         }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Country> Countries { get; set; }
@@ -112,70 +112,11 @@ namespace PokemonReviewApp.Data
                     var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e"); //e adında geçici bir parametre oluşturur
                     var property = System.Linq.Expressions.Expression.Property(parameter, nameof(ISoftDelete.IsDeleted)); //incelenen modelin IsoftDelete özelliğini yakalar
                     //e => e.IsDeleted == false silinmiş olarak işaretlenmeyenler
-                    var condition = System.Linq.Expressions.Expression.Lambda(System.Linq.Expressions.Expression.Equal(property, System.Linq.Expressions.Expression.Constant(false)),parameter);
+                    var condition = System.Linq.Expressions.Expression.Lambda(System.Linq.Expressions.Expression.Equal(property, System.Linq.Expressions.Expression.Constant(false)), parameter);
                     //filtreyi kullanmamızı sağlar
                     modelBuilder.Entity(entityType.ClrType).HasQueryFilter(condition);
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-        /*        LOG SİSTEMİ İÇİN TEK BİR KONTROL MERKEZİ DENEMESİ
-         
-        //log sistemi için 
-        public override int SaveChanges()
-        {
-            var modifiedEntries = ChangeTracker.Entries().Where(e => e.Entity is ILoggable &&(e.State == EntityState.Added || e.State == EntityState.Modified)).ToList(); //listenin kopyası
-
-            var logsToAdd = new List<Log>(); //geçici olarak burada tutuyor
-
-            foreach (var entry in modifiedEntries)
-            {
-                var entityName = entry.Entity.GetType().Name;
-                string action = entry.State == EntityState.Added ? "POST" : "PUT";
-
-                string? oldValues = null;
-                if (entry.State == EntityState.Modified)
-                {
-                    var databaseValues = entry.GetDatabaseValues();
-                    if (databaseValues != null)
-                    {
-                        var originalObj = databaseValues.ToObject();
-                        oldValues = System.Text.Json.JsonSerializer.Serialize(originalObj);
-                    }
-                }
-
-                var newValues = System.Text.Json.JsonSerializer.Serialize(entry.CurrentValues.ToObject());
-
-                var log = new Log
-                {
-                    Action = action,
-                    TableName = entityName,
-                    OldValues = oldValues,
-                    NewValues = newValues,
-                    LoggedAt = DateTime.UtcNow
-                };
-
-                logsToAdd.Add(log); //geçici listeye ekliyoruz
-            }
-
-            //döngüden çıkınca kalıcı olarak ekliyor
-            if (logsToAdd.Any())
-            {
-                Logs.AddRange(logsToAdd);
-            }
-
-            return base.SaveChanges();
-        } */
-
     }
 }
