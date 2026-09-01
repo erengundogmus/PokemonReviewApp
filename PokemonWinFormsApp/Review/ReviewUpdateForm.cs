@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Review
 {
     public partial class ReviewUpdateForm : Form
     {
-        private readonly IGenericApiService<ReviewInputDto, ReviewOutputDto> _reviewService;
+        private readonly IApiService _apiService;
         private int _reviewId;
 
-        public ReviewUpdateForm(IGenericApiService<ReviewInputDto, ReviewOutputDto> reviewService)
+        public ReviewUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _reviewService = reviewService;
+            _apiService = apiService;
         }
 
         public async Task LoadReviewForUpdateAsync(int reviewId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Review
             _reviewId = reviewId;
             try
             {
-                var review = await _reviewService.GetByIdAsync("review", _reviewId);
+                var review = await _apiService.GetByIdAsync<ReviewOutputDto>("review", _reviewId);
                 if (review != null)
                 {
                     textTitle.Text = review.Title;
@@ -48,7 +48,7 @@ namespace PokemonWinFormsApp.Review
 
             try
             {
-                bool isSuccess = await _reviewService.UpdateAsync("review", _reviewId, updatedReview);
+                bool isSuccess = await _apiService.UpdateAsync("review", _reviewId, updatedReview);
 
                 if (isSuccess)
                 {

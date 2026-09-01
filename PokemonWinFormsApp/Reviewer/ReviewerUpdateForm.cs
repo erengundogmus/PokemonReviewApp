@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Reviewer
 {
     public partial class ReviewerUpdateForm : Form
     {
-        private readonly IGenericApiService<ReviewerInputDto, ReviewerOutputDto> _reviewerService;
+        private readonly IApiService _apiService;
         private int _reviewerId;
 
-        public ReviewerUpdateForm(IGenericApiService<ReviewerInputDto, ReviewerOutputDto> reviewerService)
+        public ReviewerUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _reviewerService = reviewerService;
+            _apiService = apiService;
         }
 
         public async Task LoadReviewerForUpdateAsync(int reviewerId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Reviewer
             _reviewerId = reviewerId;
             try
             {
-                var reviewer = await _reviewerService.GetByIdAsync("reviewer", _reviewerId);
+                var reviewer = await _apiService.GetByIdAsync<ReviewerOutputDto>("reviewer", _reviewerId);
                 if (reviewer != null)
                 {
                     textFirstName.Text = reviewer.FirstName;
@@ -42,7 +42,7 @@ namespace PokemonWinFormsApp.Reviewer
 
             try
             {
-                bool isSuccess = await _reviewerService.UpdateAsync("reviewer", _reviewerId, updatedReviewer);
+                bool isSuccess = await _apiService.UpdateAsync("reviewer", _reviewerId, updatedReviewer);
 
                 if (isSuccess)
                 {

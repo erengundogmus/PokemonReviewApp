@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryUpdateForm : Form
     {
-        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        private readonly IApiService _apiService;
         private int _categoryId;
 
-        public CategoryUpdateForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService)
+        public CategoryUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _categoryService = categoryService;
+            _apiService = apiService;
         }
 
         public async Task LoadCategoryForUpdateAsync(int categoryId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Category
             _categoryId = categoryId;
             try
             {
-                var category = await _categoryService.GetByIdAsync("category", _categoryId);
+                var category = await _apiService.GetByIdAsync<CategoryOutputDto>("category", _categoryId);
                 if (category != null)
                 {
                     textName.Text = category.Name;
@@ -40,7 +40,7 @@ namespace PokemonWinFormsApp.Category
 
             try
             {
-                bool isSuccess = await _categoryService.UpdateAsync("category", _categoryId, updatedCategory);
+                bool isSuccess = await _apiService.UpdateAsync("category", _categoryId, updatedCategory);
 
                 if (isSuccess)
                 {

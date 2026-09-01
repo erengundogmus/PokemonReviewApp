@@ -1,17 +1,16 @@
-﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Food
 {
     public partial class FoodDetailForm : Form
     {
-        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private readonly IApiService _apiService;
         private int _foodId;
 
-        public FoodDetailForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService)
+        public FoodDetailForm(IApiService apiService)
         {
             InitializeComponent();
-            _foodService = foodService;
+            _apiService = apiService;
         }
 
         public async Task LoadFoodDetailAsync(int foodId)
@@ -19,7 +18,7 @@ namespace PokemonWinFormsApp.Food
             _foodId = foodId;
             try
             {
-                var food = await _foodService.GetByIdAsync("food", _foodId);
+                var food = await _apiService.GetByIdAsync<FoodOutputDto>("food", _foodId);
 
                 if (food != null)
                 {

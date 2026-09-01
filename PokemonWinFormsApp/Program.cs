@@ -1,13 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PokemonWinFormsApp.Category;
-using PokemonWinFormsApp.Country;
-using PokemonWinFormsApp.Food;
-using PokemonWinFormsApp.Owner;
-using PokemonWinFormsApp.Pokemon;
-using PokemonWinFormsApp.PokemonFood;
-using PokemonWinFormsApp.Review;
-using PokemonWinFormsApp.Reviewer;
+using System.Reflection;
 
 namespace PokemonWinFormsApp
 {
@@ -33,55 +26,16 @@ namespace PokemonWinFormsApp
                         client.BaseAddress = new Uri(apiBaseUrl);
                     });
 
-                    services.AddTransient(typeof(IGenericApiService<,>), typeof(GenericApiService<,>));
+                    services.AddTransient<IApiService, ApiService>();
 
-                    services.AddTransient<LoginForm>();
-                    services.AddTransient<MainForm>();
+                    //projedeki tüm form sınıflarını bulup otomatik olarak transient kaydetme
+                    var formTypes = Assembly.GetExecutingAssembly().GetTypes()
+                                            .Where(t => t.IsSubclassOf(typeof(Form)));
 
-                    // Category Forms
-                    services.AddTransient<CategoryForm>();
-                    services.AddTransient<CategoryCreateForm>();
-                    services.AddTransient<CategoryDetailForm>();
-                    services.AddTransient<CategoryUpdateForm>();
-
-                    // Country Forms
-                    services.AddTransient<CountryForm>();
-                    services.AddTransient<CountryCreateForm>();
-                    services.AddTransient<CountryDetailForm>();
-                    services.AddTransient<CountryUpdateForm>();
-
-                    // Food Forms
-                    services.AddTransient<FoodForm>();
-                    services.AddTransient<FoodCreateForm>();
-                    services.AddTransient<FoodDetailForm>();
-                    services.AddTransient<FoodUpdateForm>();
-
-                    // Owner Forms
-                    services.AddTransient<OwnerForm>();
-                    services.AddTransient<OwnerCreateForm>();
-                    services.AddTransient<OwnerDetailForm>();
-                    services.AddTransient<OwnerUpdateForm>();
-
-                    // Review Forms
-                    services.AddTransient<ReviewForm>();
-                    services.AddTransient<ReviewCreateForm>();
-                    services.AddTransient<ReviewDetailForm>();
-                    services.AddTransient<ReviewUpdateForm>();
-
-                    // Reviewer Forms
-                    services.AddTransient<ReviewerForm>();
-                    services.AddTransient<ReviewerCreateForm>();
-                    services.AddTransient<ReviewerDetailForm>();
-                    services.AddTransient<ReviewerUpdateForm>();
-
-                    // Pokemon Forms
-                    services.AddTransient<PokemonForm>();
-                    services.AddTransient<PokemonCreateForm>();
-                    services.AddTransient<PokemonDetailForm>();
-                    services.AddTransient<PokemonUpdateForm>();
-
-                    // PokemonFood Form
-                    services.AddTransient<PokemonFoodForm>();
+                    foreach (var formType in formTypes)
+                    {
+                        services.AddTransient(formType);
+                    }
                 })
                 .Build();
 

@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Country
 {
     public partial class CountryUpdateForm : Form
     {
-        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
+        private readonly IApiService _apiService;
         private int _countryId;
 
-        public CountryUpdateForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService)
+        public CountryUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _countryService = countryService;
+            _apiService = apiService;
         }
 
         public async Task LoadCountryForUpdateAsync(int countryId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Country
             _countryId = countryId;
             try
             {
-                var country = await _countryService.GetByIdAsync("country", _countryId);
+                var country = await _apiService.GetByIdAsync<CountryOutputDto>("country", _countryId);
                 if (country != null)
                 {
                     textName.Text = country.Name;
@@ -40,7 +40,7 @@ namespace PokemonWinFormsApp.Country
 
             try
             {
-                bool isSuccess = await _countryService.UpdateAsync("country", _countryId, updatedCountry);
+                bool isSuccess = await _apiService.UpdateAsync("country", _countryId, updatedCountry);
 
                 if (isSuccess)
                 {

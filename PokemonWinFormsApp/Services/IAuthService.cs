@@ -1,5 +1,4 @@
-﻿using PokemonWinFormsApp;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 
 public interface IAuthService
 {

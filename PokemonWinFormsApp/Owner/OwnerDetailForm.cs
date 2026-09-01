@@ -1,17 +1,16 @@
-﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Owner
 {
     public partial class OwnerDetailForm : Form
     {
-        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private readonly IApiService _apiService;
         private int _ownerId;
 
-        public OwnerDetailForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService)
+        public OwnerDetailForm(IApiService apiService)
         {
             InitializeComponent();
-            _ownerService = ownerService;
+            _apiService = apiService;
         }
 
         public async Task LoadOwnerDetailAsync(int ownerId)
@@ -19,7 +18,7 @@ namespace PokemonWinFormsApp.Owner
             _ownerId = ownerId;
             try
             {
-                var owner = await _ownerService.GetByIdAsync("owner", _ownerId);
+                var owner = await _apiService.GetByIdAsync<OwnerOutputDto>("owner", _ownerId);
 
                 if (owner != null)
                 {

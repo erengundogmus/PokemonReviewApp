@@ -1,18 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Country
 {
     public partial class CountryForm : Form
     {
-        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
+        private readonly IApiService _apiService;
         private readonly IServiceProvider _serviceProvider;
 
-        public CountryForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService, IServiceProvider serviceProvider)
+        public CountryForm(IApiService apiService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _countryService = countryService;
+            _apiService = apiService;
             _serviceProvider = serviceProvider;
         }
 
@@ -30,7 +29,7 @@ namespace PokemonWinFormsApp.Country
         {
             try
             {
-                var countries = await _countryService.GetAllAsync("country");
+                var countries = await _apiService.GetAllAsync<CountryOutputDto>("country");
 
                 if (countries != null)
                 {
@@ -120,7 +119,7 @@ namespace PokemonWinFormsApp.Country
                     {
                         try
                         {
-                            bool isSuccess = await _countryService.DeleteAsync("country", selectedCountry.Id);
+                            bool isSuccess = await _apiService.DeleteAsync("country", selectedCountry.Id);
 
                             if (isSuccess)
                             {

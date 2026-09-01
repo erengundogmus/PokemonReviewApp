@@ -1,17 +1,16 @@
-﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Country
 {
     public partial class CountryDetailForm : Form
     {
-        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
+        private readonly IApiService _apiService;
         private int _countryId;
 
-        public CountryDetailForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService)
+        public CountryDetailForm(IApiService apiService)
         {
             InitializeComponent();
-            _countryService = countryService;
+            _apiService = apiService;
         }
 
         public async Task LoadCountryDetailAsync(int countryId)
@@ -19,7 +18,7 @@ namespace PokemonWinFormsApp.Country
             _countryId = countryId;
             try
             {
-                var country = await _countryService.GetByIdAsync("country", _countryId);
+                var country = await _apiService.GetByIdAsync<CountryOutputDto>("country", _countryId);
 
                 if (country != null)
                 {

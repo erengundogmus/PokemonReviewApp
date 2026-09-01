@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
 using PokemonWinFormsApp.Food;
 
@@ -7,13 +6,13 @@ namespace PokemonWinFormsApp
 {
     public partial class FoodForm : Form
     {
-        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private readonly IApiService _apiService;
         private readonly IServiceProvider _serviceProvider;
 
-        public FoodForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService, IServiceProvider serviceProvider)
+        public FoodForm(IApiService apiService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _foodService = foodService;
+            _apiService = apiService;
             _serviceProvider = serviceProvider;
         }
 
@@ -31,7 +30,7 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var foods = await _foodService.GetAllAsync("food");
+                var foods = await _apiService.GetAllAsync<FoodOutputDto>("food");
 
                 if (foods != null)
                 {
@@ -121,7 +120,7 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            bool isSuccess = await _foodService.DeleteAsync("food", selectedFood.Id);
+                            bool isSuccess = await _apiService.DeleteAsync("food", selectedFood.Id);
 
                             if (isSuccess)
                             {

@@ -1,16 +1,15 @@
 ﻿using PokemonReviewApp.Dto;
-using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonCreateForm : Form
     {
-        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private readonly IApiService _apiService;
 
-        public PokemonCreateForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService)
+        public PokemonCreateForm(IApiService apiService)
         {
             InitializeComponent();
-            _pokemonService = pokemonService;
+            _apiService = apiService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -25,7 +24,7 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
-                bool isSuccess = await _pokemonService.CreateAsync("pokemon", newPokemon);
+                bool isSuccess = await _apiService.CreateAsync("pokemon", newPokemon);
 
                 if (isSuccess)
                 {

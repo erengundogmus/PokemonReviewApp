@@ -1,16 +1,15 @@
 ﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Reviewer
 {
     public partial class ReviewerCreateForm : Form
     {
-        private readonly IGenericApiService<ReviewerInputDto, ReviewerOutputDto> _reviewerService;
+        private readonly IApiService _apiService;
 
-        public ReviewerCreateForm(IGenericApiService<ReviewerInputDto, ReviewerOutputDto> reviewerService)
+        public ReviewerCreateForm(IApiService apiService)
         {
             InitializeComponent();
-            _reviewerService = reviewerService;
+            _apiService = apiService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -23,7 +22,7 @@ namespace PokemonWinFormsApp.Reviewer
 
             try
             {
-                bool isSuccess = await _reviewerService.CreateAsync("reviewer", newReviewer);
+                bool isSuccess = await _apiService.CreateAsync("reviewer", newReviewer);
 
                 if (isSuccess)
                 {

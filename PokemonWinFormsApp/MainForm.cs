@@ -3,8 +3,6 @@ using PokemonWinFormsApp.Category;
 using PokemonWinFormsApp.Country;
 using PokemonWinFormsApp.Pokemon;
 using PokemonWinFormsApp.PokemonFood;
-using System;
-using System.Windows.Forms;
 
 namespace PokemonWinFormsApp
 {

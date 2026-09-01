@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
 using PokemonWinFormsApp.Review;
 
@@ -7,13 +6,13 @@ namespace PokemonWinFormsApp
 {
     public partial class ReviewForm : Form
     {
-        private readonly IGenericApiService<ReviewInputDto, ReviewOutputDto> _reviewService;
+        private readonly IApiService _apiService;
         private readonly IServiceProvider _serviceProvider;
 
-        public ReviewForm(IGenericApiService<ReviewInputDto, ReviewOutputDto> reviewService, IServiceProvider serviceProvider)
+        public ReviewForm(IApiService apiService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _reviewService = reviewService;
+            _apiService = apiService;
             _serviceProvider = serviceProvider;
         }
 
@@ -31,7 +30,7 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var reviews = await _reviewService.GetAllAsync("review");
+                var reviews = await _apiService.GetAllAsync<ReviewOutputDto>("review");
 
                 if (reviews != null)
                 {
@@ -121,7 +120,7 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            bool isSuccess = await _reviewService.DeleteAsync("review", selectedReview.Id);
+                            bool isSuccess = await _apiService.DeleteAsync("review", selectedReview.Id);
 
                             if (isSuccess)
                             {

@@ -1,17 +1,16 @@
-﻿using PokemonReviewApp.Dto;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonDetailForm : Form
     {
-        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private readonly IApiService _apiService;
         private int _pokemonId;
 
-        public PokemonDetailForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService)
+        public PokemonDetailForm(IApiService apiService)
         {
             InitializeComponent();
-            _pokemonService = pokemonService;
+            _apiService = apiService;
         }
 
         public async Task LoadPokemonDetailAsync(int pokemonId)
@@ -19,7 +18,7 @@ namespace PokemonWinFormsApp.Pokemon
             _pokemonId = pokemonId;
             try
             {
-                var pokemon = await _pokemonService.GetByIdAsync("pokemon", _pokemonId);
+                var pokemon = await _apiService.GetByIdAsync<PokemonOutputDto>("pokemon", _pokemonId);
 
                 if (pokemon != null)
                 {

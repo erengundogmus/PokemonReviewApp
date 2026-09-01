@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Owner
 {
     public partial class OwnerUpdateForm : Form
     {
-        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private readonly IApiService _apiService;
         private int _ownerId;
 
-        public OwnerUpdateForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService)
+        public OwnerUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _ownerService = ownerService;
+            _apiService = apiService;
         }
 
         public async Task LoadOwnerForUpdateAsync(int ownerId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Owner
             _ownerId = ownerId;
             try
             {
-                var owner = await _ownerService.GetByIdAsync("owner", _ownerId);
+                var owner = await _apiService.GetByIdAsync<OwnerOutputDto>("owner", _ownerId);
                 if (owner != null)
                 {
                     textName.Text = owner.Name;
@@ -43,7 +43,7 @@ namespace PokemonWinFormsApp.Owner
 
             try
             {
-                bool isSuccess = await _ownerService.UpdateAsync("owner", _ownerId, updatedOwner);
+                bool isSuccess = await _apiService.UpdateAsync("owner", _ownerId, updatedOwner);
 
                 if (isSuccess)
                 {

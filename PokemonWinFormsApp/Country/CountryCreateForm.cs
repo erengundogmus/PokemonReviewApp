@@ -1,16 +1,15 @@
 ﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Country
 {
     public partial class CountryCreateForm : Form
     {
-        private readonly IGenericApiService<CountryInputDto, CountryOutputDto> _countryService;
+        private readonly IApiService _apiService;
 
-        public CountryCreateForm(IGenericApiService<CountryInputDto, CountryOutputDto> countryService)
+        public CountryCreateForm(IApiService apiService)
         {
             InitializeComponent();
-            _countryService = countryService;
+            _apiService = apiService;
         }
 
         private async void CountryCreate_Click(object sender, EventArgs e)
@@ -22,7 +21,7 @@ namespace PokemonWinFormsApp.Country
 
             try
             {
-                bool isSuccess = await _countryService.CreateAsync("country", newCountry);
+                bool isSuccess = await _apiService.CreateAsync("country", newCountry);
 
                 if (isSuccess)
                 {

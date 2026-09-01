@@ -1,15 +1,15 @@
 ﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryCreateForm : Form
     {
-        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
-        public CategoryCreateForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService)
+        private readonly IApiService _apiService;
+
+        public CategoryCreateForm(IApiService apiService)
         {
             InitializeComponent();
-            _categoryService = categoryService;
+            _apiService = apiService;
         }
 
         private async void CategoryCreate_Click(object sender, EventArgs e)
@@ -21,8 +21,7 @@ namespace PokemonWinFormsApp.Category
 
             try
             {
-                //httpclient ve baseurl yok sadece endpoint ismini veriyoruz
-                bool isSuccess = await _categoryService.CreateAsync("category", newCategory);
+                bool isSuccess = await _apiService.CreateAsync("category", newCategory);
 
                 if (isSuccess)
                 {
@@ -31,7 +30,6 @@ namespace PokemonWinFormsApp.Category
                 }
                 else
                 {
-                    // Generic servis bool döndüğü için hata mesajını genel tutuyoruz
                     MessageBox.Show("Failed to create category.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }

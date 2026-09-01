@@ -1,18 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PokemonReviewApp.Dto;
 using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonForm : Form
     {
-        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private readonly IApiService _apiService;
         private readonly IServiceProvider _serviceProvider;
 
-        public PokemonForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService, IServiceProvider serviceProvider)
+        public PokemonForm(IApiService apiService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _pokemonService = pokemonService;
+            _apiService = apiService;
             _serviceProvider = serviceProvider;
         }
 
@@ -30,7 +29,8 @@ namespace PokemonWinFormsApp.Pokemon
         {
             try
             {
-                var pokemons = await _pokemonService.GetAllAsync("pokemon");
+                // GetAllAsync metoduna okumak istediğimiz modeli <PokemonOutputDto> olarak ekledik
+                var pokemons = await _apiService.GetAllAsync<PokemonOutputDto>("pokemon");
 
                 if (pokemons != null)
                 {
@@ -120,7 +120,7 @@ namespace PokemonWinFormsApp.Pokemon
                     {
                         try
                         {
-                            bool isSuccess = await _pokemonService.DeleteAsync("pokemon", selectedPokemon.Id);
+                            bool isSuccess = await _apiService.DeleteAsync("pokemon", selectedPokemon.Id);
 
                             if (isSuccess)
                             {

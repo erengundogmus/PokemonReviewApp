@@ -1,16 +1,15 @@
 ﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Food
 {
     public partial class FoodCreateForm : Form
     {
-        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private readonly IApiService _apiService;
 
-        public FoodCreateForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService)
+        public FoodCreateForm(IApiService apiService)
         {
             InitializeComponent();
-            _foodService = foodService;
+            _apiService = apiService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -23,7 +22,7 @@ namespace PokemonWinFormsApp.Food
 
             try
             {
-                bool isSuccess = await _foodService.CreateAsync("food", newFood);
+                bool isSuccess = await _apiService.CreateAsync("food", newFood);
 
                 if (isSuccess)
                 {

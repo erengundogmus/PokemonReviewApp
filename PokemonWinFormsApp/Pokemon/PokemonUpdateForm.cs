@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Pokemon
 {
     public partial class PokemonUpdateForm : Form
     {
-        private readonly IGenericApiService<PokemonInputDto, PokemonOutputDto> _pokemonService;
+        private readonly IApiService _apiService;
         private int _pokemonId;
 
-        public PokemonUpdateForm(IGenericApiService<PokemonInputDto, PokemonOutputDto> pokemonService)
+        public PokemonUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _pokemonService = pokemonService;
+            _apiService = apiService;
         }
 
         public async Task LoadPokemonForUpdateAsync(int pokemonId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Pokemon
             _pokemonId = pokemonId;
             try
             {
-                var pokemon = await _pokemonService.GetByIdAsync("pokemon", _pokemonId);
+                var pokemon = await _apiService.GetByIdAsync<PokemonOutputDto>("pokemon", _pokemonId);
                 if (pokemon != null)
                 {
                     textName.Text = pokemon.Name;
@@ -46,7 +46,7 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
-                bool isSuccess = await _pokemonService.UpdateAsync("pokemon", _pokemonId, updatedPokemon);
+                bool isSuccess = await _apiService.UpdateAsync("pokemon", _pokemonId, updatedPokemon);
 
                 if (isSuccess)
                 {

@@ -1,17 +1,16 @@
-﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Reviewer
 {
     public partial class ReviewerDetailForm : Form
     {
-        private readonly IGenericApiService<ReviewerInputDto, ReviewerOutputDto> _reviewerService;
+        private readonly IApiService _apiService;
         private int _reviewerId;
 
-        public ReviewerDetailForm(IGenericApiService<ReviewerInputDto, ReviewerOutputDto> reviewerService)
+        public ReviewerDetailForm(IApiService apiService)
         {
             InitializeComponent();
-            _reviewerService = reviewerService;
+            _apiService = apiService;
         }
 
         public async Task LoadReviewerDetailAsync(int reviewerId)
@@ -19,7 +18,7 @@ namespace PokemonWinFormsApp.Reviewer
             _reviewerId = reviewerId;
             try
             {
-                var reviewer = await _reviewerService.GetByIdAsync("reviewer", _reviewerId);
+                var reviewer = await _apiService.GetByIdAsync<ReviewerOutputDto>("reviewer", _reviewerId);
 
                 if (reviewer != null)
                 {

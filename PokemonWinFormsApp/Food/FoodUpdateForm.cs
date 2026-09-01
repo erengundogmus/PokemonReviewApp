@@ -5,13 +5,13 @@ namespace PokemonWinFormsApp.Food
 {
     public partial class FoodUpdateForm : Form
     {
-        private readonly IGenericApiService<FoodInputDto, FoodOutputDto> _foodService;
+        private readonly IApiService _apiService;
         private int _foodId;
 
-        public FoodUpdateForm(IGenericApiService<FoodInputDto, FoodOutputDto> foodService)
+        public FoodUpdateForm(IApiService apiService)
         {
             InitializeComponent();
-            _foodService = foodService;
+            _apiService = apiService;
         }
 
         public async Task LoadFoodForUpdateAsync(int foodId)
@@ -19,7 +19,7 @@ namespace PokemonWinFormsApp.Food
             _foodId = foodId;
             try
             {
-                var food = await _foodService.GetByIdAsync("food", _foodId);
+                var food = await _apiService.GetByIdAsync<FoodOutputDto>("food", _foodId);
                 if (food != null)
                 {
                     textName.Text = food.Name;
@@ -42,7 +42,7 @@ namespace PokemonWinFormsApp.Food
 
             try
             {
-                bool isSuccess = await _foodService.UpdateAsync("food", _foodId, updatedFood);
+                bool isSuccess = await _apiService.UpdateAsync("food", _foodId, updatedFood);
 
                 if (isSuccess)
                 {

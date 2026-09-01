@@ -1,16 +1,15 @@
 ﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Owner
 {
     public partial class OwnerCreateForm : Form
     {
-        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private readonly IApiService _apiService;
 
-        public OwnerCreateForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService)
+        public OwnerCreateForm(IApiService apiService)
         {
             InitializeComponent();
-            _ownerService = ownerService;
+            _apiService = apiService;
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
@@ -24,7 +23,7 @@ namespace PokemonWinFormsApp.Owner
 
             try
             {
-                bool isSuccess = await _ownerService.CreateAsync("owner", newOwner);
+                bool isSuccess = await _apiService.CreateAsync("owner", newOwner);
 
                 if (isSuccess)
                 {

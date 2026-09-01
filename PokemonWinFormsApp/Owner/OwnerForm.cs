@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
 using PokemonWinFormsApp.Owner;
 
@@ -7,13 +6,13 @@ namespace PokemonWinFormsApp
 {
     public partial class OwnerForm : Form
     {
-        private readonly IGenericApiService<OwnerInputDto, OwnerOutputDto> _ownerService;
+        private readonly IApiService _apiService;
         private readonly IServiceProvider _serviceProvider;
 
-        public OwnerForm(IGenericApiService<OwnerInputDto, OwnerOutputDto> ownerService, IServiceProvider serviceProvider)
+        public OwnerForm(IApiService apiService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _ownerService = ownerService;
+            _apiService = apiService;
             _serviceProvider = serviceProvider;
         }
 
@@ -31,7 +30,7 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var owners = await _ownerService.GetAllAsync("owner");
+                var owners = await _apiService.GetAllAsync<OwnerOutputDto>("owner");
 
                 if (owners != null)
                 {
@@ -121,7 +120,7 @@ namespace PokemonWinFormsApp
                     {
                         try
                         {
-                            bool isSuccess = await _ownerService.DeleteAsync("owner", selectedOwner.Id);
+                            bool isSuccess = await _apiService.DeleteAsync("owner", selectedOwner.Id);
 
                             if (isSuccess)
                             {

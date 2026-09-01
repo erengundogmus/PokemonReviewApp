@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryForm : Form
     {
-        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        private readonly IApiService _apiService;
         private readonly IServiceProvider _serviceProvider;
-        public CategoryForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService, IServiceProvider serviceProvider)
+
+        public CategoryForm(IApiService apiService, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _categoryService = categoryService;
+            _apiService = apiService;
             _serviceProvider = serviceProvider;
         }
 
@@ -29,7 +29,7 @@ namespace PokemonWinFormsApp.Category
         {
             try
             {
-                var categories = await _categoryService.GetAllAsync("category");
+                var categories = await _apiService.GetAllAsync<CategoryOutputDto>("category");
 
                 if (categories != null)
                 {
@@ -120,7 +120,7 @@ namespace PokemonWinFormsApp.Category
                     {
                         try
                         {
-                            bool isSuccess = await _categoryService.DeleteAsync("category", selectedCategory.Id);
+                            bool isSuccess = await _apiService.DeleteAsync("category", selectedCategory.Id);
 
                             if (isSuccess)
                             {

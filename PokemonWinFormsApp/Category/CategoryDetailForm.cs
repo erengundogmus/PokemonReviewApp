@@ -1,16 +1,16 @@
-﻿using PokemonReviewApp.InputDtos;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Category
 {
     public partial class CategoryDetailForm : Form
     {
-        private readonly IGenericApiService<CategoryInputDto, CategoryOutputDto> _categoryService;
+        private readonly IApiService _apiService;
         private int _categoryId;
-        public CategoryDetailForm(IGenericApiService<CategoryInputDto, CategoryOutputDto> categoryService)
+
+        public CategoryDetailForm(IApiService apiService)
         {
             InitializeComponent();
-            _categoryService = categoryService;
+            _apiService = apiService;
         }
 
         public async Task LoadCategoryDetailAsync(int categoryId)
@@ -18,7 +18,7 @@ namespace PokemonWinFormsApp.Category
             _categoryId = categoryId;
             try
             {
-                var category = await _categoryService.GetByIdAsync("category", _categoryId);
+                var category = await _apiService.GetByIdAsync<CategoryOutputDto>("category", _categoryId);
 
                 if (category != null)
                 {
