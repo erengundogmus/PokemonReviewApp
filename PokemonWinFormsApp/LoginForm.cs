@@ -1,6 +1,5 @@
 ﻿using Autofac;
-using System;
-using System.Windows.Forms;
+using PokemonWinFormsApp.Auth;
 
 namespace PokemonWinFormsApp
 {
@@ -50,5 +49,22 @@ namespace PokemonWinFormsApp
                 MessageBox.Show("Connection error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void btnForgotPassword_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var scope = Program.Container.BeginLifetimeScope())
+                {
+                    var resetPasswordForm = scope.Resolve<ResetPasswordForm>();
+                    resetPasswordForm.ShowDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while opening the password reset screen: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
     }
 }

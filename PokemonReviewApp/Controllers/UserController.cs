@@ -93,5 +93,18 @@ namespace PokemonReviewApp.Controllers
 
             return tokenHandler.WriteToken(token);
         }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
+        {
+            var success = await _userRepository.ResetPassword(request.Username, request.NewPassword);
+
+            if (!success)
+                return NotFound("User not found or an error occurred while updating the password.");
+
+            return Ok(new { message = "Password successfully updated." });
+        }
+
+
     }
 }

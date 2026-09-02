@@ -53,8 +53,8 @@ namespace PokemonWinFormsApp
                     {
                         containerBuilder
                             .RegisterType(type)
-                            .InstancePerDependency()
-                            .ExternallyOwned();
+                            .InstancePerDependency() //nesne her istekte yeniden üretilir
+                            .ExternallyOwned(); //formun kapatılma kontrolü winforms'ta
                     }
                 })
                 .Build();

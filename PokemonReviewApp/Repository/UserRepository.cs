@@ -66,15 +66,21 @@ namespace PokemonReviewApp.Repository
             }
         }
 
+        public async Task<bool> ResetPassword(string username, string newPassword)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Username.ToLower() == username.ToLower());
 
+            if (user == null)
+                return false;
 
+            //yeni şifre için yeni bir hash ve salt üretiyor
+            CreatePasswordHash(newPassword, out byte[] passwordHash, out byte[] passwordSalt);
 
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
 
-
-
-
-
-
-
+            _context.Users.Update(user);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }
