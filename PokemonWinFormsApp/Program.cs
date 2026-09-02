@@ -1,3 +1,5 @@
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
@@ -6,12 +8,17 @@ namespace PokemonWinFormsApp
 {
     internal static class Program
     {
+        public static ILifetimeScope Container { get; private set; } = null!;
+
         [STAThread]
         static void Main()
         {
             ApplicationConfiguration.Initialize();
 
             var host = Host.CreateDefaultBuilder()
+                //servis sağlayıcı fabrikasını Autofac olarak seçiyoruz
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+
                 .ConfigureServices((context, services) =>
                 {
                     string apiBaseUrl = "https://localhost:7013/api/";
@@ -27,19 +34,37 @@ namespace PokemonWinFormsApp
                     });
 
                     services.AddTransient<IApiService, ApiService>();
+                })
 
-                    //projedeki tüm form sınıflarını bulup otomatik olarak transient kaydetme
-                    var formTypes = Assembly.GetExecutingAssembly().GetTypes()
-                                            .Where(t => t.IsSubclassOf(typeof(Form)));
+                //autofac container'a formları kaydediyoruz sürekli yeni form kaydetmemek ve diğer türleri de autoface eklemesin diye filtreledik
+                .ConfigureContainer<ContainerBuilder>(containerBuilder =>
+                {
+                    var assembly = Assembly.GetExecutingAssembly();
 
-                    foreach (var formType in formTypes)
+                    var types = assembly.GetTypes()
+                        .Where(t => t.IsClass
+                                    && !t.IsAbstract
+                                    && !t.IsInterface
+                                    && !t.IsGenericTypeDefinition
+                                    && !typeof(UserControl).IsAssignableFrom(t)
+                                    && typeof(Form).IsAssignableFrom(t));
+
+                    foreach (var type in types)
                     {
-                        services.AddTransient(formType);
+                        containerBuilder
+                            .RegisterType(type)
+                            .InstancePerDependency()
+                            .ExternallyOwned();
                     }
                 })
                 .Build();
 
-            var loginForm = host.Services.GetRequiredService<LoginForm>();
+            //autofac container'ını merkezi olarak saklıyoruz
+            Container = host.Services.GetRequiredService<ILifetimeScope>();
+
+            //ilk formu Autofac oluşturuyor
+            var loginForm = Container.Resolve<LoginForm>();
+
             Application.Run(loginForm);
         }
     }

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Autofac;
 using PokemonReviewApp.OutputDtos;
 using PokemonWinFormsApp.Owner;
 
@@ -7,13 +7,11 @@ namespace PokemonWinFormsApp
     public partial class OwnerForm : Form
     {
         private readonly IApiService _apiService;
-        private readonly IServiceProvider _serviceProvider;
 
-        public OwnerForm(IApiService apiService, IServiceProvider serviceProvider)
+        public OwnerForm(IApiService apiService)
         {
             InitializeComponent();
             _apiService = apiService;
-            _serviceProvider = serviceProvider;
         }
 
         private async void OwnerForm_Load(object sender, EventArgs e)
@@ -50,9 +48,13 @@ namespace PokemonWinFormsApp
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;
                 if (selectedOwner != null)
                 {
-                    var detailForm = _serviceProvider.GetRequiredService<OwnerDetailForm>();
-                    await detailForm.LoadOwnerDetailAsync(selectedOwner.Id);
-                    detailForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var detailForm = scope.Resolve<OwnerDetailForm>();
+                        await detailForm.LoadOwnerDetailAsync(selectedOwner.Id);
+                        detailForm.ShowDialog();
+                    }
                 }
                 else
                 {
@@ -69,8 +71,12 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var createForm = _serviceProvider.GetRequiredService<OwnerCreateForm>();
-                createForm.ShowDialog();
+                //autofac ile güvenli form çağırmak için child scope açıyor
+                using (var scope = Program.Container.BeginLifetimeScope())
+                {
+                    var createForm = scope.Resolve<OwnerCreateForm>();
+                    createForm.ShowDialog();
+                }
                 await LoadOwnersAsync();
             }
             catch (Exception ex)
@@ -86,9 +92,13 @@ namespace PokemonWinFormsApp
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;
                 if (selectedOwner != null)
                 {
-                    var updateForm = _serviceProvider.GetRequiredService<OwnerUpdateForm>();
-                    await updateForm.LoadOwnerForUpdateAsync(selectedOwner.Id);
-                    updateForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var updateForm = scope.Resolve<OwnerUpdateForm>();
+                        await updateForm.LoadOwnerForUpdateAsync(selectedOwner.Id);
+                        updateForm.ShowDialog();
+                    }
 
                     await LoadOwnersAsync();
                 }

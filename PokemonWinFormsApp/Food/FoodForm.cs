@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Autofac;
 using PokemonReviewApp.OutputDtos;
 using PokemonWinFormsApp.Food;
 
@@ -7,13 +7,11 @@ namespace PokemonWinFormsApp
     public partial class FoodForm : Form
     {
         private readonly IApiService _apiService;
-        private readonly IServiceProvider _serviceProvider;
 
-        public FoodForm(IApiService apiService, IServiceProvider serviceProvider)
+        public FoodForm(IApiService apiService)
         {
             InitializeComponent();
             _apiService = apiService;
-            _serviceProvider = serviceProvider;
         }
 
         private async void FoodForm_Load(object sender, EventArgs e)
@@ -50,9 +48,13 @@ namespace PokemonWinFormsApp
                 var selectedFood = dataGridView1.CurrentRow.DataBoundItem as FoodOutputDto;
                 if (selectedFood != null)
                 {
-                    var detailForm = _serviceProvider.GetRequiredService<FoodDetailForm>();
-                    await detailForm.LoadFoodDetailAsync(selectedFood.Id);
-                    detailForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var detailForm = scope.Resolve<FoodDetailForm>();
+                        await detailForm.LoadFoodDetailAsync(selectedFood.Id);
+                        detailForm.ShowDialog();
+                    }
                 }
                 else
                 {
@@ -69,8 +71,12 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                var createForm = _serviceProvider.GetRequiredService<FoodCreateForm>();
-                createForm.ShowDialog();
+                //autofac ile güvenli form çağırmak için child scope açıyor
+                using (var scope = Program.Container.BeginLifetimeScope())
+                {
+                    var createForm = scope.Resolve<FoodCreateForm>();
+                    createForm.ShowDialog();
+                }
                 await LoadFoodsAsync();
             }
             catch (Exception ex)
@@ -86,9 +92,13 @@ namespace PokemonWinFormsApp
                 var selectedFood = dataGridView1.CurrentRow.DataBoundItem as FoodOutputDto;
                 if (selectedFood != null)
                 {
-                    var updateForm = _serviceProvider.GetRequiredService<FoodUpdateForm>();
-                    await updateForm.LoadFoodForUpdateAsync(selectedFood.Id);
-                    updateForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var updateForm = scope.Resolve<FoodUpdateForm>();
+                        await updateForm.LoadFoodForUpdateAsync(selectedFood.Id);
+                        updateForm.ShowDialog();
+                    }
 
                     await LoadFoodsAsync();
                 }

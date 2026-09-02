@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Autofac;
 using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Category
@@ -6,13 +6,11 @@ namespace PokemonWinFormsApp.Category
     public partial class CategoryForm : Form
     {
         private readonly IApiService _apiService;
-        private readonly IServiceProvider _serviceProvider;
 
-        public CategoryForm(IApiService apiService, IServiceProvider serviceProvider)
+        public CategoryForm(IApiService apiService)
         {
             InitializeComponent();
             _apiService = apiService;
-            _serviceProvider = serviceProvider;
         }
 
         private async void CategoryForm_Load(object sender, EventArgs e)
@@ -38,7 +36,11 @@ namespace PokemonWinFormsApp.Category
             }
             catch (Exception ex)
             {
-                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "API connection error or failed while loading data: " + ex.Message,
+                    "Hata",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
@@ -47,20 +49,35 @@ namespace PokemonWinFormsApp.Category
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
+
                 if (selectedCategory != null)
                 {
-                    var detailForm = _serviceProvider.GetRequiredService<CategoryDetailForm>();
-                    await detailForm.LoadCategoryDetailAsync(selectedCategory.Id);
-                    detailForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var detailForm = scope.Resolve<CategoryDetailForm>();
+
+                        await detailForm.LoadCategoryDetailAsync(selectedCategory.Id);
+
+                        detailForm.ShowDialog();
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("Could not cast selected row to CategoryOutputDto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(
+                        "Could not cast selected row to CategoryOutputDto.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a category item from the list.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Please select a category item from the list.",
+                    "Warning",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
         }
 
@@ -68,14 +85,23 @@ namespace PokemonWinFormsApp.Category
         {
             try
             {
-                var createForm = _serviceProvider.GetRequiredService<CategoryCreateForm>();
-                createForm.ShowDialog();
+                //autofac ile güvenli form çağırmak için child scope açıyor
+                using (var scope = Program.Container.BeginLifetimeScope())
+                {
+                    var createForm = scope.Resolve<CategoryCreateForm>();
+
+                    createForm.ShowDialog();
+                }
 
                 await LoadCategoriesAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while opening the create form: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    "An error occurred while opening the create form: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
@@ -84,22 +110,37 @@ namespace PokemonWinFormsApp.Category
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
+
                 if (selectedCategory != null)
                 {
-                    var updateForm = _serviceProvider.GetRequiredService<CategoryUpdateForm>();
-                    await updateForm.LoadCategoryForUpdateAsync(selectedCategory.Id);
-                    updateForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var updateForm = scope.Resolve<CategoryUpdateForm>();
+
+                        await updateForm.LoadCategoryForUpdateAsync(selectedCategory.Id);
+
+                        updateForm.ShowDialog();
+                    }
 
                     await LoadCategoriesAsync();
                 }
                 else
                 {
-                    MessageBox.Show("Could not cast selected row to CategoryOutputDto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(
+                        "Could not cast selected row to CategoryOutputDto.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a category item from the list to update.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Please select a category item from the list to update.",
+                    "Warning",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
         }
 
@@ -108,6 +149,7 @@ namespace PokemonWinFormsApp.Category
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
+
                 if (selectedCategory != null)
                 {
                     DialogResult dialogResult = MessageBox.Show(
@@ -120,32 +162,55 @@ namespace PokemonWinFormsApp.Category
                     {
                         try
                         {
-                            bool isSuccess = await _apiService.DeleteAsync("category", selectedCategory.Id);
+                            bool isSuccess = await _apiService.DeleteAsync(
+                                "category",
+                                selectedCategory.Id);
 
                             if (isSuccess)
                             {
-                                MessageBox.Show("Category successfully deleted!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MessageBox.Show(
+                                    "Category successfully deleted!",
+                                    "Success",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information);
+
                                 await LoadCategoriesAsync();
                             }
                             else
                             {
-                                MessageBox.Show("Failed to delete category.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                MessageBox.Show(
+                                    "Failed to delete category.",
+                                    "Error",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error);
                             }
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(
+                                "An error occurred: " + ex.Message,
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
                         }
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Could not cast selected row to CategoryOutputDto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(
+                        "Could not cast selected row to CategoryOutputDto.",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
                 }
             }
             else
             {
-                MessageBox.Show("Please select a category item from the list to delete.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Please select a category item from the list to delete.",
+                    "Warning",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
             }
         }
     }

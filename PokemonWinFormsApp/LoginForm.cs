@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Autofac;
 using System;
 using System.Windows.Forms;
 
@@ -7,14 +7,10 @@ namespace PokemonWinFormsApp
     public partial class LoginForm : Form
     {
         private readonly IAuthService _authService;
-        private readonly IServiceProvider _serviceProvider;
-
-        // Constructor Injection ile IAuthService ve DI Provider'ı alıyoruz
-        public LoginForm(IAuthService authService, IServiceProvider serviceProvider)
+        public LoginForm(IAuthService authService)
         {
             InitializeComponent();
             _authService = authService;
-            _serviceProvider = serviceProvider;
         }
 
         private async void BtnLogin_Click(object sender, EventArgs e)
@@ -40,7 +36,7 @@ namespace PokemonWinFormsApp
 
                     this.Hide();
 
-                    var mainForm = _serviceProvider.GetRequiredService<MainForm>();
+                    var mainForm = Program.Container.Resolve<MainForm>();
                     mainForm.FormClosed += (s, args) => this.Close();
                     mainForm.Show();
                 }

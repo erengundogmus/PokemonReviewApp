@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+using Autofac;
 using PokemonWinFormsApp.Category;
 using PokemonWinFormsApp.Country;
 using PokemonWinFormsApp.Pokemon;
@@ -8,59 +8,56 @@ namespace PokemonWinFormsApp
 {
     public partial class MainForm : Form
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public MainForm(IServiceProvider serviceProvider)
+        public MainForm()
         {
             InitializeComponent();
-            _serviceProvider = serviceProvider;
         }
 
         private void buttonFood_Click(object sender, EventArgs e)
         {
-            var foodForm = _serviceProvider.GetRequiredService<FoodForm>();
+            var foodForm = Program.Container.Resolve<FoodForm>();
             foodForm.ShowDialog();
         }
 
         private void buttonCountry_Click(object sender, EventArgs e)
         {
-            var countryForm = _serviceProvider.GetRequiredService<CountryForm>();
+            var countryForm = Program.Container.Resolve<CountryForm>();
             countryForm.ShowDialog();
         }
 
         private void buttonCategory_Click(object sender, EventArgs e)
         {
-            var categoryForm = _serviceProvider.GetRequiredService<CategoryForm>();
+            var categoryForm = Program.Container.Resolve<CategoryForm>();
             categoryForm.ShowDialog();
         }
 
         private void buttonOwner_Click(object sender, EventArgs e)
         {
-            var ownerForm = _serviceProvider.GetRequiredService<OwnerForm>();
+            var ownerForm = Program.Container.Resolve<OwnerForm>();
             ownerForm.ShowDialog();
         }
 
         private void buttonReview_Click(object sender, EventArgs e)
         {
-            var reviewForm = _serviceProvider.GetRequiredService<ReviewForm>();
+            var reviewForm = Program.Container.Resolve<ReviewForm>();
             reviewForm.ShowDialog();
         }
 
         private void buttonReviewer_Click(object sender, EventArgs e)
         {
-            var reviewerForm = _serviceProvider.GetRequiredService<ReviewerForm>();
+            var reviewerForm = Program.Container.Resolve<ReviewerForm>();
             reviewerForm.ShowDialog();
         }
 
         private void buttonPokemon_Click(object sender, EventArgs e)
         {
-            var pokemonForm = _serviceProvider.GetRequiredService<PokemonForm>();
+            var pokemonForm = Program.Container.Resolve<PokemonForm>();
             pokemonForm.ShowDialog();
         }
 
         private void buttonPokemonFood_Click(object sender, EventArgs e)
         {
-            var pokemonFoodForm = _serviceProvider.GetRequiredService<PokemonFoodForm>();
+            var pokemonFoodForm = Program.Container.Resolve<PokemonFoodForm>();
             pokemonFoodForm.ShowDialog();
         }
     }

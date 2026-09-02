@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Autofac;
 using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
@@ -6,13 +6,11 @@ namespace PokemonWinFormsApp.Pokemon
     public partial class PokemonForm : Form
     {
         private readonly IApiService _apiService;
-        private readonly IServiceProvider _serviceProvider;
 
-        public PokemonForm(IApiService apiService, IServiceProvider serviceProvider)
+        public PokemonForm(IApiService apiService)
         {
             InitializeComponent();
             _apiService = apiService;
-            _serviceProvider = serviceProvider;
         }
 
         private async void PokemonForm_Load(object sender, EventArgs e)
@@ -29,7 +27,6 @@ namespace PokemonWinFormsApp.Pokemon
         {
             try
             {
-                // GetAllAsync metoduna okumak istediğimiz modeli <PokemonOutputDto> olarak ekledik
                 var pokemons = await _apiService.GetAllAsync<PokemonOutputDto>("pokemon");
 
                 if (pokemons != null)
@@ -50,9 +47,13 @@ namespace PokemonWinFormsApp.Pokemon
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
                 if (selectedPokemon != null)
                 {
-                    var detailForm = _serviceProvider.GetRequiredService<PokemonDetailForm>();
-                    await detailForm.LoadPokemonDetailAsync(selectedPokemon.Id);
-                    detailForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var detailForm = scope.Resolve<PokemonDetailForm>();
+                        await detailForm.LoadPokemonDetailAsync(selectedPokemon.Id);
+                        detailForm.ShowDialog();
+                    }
                 }
                 else
                 {
@@ -69,8 +70,12 @@ namespace PokemonWinFormsApp.Pokemon
         {
             try
             {
-                var createForm = _serviceProvider.GetRequiredService<PokemonCreateForm>();
-                createForm.ShowDialog();
+                //autofac ile güvenli form çağırmak child scope açıyor
+                using (var scope = Program.Container.BeginLifetimeScope())
+                {
+                    var createForm = scope.Resolve<PokemonCreateForm>();
+                    createForm.ShowDialog();
+                }
                 await LoadPokemonsAsync();
             }
             catch (Exception ex)
@@ -86,9 +91,13 @@ namespace PokemonWinFormsApp.Pokemon
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
                 if (selectedPokemon != null)
                 {
-                    var updateForm = _serviceProvider.GetRequiredService<PokemonUpdateForm>();
-                    await updateForm.LoadPokemonForUpdateAsync(selectedPokemon.Id);
-                    updateForm.ShowDialog();
+                    //autofac ile güvenli form çağırmak için child scope açıyor
+                    using (var scope = Program.Container.BeginLifetimeScope())
+                    {
+                        var updateForm = scope.Resolve<PokemonUpdateForm>();
+                        await updateForm.LoadPokemonForUpdateAsync(selectedPokemon.Id);
+                        updateForm.ShowDialog();
+                    }
 
                     await LoadPokemonsAsync();
                 }
