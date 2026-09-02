@@ -8,10 +8,10 @@ namespace PokemonWinFormsApp.Country
         private readonly IApiService _apiService;
         private int _countryId;
 
-        public CountryUpdateForm(IApiService apiService)
+        public CountryUpdateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadCountryForUpdateAsync(int countryId)

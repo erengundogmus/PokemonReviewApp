@@ -6,10 +6,10 @@ namespace PokemonWinFormsApp.Category
     {
         private readonly IApiService _apiService;
 
-        public CategoryCreateForm(IApiService apiService)
+        public CategoryCreateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void CategoryCreate_Click(object sender, EventArgs e)

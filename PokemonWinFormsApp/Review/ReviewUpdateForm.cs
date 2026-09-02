@@ -8,10 +8,10 @@ namespace PokemonWinFormsApp.Review
         private readonly IApiService _apiService;
         private int _reviewId;
 
-        public ReviewUpdateForm(IApiService apiService)
+        public ReviewUpdateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadReviewForUpdateAsync(int reviewId)

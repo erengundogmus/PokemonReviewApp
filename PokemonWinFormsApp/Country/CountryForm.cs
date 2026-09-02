@@ -1,5 +1,4 @@
-﻿using Autofac;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Country
 {
@@ -7,10 +6,10 @@ namespace PokemonWinFormsApp.Country
     {
         private readonly IApiService _apiService;
 
-        public CountryForm(IApiService apiService)
+        public CountryForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void CountryForm_Load(object sender, EventArgs e)
@@ -47,13 +46,9 @@ namespace PokemonWinFormsApp.Country
                 var selectedCountry = dataGridView1.CurrentRow.DataBoundItem as CountryOutputDto;
                 if (selectedCountry != null)
                 {
-                    //autofac ile güvenli form çağırmak için child scope açıyor
-                    using (var scope = Program.Container.BeginLifetimeScope())
-                    {
-                        var detailForm = scope.Resolve<CountryDetailForm>();
-                        await detailForm.LoadCountryDetailAsync(selectedCountry.Id);
-                        detailForm.ShowDialog();
-                    }
+                    var detailForm = new CountryDetailForm();
+                    await detailForm.LoadCountryDetailAsync(selectedCountry.Id);
+                    detailForm.ShowDialog();
                 }
                 else
                 {
@@ -70,12 +65,9 @@ namespace PokemonWinFormsApp.Country
         {
             try
             {
-                //autofac ile güvenli form çağırmak için child scope açıyor
-                using (var scope = Program.Container.BeginLifetimeScope())
-                {
-                    var createForm = scope.Resolve<CountryCreateForm>();
-                    createForm.ShowDialog();
-                }
+                var createForm = new CountryCreateForm();
+                createForm.ShowDialog();
+
                 await LoadCountriesAsync();
             }
             catch (Exception ex)
@@ -91,13 +83,9 @@ namespace PokemonWinFormsApp.Country
                 var selectedCountry = dataGridView1.CurrentRow.DataBoundItem as CountryOutputDto;
                 if (selectedCountry != null)
                 {
-                    //autofac ile güvenli form çağırmak için child scope açıyor
-                    using (var scope = Program.Container.BeginLifetimeScope())
-                    {
-                        var updateForm = scope.Resolve<CountryUpdateForm>();
-                        await updateForm.LoadCountryForUpdateAsync(selectedCountry.Id);
-                        updateForm.ShowDialog();
-                    }
+                    var updateForm = new CountryUpdateForm();
+                    await updateForm.LoadCountryForUpdateAsync(selectedCountry.Id);
+                    updateForm.ShowDialog();
 
                     await LoadCountriesAsync();
                 }

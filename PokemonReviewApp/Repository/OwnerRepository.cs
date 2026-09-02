@@ -2,6 +2,7 @@
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using System.Security.Claims;
 
 namespace PokemonReviewApp.Repository
 {
@@ -18,7 +19,16 @@ namespace PokemonReviewApp.Repository
 
         private string GetCurrentUser()
         {
-            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
+            var context = _httpContextAccessor.HttpContext;
+            if (context?.User?.Identity?.IsAuthenticated != true)
+                return "System";
+
+            var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? context.User.FindFirst("sub")?.Value ?? "UnknownID";
+
+            var userName = context.User.Identity.Name ?? "UnknownUser";
+
+            return $"{userId} ({userName})";
         }
 
         public bool CreateOwner(Owner owner)

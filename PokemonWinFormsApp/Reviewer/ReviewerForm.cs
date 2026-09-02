@@ -1,5 +1,4 @@
-﻿using Autofac;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 using PokemonWinFormsApp.Reviewer;
 
 namespace PokemonWinFormsApp
@@ -8,10 +7,10 @@ namespace PokemonWinFormsApp
     {
         private readonly IApiService _apiService;
 
-        public ReviewerForm(IApiService apiService)
+        public ReviewerForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void ReviewerForm_Load(object sender, EventArgs e)
@@ -48,13 +47,9 @@ namespace PokemonWinFormsApp
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;
                 if (selectedReviewer != null)
                 {
-                    //autofac ile güvenli form çağırmak için child scope açıyor
-                    using (var scope = Program.Container.BeginLifetimeScope())
-                    {
-                        var detailForm = scope.Resolve<ReviewerDetailForm>();
-                        await detailForm.LoadReviewerDetailAsync(selectedReviewer.Id);
-                        detailForm.ShowDialog();
-                    }
+                    var detailForm = new ReviewerDetailForm();
+                    await detailForm.LoadReviewerDetailAsync(selectedReviewer.Id);
+                    detailForm.ShowDialog();
                 }
                 else
                 {
@@ -71,12 +66,9 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                //autofac ile güvenli form çağırmak için child scope açıyor
-                using (var scope = Program.Container.BeginLifetimeScope())
-                {
-                    var createForm = scope.Resolve<ReviewerCreateForm>();
-                    createForm.ShowDialog();
-                }
+                var createForm = new ReviewerCreateForm();
+                createForm.ShowDialog();
+
                 await LoadReviewersAsync();
             }
             catch (Exception ex)
@@ -92,13 +84,9 @@ namespace PokemonWinFormsApp
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;
                 if (selectedReviewer != null)
                 {
-                    //autofac ile güvenli form çağırmak için child scope açıyor
-                    using (var scope = Program.Container.BeginLifetimeScope())
-                    {
-                        var updateForm = scope.Resolve<ReviewerUpdateForm>();
-                        await updateForm.LoadReviewerForUpdateAsync(selectedReviewer.Id);
-                        updateForm.ShowDialog();
-                    }
+                    var updateForm = new ReviewerUpdateForm();
+                    await updateForm.LoadReviewerForUpdateAsync(selectedReviewer.Id);
+                    updateForm.ShowDialog();
 
                     await LoadReviewersAsync();
                 }

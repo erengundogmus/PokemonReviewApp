@@ -5,20 +5,18 @@ namespace PokemonWinFormsApp.Country
     public partial class CountryDetailForm : Form
     {
         private readonly IApiService _apiService;
-        private int _countryId;
 
-        public CountryDetailForm(IApiService apiService)
+        public CountryDetailForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadCountryDetailAsync(int countryId)
         {
-            _countryId = countryId;
             try
             {
-                var country = await _apiService.GetByIdAsync<CountryOutputDto>("country", _countryId);
+                var country = await _apiService.GetByIdAsync<CountryOutputDto>("country", countryId);
 
                 if (country != null)
                 {

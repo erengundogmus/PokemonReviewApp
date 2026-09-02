@@ -1,5 +1,4 @@
-﻿using Autofac;
-using PokemonReviewApp.OutputDtos;
+﻿using PokemonReviewApp.OutputDtos;
 
 namespace PokemonWinFormsApp.Pokemon
 {
@@ -7,10 +6,10 @@ namespace PokemonWinFormsApp.Pokemon
     {
         private readonly IApiService _apiService;
 
-        public PokemonForm(IApiService apiService)
+        public PokemonForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void PokemonForm_Load(object sender, EventArgs e)
@@ -47,17 +46,9 @@ namespace PokemonWinFormsApp.Pokemon
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
                 if (selectedPokemon != null)
                 {
-                    //autofac ile güvenli form çağırmak için child scope açıyor
-                    using (var scope = Program.Container.BeginLifetimeScope())
-                    {
-                        var detailForm = scope.Resolve<PokemonDetailForm>();
-                        await detailForm.LoadPokemonDetailAsync(selectedPokemon.Id);
-                        detailForm.ShowDialog();
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Could not cast selected row to PokemonOutputDto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    var detailForm = new PokemonDetailForm();
+                    await detailForm.LoadPokemonDetailAsync(selectedPokemon.Id);
+                    detailForm.ShowDialog();
                 }
             }
             else
@@ -70,12 +61,9 @@ namespace PokemonWinFormsApp.Pokemon
         {
             try
             {
-                //autofac ile güvenli form çağırmak child scope açıyor
-                using (var scope = Program.Container.BeginLifetimeScope())
-                {
-                    var createForm = scope.Resolve<PokemonCreateForm>();
-                    createForm.ShowDialog();
-                }
+                var createForm = new PokemonCreateForm();
+                createForm.ShowDialog();
+
                 await LoadPokemonsAsync();
             }
             catch (Exception ex)
@@ -91,19 +79,11 @@ namespace PokemonWinFormsApp.Pokemon
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
                 if (selectedPokemon != null)
                 {
-                    //autofac ile güvenli form çağırmak için child scope açıyor
-                    using (var scope = Program.Container.BeginLifetimeScope())
-                    {
-                        var updateForm = scope.Resolve<PokemonUpdateForm>();
-                        await updateForm.LoadPokemonForUpdateAsync(selectedPokemon.Id);
-                        updateForm.ShowDialog();
-                    }
+                    var updateForm = new PokemonUpdateForm();
+                    await updateForm.LoadPokemonForUpdateAsync(selectedPokemon.Id);
+                    updateForm.ShowDialog();
 
                     await LoadPokemonsAsync();
-                }
-                else
-                {
-                    MessageBox.Show("Could not cast selected row to PokemonOutputDto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
@@ -146,10 +126,6 @@ namespace PokemonWinFormsApp.Pokemon
                             MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
-                }
-                else
-                {
-                    MessageBox.Show("Could not cast selected row to PokemonOutputDto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else

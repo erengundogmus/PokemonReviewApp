@@ -6,10 +6,10 @@ namespace PokemonWinFormsApp.Auth
     {
         private readonly IApiService _apiService;
 
-        public ResetPasswordForm(IApiService apiService)
+        public ResetPasswordForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void buttonReset_Click(object sender, EventArgs e)

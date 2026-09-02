@@ -7,10 +7,10 @@ namespace PokemonWinFormsApp.PokemonFood
         private readonly IApiService _apiService;
         private readonly string pokemonFoodApiUrl = "pokemonfood";
 
-        public PokemonFoodForm(IApiService apiService)
+        public PokemonFoodForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void PokemonFoodForm_Load(object sender, EventArgs e)

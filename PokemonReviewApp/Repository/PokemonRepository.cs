@@ -3,6 +3,7 @@ using PokemonReviewApp.AuditLogs;
 using PokemonReviewApp.Data;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
+using System.Security.Claims;
 
 namespace PokemonReviewApp.Repository
 {
@@ -19,7 +20,16 @@ namespace PokemonReviewApp.Repository
 
         private string GetCurrentUser()
         {
-            return _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "System";
+            var context = _httpContextAccessor.HttpContext;
+            if (context?.User?.Identity?.IsAuthenticated != true)
+                return "System";
+
+            var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? context.User.FindFirst("sub")?.Value ?? "UnknownID";
+
+            var userName = context.User.Identity.Name ?? "UnknownUser";
+
+            return $"{userId} ({userName})";
         }
 
         public bool CreatePokemon(int ownerId, int categoryId, Pokemon pokemon)
@@ -89,6 +99,9 @@ namespace PokemonReviewApp.Repository
             using var transaction = this.context.Database.BeginTransaction();
             try
             {
+                var ownerRelation = this.context.PokemonsOwners.FirstOrDefault(po => po.PokemonId == pokemon.Id);
+                var categoryRelation = this.context.PokemonCategories.FirstOrDefault(pc => pc.PokemonId == pokemon.Id);
+
                 pokemon.IsDeleted = true;
                 pokemon.DeletedAt = DateTime.UtcNow;
                 this.context.Pokemons.Update(pokemon);
@@ -101,6 +114,8 @@ namespace PokemonReviewApp.Repository
                     PokemonId = pokemon.Id,
                     NewName = pokemon.Name,
                     NewBirthDate = pokemon.BirthDate,
+                    NewOwnerId = ownerRelation?.OwnerId,
+                    NewCategoryId = categoryRelation?.CategoryId,
                     LoggedAt = DateTime.UtcNow
                 };
 
@@ -176,7 +191,6 @@ namespace PokemonReviewApp.Repository
 
                 if (existingPokemon != null)
                 {
-                    // Dışarıdan gelen yeni değerleri mevcut entity'ye aktarıyoruz (Tracking çakışmasını önlemek için)
                     existingPokemon.Name = pokemon.Name;
                     existingPokemon.BirthDate = pokemon.BirthDate;
 
@@ -218,7 +232,6 @@ namespace PokemonReviewApp.Repository
                 };
                 this.context.Add(pokemonCategory);
 
-                // existingPokemon zaten context tarafından takip edildiği için ekstra Update çağrısına gerek kalmıyor
 
                 if (Save())
                 {

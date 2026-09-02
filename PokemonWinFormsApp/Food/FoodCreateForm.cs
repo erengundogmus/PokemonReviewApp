@@ -6,10 +6,10 @@ namespace PokemonWinFormsApp.Food
     {
         private readonly IApiService _apiService;
 
-        public FoodCreateForm(IApiService apiService)
+        public FoodCreateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)

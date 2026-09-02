@@ -6,10 +6,10 @@ namespace PokemonWinFormsApp.Country
     {
         private readonly IApiService _apiService;
 
-        public CountryCreateForm(IApiService apiService)
+        public CountryCreateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void CountryCreate_Click(object sender, EventArgs e)

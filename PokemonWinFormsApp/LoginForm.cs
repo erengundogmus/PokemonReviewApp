@@ -6,10 +6,11 @@ namespace PokemonWinFormsApp
     public partial class LoginForm : Form
     {
         private readonly IAuthService _authService;
-        public LoginForm(IAuthService authService)
+        public LoginForm()
         {
             InitializeComponent();
-            _authService = authService;
+            _authService = ResolveHelper.GetInstance<IAuthService>();
+
         }
 
         private async void BtnLogin_Click(object sender, EventArgs e)
@@ -35,7 +36,7 @@ namespace PokemonWinFormsApp
 
                     this.Hide();
 
-                    var mainForm = Program.Container.Resolve<MainForm>();
+                    var mainForm = new MainForm();
                     mainForm.FormClosed += (s, args) => this.Close();
                     mainForm.Show();
                 }
@@ -54,11 +55,8 @@ namespace PokemonWinFormsApp
         {
             try
             {
-                using (var scope = Program.Container.BeginLifetimeScope())
-                {
-                    var resetPasswordForm = scope.Resolve<ResetPasswordForm>();
-                    resetPasswordForm.ShowDialog();
-                }
+                var resetForm = new ResetPasswordForm();
+                resetForm.ShowDialog();
             }
             catch (Exception ex)
             {

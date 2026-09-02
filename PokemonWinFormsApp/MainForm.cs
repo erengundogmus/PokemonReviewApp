@@ -1,4 +1,3 @@
-using Autofac;
 using PokemonWinFormsApp.Category;
 using PokemonWinFormsApp.Country;
 using PokemonWinFormsApp.Pokemon;
@@ -12,52 +11,44 @@ namespace PokemonWinFormsApp
         {
             InitializeComponent();
         }
-
         private void buttonFood_Click(object sender, EventArgs e)
         {
-            var foodForm = Program.Container.Resolve<FoodForm>();
+            var foodForm = new FoodForm();
             foodForm.ShowDialog();
         }
-
         private void buttonCountry_Click(object sender, EventArgs e)
         {
-            var countryForm = Program.Container.Resolve<CountryForm>();
+            var countryForm = new CountryForm();
             countryForm.ShowDialog();
         }
-
         private void buttonCategory_Click(object sender, EventArgs e)
         {
-            var categoryForm = Program.Container.Resolve<CategoryForm>();
+            var categoryForm = new CategoryForm();
             categoryForm.ShowDialog();
         }
-
         private void buttonOwner_Click(object sender, EventArgs e)
         {
-            var ownerForm = Program.Container.Resolve<OwnerForm>();
+            var ownerForm = new OwnerForm();
             ownerForm.ShowDialog();
         }
-
         private void buttonReview_Click(object sender, EventArgs e)
         {
-            var reviewForm = Program.Container.Resolve<ReviewForm>();
+            var reviewForm = new ReviewForm();
             reviewForm.ShowDialog();
         }
-
         private void buttonReviewer_Click(object sender, EventArgs e)
         {
-            var reviewerForm = Program.Container.Resolve<ReviewerForm>();
+            var reviewerForm = new ReviewerForm();
             reviewerForm.ShowDialog();
         }
-
         private void buttonPokemon_Click(object sender, EventArgs e)
         {
-            var pokemonForm = Program.Container.Resolve<PokemonForm>();
+            var pokemonForm = new PokemonForm();
             pokemonForm.ShowDialog();
         }
-
         private void buttonPokemonFood_Click(object sender, EventArgs e)
         {
-            var pokemonFoodForm = Program.Container.Resolve<PokemonFoodForm>();
+            var pokemonFoodForm = new PokemonFoodForm();
             pokemonFoodForm.ShowDialog();
         }
     }

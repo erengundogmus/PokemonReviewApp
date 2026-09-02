@@ -8,10 +8,10 @@ namespace PokemonWinFormsApp.Pokemon
         private readonly IApiService _apiService;
         private int _pokemonId;
 
-        public PokemonUpdateForm(IApiService apiService)
+        public PokemonUpdateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadPokemonForUpdateAsync(int pokemonId)

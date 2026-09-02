@@ -8,10 +8,10 @@ namespace PokemonWinFormsApp.Owner
         private readonly IApiService _apiService;
         private int _ownerId;
 
-        public OwnerUpdateForm(IApiService apiService)
+        public OwnerUpdateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadOwnerForUpdateAsync(int ownerId)

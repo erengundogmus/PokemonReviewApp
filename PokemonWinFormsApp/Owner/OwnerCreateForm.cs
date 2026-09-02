@@ -6,10 +6,10 @@ namespace PokemonWinFormsApp.Owner
     {
         private readonly IApiService _apiService;
 
-        public OwnerCreateForm(IApiService apiService)
+        public OwnerCreateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)

@@ -5,20 +5,18 @@ namespace PokemonWinFormsApp.Review
     public partial class ReviewDetailForm : Form
     {
         private readonly IApiService _apiService;
-        private int _reviewId;
 
-        public ReviewDetailForm(IApiService apiService)
+        public ReviewDetailForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadReviewDetailAsync(int reviewId)
         {
-            _reviewId = reviewId;
             try
             {
-                var review = await _apiService.GetByIdAsync<ReviewOutputDto>("review", _reviewId);
+                var review = await _apiService.GetByIdAsync<ReviewOutputDto>("review", reviewId);
 
                 if (review != null)
                 {

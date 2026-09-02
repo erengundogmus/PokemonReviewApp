@@ -8,10 +8,10 @@ namespace PokemonWinFormsApp.Category
         private readonly IApiService _apiService;
         private int _categoryId;
 
-        public CategoryUpdateForm(IApiService apiService)
+        public CategoryUpdateForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadCategoryForUpdateAsync(int categoryId)

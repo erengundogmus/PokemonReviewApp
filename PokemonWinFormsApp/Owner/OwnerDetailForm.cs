@@ -7,10 +7,10 @@ namespace PokemonWinFormsApp.Owner
         private readonly IApiService _apiService;
         private int _ownerId;
 
-        public OwnerDetailForm(IApiService apiService)
+        public OwnerDetailForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadOwnerDetailAsync(int ownerId)

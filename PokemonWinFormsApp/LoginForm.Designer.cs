@@ -57,7 +57,7 @@
             this.BtnLogin.Name = "BtnLogin";
             this.BtnLogin.Size = new System.Drawing.Size(180, 32);
             this.BtnLogin.TabIndex = 2;
-            this.BtnLogin.Text = "Giriş Yap";
+            this.BtnLogin.Text = "Login";
             this.BtnLogin.UseVisualStyleBackColor = true;
             this.BtnLogin.Click += new System.EventHandler(this.BtnLogin_Click);
             // 
@@ -78,7 +78,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(76, 15);
             this.label1.TabIndex = 4;
-            this.label1.Text = "Kullanıcı Adı:";
+            this.label1.Text = "Username:";
             // 
             // label2
             // 
@@ -87,7 +87,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(33, 15);
             this.label2.TabIndex = 5;
-            this.label2.Text = "Şifre:";
+            this.label2.Text = "Password:";
             // 
             // LoginForm
             // 
@@ -102,7 +102,7 @@
             this.Controls.Add(this.txtUsername);
             this.Name = "LoginForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Kullanıcı Girişi";
+            this.Text = "User Login";
             this.ResumeLayout(false);
             this.PerformLayout();
 

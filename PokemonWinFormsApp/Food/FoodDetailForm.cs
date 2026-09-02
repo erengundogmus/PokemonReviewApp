@@ -5,20 +5,18 @@ namespace PokemonWinFormsApp.Food
     public partial class FoodDetailForm : Form
     {
         private readonly IApiService _apiService;
-        private int _foodId;
 
-        public FoodDetailForm(IApiService apiService)
+        public FoodDetailForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadFoodDetailAsync(int foodId)
         {
-            _foodId = foodId;
             try
             {
-                var food = await _apiService.GetByIdAsync<FoodOutputDto>("food", _foodId);
+                var food = await _apiService.GetByIdAsync<FoodOutputDto>("food", foodId);
 
                 if (food != null)
                 {

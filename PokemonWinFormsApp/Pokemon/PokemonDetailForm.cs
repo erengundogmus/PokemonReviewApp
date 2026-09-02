@@ -5,20 +5,18 @@ namespace PokemonWinFormsApp.Pokemon
     public partial class PokemonDetailForm : Form
     {
         private readonly IApiService _apiService;
-        private int _pokemonId;
 
-        public PokemonDetailForm(IApiService apiService)
+        public PokemonDetailForm()
         {
             InitializeComponent();
-            _apiService = apiService;
+            _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         public async Task LoadPokemonDetailAsync(int pokemonId)
         {
-            _pokemonId = pokemonId;
             try
             {
-                var pokemon = await _apiService.GetByIdAsync<PokemonOutputDto>("pokemon", _pokemonId);
+                var pokemon = await _apiService.GetByIdAsync<PokemonOutputDto>("pokemon", pokemonId);
 
                 if (pokemon != null)
                 {
