@@ -34,6 +34,9 @@ builder.Services.AddScoped<IReviewInterface, ReviewRepository>();
 builder.Services.AddScoped<IReviewerInterface, ReviewerRepository>();
 builder.Services.AddScoped<IFoodInterface, FoodRepository>();
 builder.Services.AddScoped<IUserInterface, UserRepository>();
+builder.Services.AddScoped<IUserRoleInterface, UserRoleRepository>();
+builder.Services.AddScoped<IRoleInterface, RoleRepository>();
+builder.Services.AddScoped<IPermissionInterface, PermissionRepository>();
 
 builder.Services.AddDbContext<DataContext>(options =>
 {

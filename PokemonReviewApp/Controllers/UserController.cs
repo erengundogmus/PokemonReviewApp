@@ -6,14 +6,13 @@ using PokemonReviewApp.Models;
 using PokemonReviewApp.OutputDtos;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace PokemonReviewApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : Controller
     {
         private readonly IUserInterface _userRepository;
         private readonly IConfiguration _configuration;
@@ -28,18 +27,18 @@ namespace PokemonReviewApp.Controllers
         public async Task<IActionResult> Register([FromBody] UserRegisterDto request)
         {
             if (await _userRepository.UserExists(request.Username))
-                return BadRequest("Bu kullanıcı adı zaten alınmış.");
+                return BadRequest("This username is already taken.");
 
             var newUser = new User
             {
                 Username = request.Username,
                 Name = request.Name,
-                Surname = request.Surname
+                Surname = request.Surname,
             };
 
             var createdUser = await _userRepository.Register(newUser, request.Password);
 
-            return Ok(new { message = "Kullanıcı başarıyla oluşturuldu", user = createdUser.Username });
+            return Ok(new { message = "User successfully created", user = createdUser.Username });
         }
 
         [HttpPost("login")]
@@ -48,15 +47,17 @@ namespace PokemonReviewApp.Controllers
             var user = await _userRepository.Login(request.Username, request.Password);
 
             if (user == null)
-                return Unauthorized("Kullanıcı adı veya şifre hatalı.");
+                return Unauthorized("Invalid username or password.");
 
             string token = CreateToken(user);
+            var permissions = await _userRepository.GetUserPermissions(user.Id);
 
             var response = new UserLoginOutputDto
             {
                 Token = token,
-                Message = "Giriş başarılı",
-                Username = user.Username
+                Message = "Login successful",
+                Username = user.Username,
+                Permissions = permissions
             };
 
             return Ok(response);
@@ -65,10 +66,10 @@ namespace PokemonReviewApp.Controllers
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username)
-        };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username)
+            };
 
             var secret = _configuration
                 .GetSection("AppSettings:Token")
@@ -94,7 +95,7 @@ namespace PokemonReviewApp.Controllers
             return tokenHandler.WriteToken(token);
         }
 
-        [HttpPost("reset-password")]
+        [HttpPost("resetpassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request)
         {
             var success = await _userRepository.ResetPassword(request.Username, request.NewPassword);
@@ -106,5 +107,11 @@ namespace PokemonReviewApp.Controllers
         }
 
 
+        [HttpGet("users-with-roles")]
+        public async Task<IActionResult> GetUsersWithRoles()
+        {
+            var users = await _userRepository.GetUsersWithRolesAsync();
+            return Ok(users);
+        }
     }
 }

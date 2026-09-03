@@ -8,5 +8,7 @@ namespace PokemonReviewApp.Interfaces
         Task<User> Login(string username, string password);
         Task<bool> ResetPassword(string username, string newPassword);
         Task<bool> UserExists(string username);
+        Task<IEnumerable<UserOutputDto>> GetUsersWithRolesAsync();
+        Task<List<string>> GetUserPermissions(int userId);
     }
 }

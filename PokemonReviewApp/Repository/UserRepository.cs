@@ -82,5 +82,48 @@ namespace PokemonReviewApp.Repository
             _context.Users.Update(user);
             return await _context.SaveChangesAsync() > 0;
         }
+
+
+        public async Task<IEnumerable<User>> GetUsers()
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<UserOutputDto>> GetUsersWithRolesAsync()
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RolePermissions)
+                            .ThenInclude(rp => rp.Permission)
+                .Select(u => new UserOutputDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Name = u.Name,
+                    Surname = u.Surname,
+                    Roles = u.UserRoles.Select(ur => ur.Role.Name).ToList(),
+                    Permissions = u.UserRoles
+                        .SelectMany(ur => ur.Role.RolePermissions)
+                        .Select(rp => rp.Permission.Name)
+                        .Distinct()
+                        .ToList()
+                })
+                .ToListAsync();
+        }
+
+        public async Task<List<string>> GetUserPermissions(int userId)
+        {
+            return await _context.UserRoles
+                .Where(ur => ur.UserId == userId)
+                .SelectMany(ur => ur.Role.RolePermissions)
+                .Select(rp => rp.Permission.Name)
+                .Distinct() //birden fazla rolde olan aynı yetkileri tekrarlamıyor
+                .ToListAsync();
+        }
+
     }
 }

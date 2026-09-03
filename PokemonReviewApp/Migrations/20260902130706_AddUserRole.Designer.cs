@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PokemonReviewApp.Data;
 
@@ -11,9 +12,11 @@ using PokemonReviewApp.Data;
 namespace PokemonReviewApp.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20260902130706_AddUserRole")]
+    partial class AddUserRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -435,23 +438,6 @@ namespace PokemonReviewApp.Migrations
                     b.ToTable("Owners");
                 });
 
-            modelBuilder.Entity("PokemonReviewApp.Models.Permission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Permissions");
-                });
-
             modelBuilder.Entity("PokemonReviewApp.Models.Pokemon", b =>
                 {
                     b.Property<int>("Id")
@@ -608,21 +594,6 @@ namespace PokemonReviewApp.Migrations
                     b.ToTable("Roles");
                 });
 
-            modelBuilder.Entity("PokemonReviewApp.Models.RolePermission", b =>
-                {
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PermissionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("RoleId", "PermissionId");
-
-                    b.HasIndex("PermissionId");
-
-                    b.ToTable("RolePermissions");
-                });
-
             modelBuilder.Entity("PokemonReviewApp.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -647,11 +618,16 @@ namespace PokemonReviewApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserTypeId");
 
                     b.ToTable("Users");
                 });
@@ -677,6 +653,23 @@ namespace PokemonReviewApp.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("PokemonReviewApp.Models.UserType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserTypes");
                 });
 
             modelBuilder.Entity("PokemonReviewApp.Models.Owner", b =>
@@ -766,23 +759,15 @@ namespace PokemonReviewApp.Migrations
                     b.Navigation("Reviewer");
                 });
 
-            modelBuilder.Entity("PokemonReviewApp.Models.RolePermission", b =>
+            modelBuilder.Entity("PokemonReviewApp.Models.User", b =>
                 {
-                    b.HasOne("PokemonReviewApp.Models.Permission", "Permission")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("PermissionId")
+                    b.HasOne("PokemonReviewApp.Models.UserType", "UserType")
+                        .WithMany("Users")
+                        .HasForeignKey("UserTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PokemonReviewApp.Models.Role", "Role")
-                        .WithMany("RolePermissions")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Permission");
-
-                    b.Navigation("Role");
+                    b.Navigation("UserType");
                 });
 
             modelBuilder.Entity("PokemonReviewApp.Models.UserRole", b =>
@@ -824,11 +809,6 @@ namespace PokemonReviewApp.Migrations
                     b.Navigation("PokemonOwners");
                 });
 
-            modelBuilder.Entity("PokemonReviewApp.Models.Permission", b =>
-                {
-                    b.Navigation("RolePermissions");
-                });
-
             modelBuilder.Entity("PokemonReviewApp.Models.Pokemon", b =>
                 {
                     b.Navigation("PokemonCategories");
@@ -847,14 +827,17 @@ namespace PokemonReviewApp.Migrations
 
             modelBuilder.Entity("PokemonReviewApp.Models.Role", b =>
                 {
-                    b.Navigation("RolePermissions");
-
                     b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("PokemonReviewApp.Models.User", b =>
                 {
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("PokemonReviewApp.Models.UserType", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }
