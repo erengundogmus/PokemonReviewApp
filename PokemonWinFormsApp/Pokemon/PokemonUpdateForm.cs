@@ -7,6 +7,7 @@ namespace PokemonWinFormsApp.Pokemon
     {
         private readonly IApiService _apiService;
         private int _pokemonId;
+        private byte[]? _selectedPhotoBytes = null;
 
         public PokemonUpdateForm()
         {
@@ -26,6 +27,15 @@ namespace PokemonWinFormsApp.Pokemon
                     textBirthDate.Text = pokemon.BirthDate.ToString("dd-MM-yyyy");
                     textOwnerId.Text = pokemon.OwnerId.ToString();
                     textCategoryId.Text = pokemon.CategoryId.ToString();
+
+                    if (pokemon.Photo != null && pokemon.Photo.Length > 0)
+                    {
+                        _selectedPhotoBytes = pokemon.Photo;
+                        using (var ms = new MemoryStream(pokemon.Photo))
+                        {
+                            pictureBoxPhoto.Image = Image.FromStream(ms);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -45,9 +55,10 @@ namespace PokemonWinFormsApp.Pokemon
             var updatedPokemon = new PokemonInputDto
             {
                 Name = textName.Text,
-                BirthDate = DateTime.TryParse(textBirthDate.Text, out DateTime birthDate) ? birthDate : DateTime.Now,
+                BirthDate = DateTime.TryParse(textBirthDate.Text, out DateTime birthDate) ? birthDate.Date : DateTime.Today,
                 OwnerId = int.TryParse(textOwnerId.Text, out int ownerId) ? ownerId : 0,
-                CategoryId = int.TryParse(textCategoryId.Text, out int categoryId) ? categoryId : 0
+                CategoryId = int.TryParse(textCategoryId.Text, out int categoryId) ? categoryId : 0,
+                Photo = _selectedPhotoBytes
             };
 
             try
@@ -67,6 +78,28 @@ namespace PokemonWinFormsApp.Pokemon
             catch (Exception ex)
             {
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnSelectPhoto_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png";
+                ofd.Title = "Select a Photo";
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    string ext = Path.GetExtension(ofd.FileName).ToLower();
+                    if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+                    {
+                        MessageBox.Show("Only JPG, JPEG, and PNG formats are supported.", "Invalid Format", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    pictureBoxPhoto.Image = Image.FromFile(ofd.FileName);
+                    _selectedPhotoBytes = File.ReadAllBytes(ofd.FileName);
+                }
             }
         }
     }

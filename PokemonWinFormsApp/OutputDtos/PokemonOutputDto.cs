@@ -9,5 +9,6 @@
         public string OwnerName { get; set; }
         public int CategoryId { get; set; }
         public string CategoryName { get; set; }
+        public byte[]? Photo { get; set; }
     }
 }

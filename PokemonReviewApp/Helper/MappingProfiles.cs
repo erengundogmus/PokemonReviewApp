@@ -41,7 +41,7 @@ namespace PokemonReviewApp.Helper
             CreateMap<Food, FoodOutputDto>().ReverseMap();
             CreateMap<Food, FoodInputDto>().ReverseMap();
 
-
+            CreateMap<Pokemon, PokemonDetailOutputDto>().ReverseMap();
 
 
         }

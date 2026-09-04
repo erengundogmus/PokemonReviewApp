@@ -2,15 +2,8 @@
 {
     partial class PokemonDetailForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -37,6 +30,8 @@
             textOwnerName = new TextBox();
             textCategoryId = new TextBox();
             textCategoryName = new TextBox();
+            pictureBoxPhoto = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPhoto).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -151,11 +146,22 @@
             textCategoryName.Size = new Size(150, 23);
             textCategoryName.TabIndex = 13;
             // 
+            // pictureBoxPhoto
+            // 
+            pictureBoxPhoto.BorderStyle = BorderStyle.FixedSingle;
+            pictureBoxPhoto.Location = new Point(340, 17);
+            pictureBoxPhoto.Name = "pictureBoxPhoto";
+            pictureBoxPhoto.Size = new Size(180, 180);
+            pictureBoxPhoto.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxPhoto.TabIndex = 14;
+            pictureBoxPhoto.TabStop = false;
+            // 
             // PokemonDetailForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(334, 311);
+            ClientSize = new Size(550, 311);
+            Controls.Add(pictureBoxPhoto);
             Controls.Add(textCategoryName);
             Controls.Add(textCategoryId);
             Controls.Add(textOwnerName);
@@ -172,6 +178,7 @@
             Controls.Add(label1);
             Name = "PokemonDetailForm";
             Text = "Pokemon Detail";
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPhoto).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -192,5 +199,6 @@
         private TextBox textOwnerName;
         private TextBox textCategoryId;
         private TextBox textCategoryName;
+        private PictureBox pictureBoxPhoto;
     }
 }

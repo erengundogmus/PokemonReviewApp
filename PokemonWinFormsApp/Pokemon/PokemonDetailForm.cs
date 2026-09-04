@@ -23,8 +23,7 @@ namespace PokemonWinFormsApp.Pokemon
 
             try
             {
-                var pokemon = await _apiService.GetByIdAsync<PokemonOutputDto>("pokemon", pokemonId);
-
+                var pokemon = await _apiService.GetByIdAsync<PokemonDetailOutputDto>("pokemon", pokemonId);
                 if (pokemon != null)
                 {
                     textId.Text = pokemon.Id.ToString();
@@ -34,6 +33,18 @@ namespace PokemonWinFormsApp.Pokemon
                     textOwnerName.Text = pokemon.OwnerName;
                     textCategoryId.Text = pokemon.CategoryId.ToString();
                     textCategoryName.Text = pokemon.CategoryName;
+
+                    if (pokemon.Photo != null && pokemon.Photo.Length > 0)
+                    {
+                        using (var ms = new MemoryStream(pokemon.Photo))
+                        {
+                            pictureBoxPhoto.Image = Image.FromStream(ms);
+                        }
+                    }
+                    else
+                    {
+                        pictureBoxPhoto.Image = null;
+                    }
                 }
             }
             catch (Exception ex)

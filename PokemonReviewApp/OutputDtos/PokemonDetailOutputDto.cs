@@ -1,15 +1,14 @@
-﻿using System.ComponentModel;
-
-namespace PokemonReviewApp.Dto
+﻿namespace PokemonReviewApp.OutputDtos
 {
-    public class PokemonInputDto
+    public class PokemonDetailOutputDto
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public DateTime BirthDate { get; set; }
         public int OwnerId { get; set; }
+        public string OwnerName { get; set; }
         public int CategoryId { get; set; }
-        
-        [DefaultValue(null)]
+        public string CategoryName { get; set; }
         public byte[]? Photo { get; set; }
     }
 }

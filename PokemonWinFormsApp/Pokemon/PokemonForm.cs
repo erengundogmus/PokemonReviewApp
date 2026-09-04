@@ -31,6 +31,11 @@ namespace PokemonWinFormsApp.Pokemon
                 if (pokemons != null)
                 {
                     dataGridView1.DataSource = pokemons.ToList();
+
+                    if (dataGridView1.Columns["Photo"] != null)
+                    {
+                        dataGridView1.Columns["Photo"].Visible = false;
+                    }
                 }
             }
             catch (Exception ex)

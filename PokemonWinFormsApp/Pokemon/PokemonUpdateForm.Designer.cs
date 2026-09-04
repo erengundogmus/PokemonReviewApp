@@ -2,15 +2,8 @@
 {
     partial class PokemonUpdateForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -21,11 +14,6 @@
         }
 
         #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             label1 = new Label();
@@ -37,6 +25,9 @@
             textOwnerId = new TextBox();
             textCategoryId = new TextBox();
             button1 = new Button();
+            pictureBoxPhoto = new PictureBox();
+            btnSelectPhoto = new Button();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPhoto).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -109,11 +100,33 @@
             button1.UseVisualStyleBackColor = true;
             button1.Click += buttonUpdate_Click;
             // 
+            // pictureBoxPhoto
+            // 
+            pictureBoxPhoto.BorderStyle = BorderStyle.FixedSingle;
+            pictureBoxPhoto.Location = new Point(290, 22);
+            pictureBoxPhoto.Name = "pictureBoxPhoto";
+            pictureBoxPhoto.Size = new Size(150, 150);
+            pictureBoxPhoto.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxPhoto.TabIndex = 9;
+            pictureBoxPhoto.TabStop = false;
+            // 
+            // btnSelectPhoto
+            // 
+            btnSelectPhoto.Location = new Point(290, 190);
+            btnSelectPhoto.Name = "btnSelectPhoto";
+            btnSelectPhoto.Size = new Size(150, 30);
+            btnSelectPhoto.TabIndex = 10;
+            btnSelectPhoto.Text = "Select Photo";
+            btnSelectPhoto.UseVisualStyleBackColor = true;
+            btnSelectPhoto.Click += btnSelectPhoto_Click;
+            // 
             // PokemonUpdateForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(284, 241);
+            ClientSize = new Size(470, 241);
+            Controls.Add(btnSelectPhoto);
+            Controls.Add(pictureBoxPhoto);
             Controls.Add(button1);
             Controls.Add(textCategoryId);
             Controls.Add(textOwnerId);
@@ -124,7 +137,8 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Name = "PokemonUpdateForm";
-            Text = "PokemonUpdateForm";
+            Text = "Update Pokemon";
+            ((System.ComponentModel.ISupportInitialize)pictureBoxPhoto).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -140,5 +154,7 @@
         private TextBox textOwnerId;
         private TextBox textCategoryId;
         private Button button1;
+        private PictureBox pictureBoxPhoto;
+        private Button btnSelectPhoto;
     }
 }

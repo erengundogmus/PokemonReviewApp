@@ -193,6 +193,7 @@ namespace PokemonReviewApp.Repository
                 {
                     existingPokemon.Name = pokemon.Name;
                     existingPokemon.BirthDate = pokemon.BirthDate;
+                    existingPokemon.Photo = pokemon.Photo;
 
                     var pokemonLog = new PokemonLog
                     {
