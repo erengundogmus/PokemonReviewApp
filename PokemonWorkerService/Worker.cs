@@ -36,7 +36,6 @@ public class Worker : BackgroundService
     {
         try
         {
-            // Serilog saat bilgisini otomatik eklediği için manuel timestamp'i sildik
             _logger.LogInformation("API'ye istek atildi ve pokemonlar listeleniyor...");
 
             var pokemons = await _pokemonApiClient.GetPokemonsAsync(cancellationToken);
@@ -46,8 +45,7 @@ public class Worker : BackgroundService
                 int index = 1;
                 foreach (var pokemon in pokemons)
                 {
-                    // ILogger'ın parametrik loglama (Structured Logging) yapısını kullanıyoruz
-                    _logger.LogInformation("  {Index}. ID: {Id,-5} | Ad: {Name,-10} | Kategori: {Category,-8} | Sahip: {Owner} | Tarih: {Date}",
+                    _logger.LogInformation("  {Index}. ID: {Id,-5} | Ad: {Name,-10} | Kategori: {Category,-8} | Sahip: {Owner,-10} | Tarih: {Date,-5}",
                         index++, pokemon.Id, pokemon.Name, pokemon.CategoryName, pokemon.OwnerName, pokemon.BirthDate.ToString("dd.MM.yyyy HH:mm"));
                 }
                 _logger.LogInformation(new string('-', 100));
