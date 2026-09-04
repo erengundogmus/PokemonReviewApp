@@ -14,6 +14,12 @@ namespace PokemonWinFormsApp.Food
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("FoodCreate"))
+            {
+                MessageBox.Show("You do not have permission to create food.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var newFood = new FoodInputDto
             {
                 Name = textName.Text,

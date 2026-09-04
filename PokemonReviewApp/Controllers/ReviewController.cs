@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.Models;
 using PokemonReviewApp.OutputDtos;
+
 namespace PokemonReviewApp.Controllers
 {
     [Route("api/[controller]")]
@@ -21,6 +23,7 @@ namespace PokemonReviewApp.Controllers
             this.pokemonInterface = pokemonInterface;
         }
 
+        [Authorize(Roles = "ReviewList")]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewOutputDto>))]
         public IActionResult GetReviews()
@@ -33,6 +36,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviews);
         }
 
+        [Authorize(Roles = "ReviewDetail")]
         [HttpGet("{reviewid}")]
         [ProducesResponseType(200, Type = typeof(ReviewOutputDto))]
         [ProducesResponseType(400)]
@@ -50,6 +54,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(review);
         }
 
+        [Authorize(Roles = "ReviewDetail")]
         [HttpGet("pokemon/{pokemonId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<ReviewOutputDto>))]
         [ProducesResponseType(400)]
@@ -63,6 +68,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(reviews);
         }
 
+        [Authorize(Roles = "ReviewCreate")]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -111,6 +117,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created");
         }
 
+        [Authorize(Roles = "ReviewUpdate")]
         [HttpPut("{reviewId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -155,6 +162,7 @@ namespace PokemonReviewApp.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "ReviewDelete")]
         [HttpDelete("{reviewId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -178,7 +186,6 @@ namespace PokemonReviewApp.Controllers
             }
 
             return NoContent();
-
         }
     }
 }

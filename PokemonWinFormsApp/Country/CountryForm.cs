@@ -35,12 +35,18 @@ namespace PokemonWinFormsApp.Country
             }
             catch (Exception ex)
             {
-                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonDetail_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CountryDetail"))
+            {
+                MessageBox.Show("You do not have permission to view country details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCountry = dataGridView1.CurrentRow.DataBoundItem as CountryOutputDto;
@@ -63,6 +69,12 @@ namespace PokemonWinFormsApp.Country
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CountryCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a country.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var createForm = new CountryCreateForm();
@@ -78,6 +90,12 @@ namespace PokemonWinFormsApp.Country
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CountryUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a country.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCountry = dataGridView1.CurrentRow.DataBoundItem as CountryOutputDto;
@@ -102,6 +120,12 @@ namespace PokemonWinFormsApp.Country
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CountryDelete"))
+            {
+                MessageBox.Show("You do not have permission to delete a country.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCountry = dataGridView1.CurrentRow.DataBoundItem as CountryOutputDto;

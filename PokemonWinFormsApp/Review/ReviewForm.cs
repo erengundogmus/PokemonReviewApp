@@ -36,12 +36,18 @@ namespace PokemonWinFormsApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonDetail_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewDetail"))
+            {
+                MessageBox.Show("You do not have permission to view review details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReview = dataGridView1.CurrentRow.DataBoundItem as ReviewOutputDto;
@@ -64,6 +70,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a review.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var createForm = new ReviewCreateForm();
@@ -79,6 +91,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a review.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReview = dataGridView1.CurrentRow.DataBoundItem as ReviewOutputDto;
@@ -103,6 +121,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewDelete"))
+            {
+                MessageBox.Show("You do not have permission to delete a review.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReview = dataGridView1.CurrentRow.DataBoundItem as ReviewOutputDto;

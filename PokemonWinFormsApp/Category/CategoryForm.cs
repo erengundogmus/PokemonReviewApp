@@ -37,7 +37,7 @@ namespace PokemonWinFormsApp.Category
             {
                 MessageBox.Show(
                     "API connection error or failed while loading data: " + ex.Message,
-                    "Hata",
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -45,6 +45,12 @@ namespace PokemonWinFormsApp.Category
 
         private async void buttonDetail_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CategoryDetail"))
+            {
+                MessageBox.Show("You do not have permission to view category details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
@@ -68,6 +74,12 @@ namespace PokemonWinFormsApp.Category
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CategoryCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a category.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var createForm = new CategoryCreateForm();
@@ -83,6 +95,12 @@ namespace PokemonWinFormsApp.Category
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CategoryUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a category.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;
@@ -108,6 +126,12 @@ namespace PokemonWinFormsApp.Category
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CategoryDelete"))
+            {
+                MessageBox.Show("You do not have permission to delete a category.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedCategory = dataGridView1.CurrentRow.DataBoundItem as CategoryOutputDto;

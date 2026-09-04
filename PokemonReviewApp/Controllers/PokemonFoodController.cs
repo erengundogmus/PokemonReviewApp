@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.Interfaces;
 using PokemonReviewApp.OutputDtos;
@@ -7,10 +8,8 @@ namespace PokemonReviewApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
     public class PokemonFoodController : Controller
     {
-
         private readonly IFoodInterface foodInterface;
         private readonly IPokemonInterface pokemonInterface;
         private readonly IMapper mapper;
@@ -22,7 +21,7 @@ namespace PokemonReviewApp.Controllers
             this.mapper = mapper;
         }
 
-
+        [Authorize(Roles = "PokemonsMenu")]
         [HttpGet("pokemon/{pokemonId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<FoodOutputDto>))]
         [ProducesResponseType(400)]
@@ -40,9 +39,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(foods);
         }
 
-
-
-
+        [Authorize(Roles = "PokemonFoodAdd")]
         [HttpPost("{foodId}/pokemon/{pokemonId}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -68,8 +65,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Food successfully added to pokemon's menu");
         }
 
-
-
+        [Authorize(Roles = "PokemonFoodRemove")]
         [HttpDelete("{foodId}/pokemon/{pokemonId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -96,9 +92,5 @@ namespace PokemonReviewApp.Controllers
 
             return NoContent();
         }
-
-
-
-
     }
 }

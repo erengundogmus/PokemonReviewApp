@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
@@ -22,6 +23,7 @@ namespace PokemonReviewApp.Controllers
             this.mapper = mapper;
         }
 
+        [Authorize(Roles = "FoodList")]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<FoodOutputDto>))]
         public IActionResult GetFoods()
@@ -34,6 +36,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(foods);
         }
 
+        [Authorize(Roles = "FoodDetail")]
         [HttpGet("{foodId}")]
         [ProducesResponseType(200, Type = typeof(FoodOutputDto))]
         [ProducesResponseType(400)]
@@ -51,7 +54,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(food);
         }
 
-
+        [Authorize(Roles = "FoodCreate")]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -82,8 +85,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created.");
         }
 
-       
-
+        [Authorize(Roles = "FoodUpdate")]
         [HttpPut("{foodId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -117,6 +119,7 @@ namespace PokemonReviewApp.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "FoodDelete")]
         [HttpDelete("{foodId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -139,6 +142,5 @@ namespace PokemonReviewApp.Controllers
 
             return NoContent();
         }
-
     }
 }

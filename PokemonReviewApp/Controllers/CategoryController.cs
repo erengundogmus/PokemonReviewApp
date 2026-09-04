@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
@@ -20,6 +21,7 @@ namespace PokemonReviewApp.Controllers
             this.mapper = mapper;
         }
 
+        [Authorize(Roles = "CategoryList")]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<CategoryOutputDto>))]
         public IActionResult GetCategories()
@@ -32,6 +34,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(categories);
         }
 
+        [Authorize(Roles = "CategoryDetail")]
         [HttpGet("{categoryId}")]
         [ProducesResponseType(200, Type = typeof(CategoryOutputDto))]
         [ProducesResponseType(400)]
@@ -49,13 +52,14 @@ namespace PokemonReviewApp.Controllers
             return Ok(category);
         }
 
+        [Authorize(Roles = "CategoryDetail")]
         [HttpGet("pokemon/{categoryId}")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<PokemonOutputDto>))]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetPokemonByCategoryId(int categoryId)
         {
-            if (!categoryInterface.CategoryExists(categoryId)) //category yoksa boş olduğunu bildirir
+            if (!categoryInterface.CategoryExists(categoryId))
                 return NotFound("Category does not exist.");
 
             var pokemons = mapper.Map<List<PokemonOutputDto>>(categoryInterface.GetPokemonByCategory(categoryId));
@@ -66,6 +70,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(pokemons);
         }
 
+        [Authorize(Roles = "CategoryCreate")]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -91,7 +96,6 @@ namespace PokemonReviewApp.Controllers
 
             if (!categoryInterface.CreateCategory(categoryMap))
             {
-                //modelstate key value olduğu için iki tane "" açtık
                 ModelState.AddModelError("", "Something went wrong while saving.");
                 return StatusCode(500, ModelState);
             }
@@ -99,7 +103,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created.");
         }
 
-
+        [Authorize(Roles = "CategoryUpdate")]
         [HttpPut("{categoryId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -121,16 +125,8 @@ namespace PokemonReviewApp.Controllers
             if (existingCategory != null)
             {
                 ModelState.AddModelError("", "Category already exist.");
-                return StatusCode(422, ModelState); //422 Unprocessable Entity hata kodu
+                return StatusCode(422, ModelState);
             }
-
-            /*   mapping yapmasaydık kullanacağımız yöntem
-            Category category = new Category
-            {
-                Id = updatedcategory.Id,
-                Name = updatedcategory.Name,
-            };
-            */
 
             var categoryMap = this.mapper.Map<Category>(updatedcategory);
             categoryMap.Id = categoryId;
@@ -139,14 +135,12 @@ namespace PokemonReviewApp.Controllers
             {
                 ModelState.AddModelError("", "Something went wrong while updating category.");
                 return StatusCode(500, ModelState);
-
             }
 
             return NoContent();
-
         }
 
-
+        [Authorize(Roles = "CategoryDelete")]
         [HttpDelete("{categoryId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -170,7 +164,6 @@ namespace PokemonReviewApp.Controllers
             }
 
             return NoContent();
-
         }
     }
 }

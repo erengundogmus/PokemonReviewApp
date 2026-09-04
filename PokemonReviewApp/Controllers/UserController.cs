@@ -45,12 +45,12 @@ namespace PokemonReviewApp.Controllers
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
             var user = await _userRepository.Login(request.Username, request.Password);
-
             if (user == null)
                 return Unauthorized("Invalid username or password.");
 
-            string token = CreateToken(user);
             var permissions = await _userRepository.GetUserPermissions(user.Id);
+
+            string token = CreateToken(user, permissions);
 
             var response = new UserLoginOutputDto
             {
@@ -63,24 +63,22 @@ namespace PokemonReviewApp.Controllers
             return Ok(response);
         }
 
-        private string CreateToken(User user)
+        private string CreateToken(User user, List<string> permissions)
         {
             var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username)
+    };
+
+            foreach (var permission in permissions)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
-            };
+                claims.Add(new Claim(ClaimTypes.Role, permission));
+            }
 
-            var secret = _configuration
-                .GetSection("AppSettings:Token")
-                .Value!;
-
+            var secret = _configuration.GetSection("AppSettings:Token").Value!;
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-
-            var creds = new SigningCredentials(
-                key,
-                SecurityAlgorithms.HmacSha512Signature
-            );
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -91,7 +89,6 @@ namespace PokemonReviewApp.Controllers
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
-
             return tokenHandler.WriteToken(token);
         }
 

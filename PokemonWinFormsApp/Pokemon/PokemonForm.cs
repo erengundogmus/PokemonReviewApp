@@ -35,12 +35,18 @@ namespace PokemonWinFormsApp.Pokemon
             }
             catch (Exception ex)
             {
-                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonDetail_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonDetail"))
+            {
+                MessageBox.Show("You do not have permission to view pokemon details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -59,6 +65,12 @@ namespace PokemonWinFormsApp.Pokemon
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a pokemon.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var createForm = new PokemonCreateForm();
@@ -74,6 +86,12 @@ namespace PokemonWinFormsApp.Pokemon
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a pokemon.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -94,6 +112,12 @@ namespace PokemonWinFormsApp.Pokemon
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonDelete"))
+            {
+                MessageBox.Show("You do not have permission to delete a pokemon.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;

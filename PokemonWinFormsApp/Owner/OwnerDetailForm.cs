@@ -15,6 +15,13 @@ namespace PokemonWinFormsApp.Owner
 
         public async Task LoadOwnerDetailAsync(int ownerId)
         {
+            if (!UserSession.HasPermission("OwnerDetail"))
+            {
+                MessageBox.Show("You do not have permission to view owner details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             _ownerId = ownerId;
             try
             {

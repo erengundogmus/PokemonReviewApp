@@ -30,12 +30,18 @@ namespace PokemonWinFormsApp.Pokemon
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error occurred while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a pokemon.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var updatedPokemon = new PokemonInputDto
             {
                 Name = textName.Text,

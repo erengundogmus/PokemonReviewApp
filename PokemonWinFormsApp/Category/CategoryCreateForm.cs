@@ -14,6 +14,12 @@ namespace PokemonWinFormsApp.Category
 
         private async void CategoryCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CategoryCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a category.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var newCategory = new CategoryInputDto
             {
                 Name = textName.Text,

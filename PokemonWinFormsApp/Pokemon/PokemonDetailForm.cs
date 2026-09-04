@@ -14,6 +14,13 @@ namespace PokemonWinFormsApp.Pokemon
 
         public async Task LoadPokemonDetailAsync(int pokemonId)
         {
+            if (!UserSession.HasPermission("PokemonDetail"))
+            {
+                MessageBox.Show("You do not have permission to view pokemon details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             try
             {
                 var pokemon = await _apiService.GetByIdAsync<PokemonOutputDto>("pokemon", pokemonId);

@@ -27,12 +27,18 @@ namespace PokemonWinFormsApp.Country
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Veriler yüklenirken hata oluştu: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CountryUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a country.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var updatedCountry = new CountryInputDto
             {
                 Name = textName.Text,

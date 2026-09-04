@@ -9,12 +9,17 @@ namespace PokemonWinFormsApp.Pokemon
         public PokemonCreateForm()
         {
             InitializeComponent();
-
             _apiService = ResolveHelper.GetInstance<IApiService>();
         }
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a pokemon.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var newPokemon = new PokemonInputDto
             {
                 Name = textName.Text,

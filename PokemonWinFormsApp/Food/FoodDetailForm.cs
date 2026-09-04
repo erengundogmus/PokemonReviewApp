@@ -14,6 +14,13 @@ namespace PokemonWinFormsApp.Food
 
         public async Task LoadFoodDetailAsync(int foodId)
         {
+            if (!UserSession.HasPermission("FoodDetail"))
+            {
+                MessageBox.Show("You do not have permission to view food details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             try
             {
                 var food = await _apiService.GetByIdAsync<FoodOutputDto>("food", foodId);

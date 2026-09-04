@@ -14,19 +14,20 @@ namespace PokemonReviewApp.Controllers
     {
         private readonly IPokemonInterface pokemonInterface;
         private readonly IMapper mapper;
-        private readonly ICategoryInterface categoryInterface; // category'nin varlığını kontrol etmek için
-        private readonly IOwnerInterface ownerInterface;  // owner'ın varlığını kontrol etmek için
+        private readonly ICategoryInterface categoryInterface;
+        private readonly IOwnerInterface ownerInterface;
         private readonly IReviewInterface reviewInterface;
 
         public PokemonController(IPokemonInterface pokemonInterface, ICategoryInterface categoryInterface, IOwnerInterface ownerInterface, IReviewInterface reviewInterface, IMapper mapper)
         {
             this.pokemonInterface = pokemonInterface;
             this.mapper = mapper;
-            this.categoryInterface = categoryInterface; // category'nin varlığını kontrol etmek için
-            this.ownerInterface = ownerInterface; // owner'ın varlığını kontrol etmek için
-            this.reviewInterface = reviewInterface; //toplu review silme işlemi için
+            this.categoryInterface = categoryInterface;
+            this.ownerInterface = ownerInterface;
+            this.reviewInterface = reviewInterface;
         }
 
+        [Authorize(Roles = "PokemonList")]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<PokemonOutputDto>))]
         public IActionResult GetPokemons()
@@ -39,7 +40,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(pokemons);
         }
 
-
+        [Authorize(Roles = "PokemonDetail")]
         [HttpGet("{pokemonId}")]
         [ProducesResponseType(200, Type = typeof(PokemonOutputDto))]
         [ProducesResponseType(400)]
@@ -57,6 +58,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(pokemon);
         }
 
+        [Authorize(Roles = "PokemonDetail")]
         [HttpGet("{pokemonId}/rating")]
         [ProducesResponseType(200, Type = typeof(decimal))]
         [ProducesResponseType(400)]
@@ -74,7 +76,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(rating);
         }
 
-        [Authorize]
+        [Authorize(Roles = "PokemonCreate")]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -109,7 +111,7 @@ namespace PokemonReviewApp.Controllers
 
             var PokemonMap = mapper.Map<Pokemon>(pokemonCreate);
 
-            if (!pokemonInterface.CreatePokemon(pokemonCreate.OwnerId, pokemonCreate.CategoryId, PokemonMap)) // veritabanına kayıt başarılı olmazsa bu hata
+            if (!pokemonInterface.CreatePokemon(pokemonCreate.OwnerId, pokemonCreate.CategoryId, PokemonMap))
             {
                 ModelState.AddModelError("", "Something went wrong while saving");
                 return StatusCode(500, ModelState);
@@ -118,9 +120,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created");
         }
 
-
-
-        [Authorize]
+        [Authorize(Roles = "PokemonUpdate")]
         [HttpPut("{pokemonId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -133,14 +133,13 @@ namespace PokemonReviewApp.Controllers
             if (!pokemonInterface.PokemonExists(pokemonId))
                 return NotFound();
 
-            // pokemonun olup olmadığını kontrol eder
-            var existingPokemon = pokemonInterface.GetPokemons()                               /*şu an güncellenen pokemon hariç(category değişecekse buraya takılmamak için)*/
-                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != pokemonId).FirstOrDefault(); // DEĞİŞİKLİK: updatedpokemon.Id yerine pokemonId kullanıldı
+            var existingPokemon = pokemonInterface.GetPokemons()
+                .Where(p => p.Name.Trim().ToUpper() == updatedpokemon.Name.Trim().ToUpper() && p.Id != pokemonId).FirstOrDefault();
 
             if (existingPokemon != null)
             {
                 ModelState.AddModelError("", "Pokemon already exist.");
-                return StatusCode(422, ModelState); //422 Unprocessable Entity hata kodu
+                return StatusCode(422, ModelState);
             }
 
             if (!ownerInterface.OwnerExists(updatedpokemon.OwnerId))
@@ -155,7 +154,6 @@ namespace PokemonReviewApp.Controllers
                 return NotFound(ModelState);
             }
 
-
             if (!ModelState.IsValid)
                 return BadRequest();
 
@@ -167,15 +165,12 @@ namespace PokemonReviewApp.Controllers
             {
                 ModelState.AddModelError("", "Something went wrong while updating pokemon.");
                 return StatusCode(500, ModelState);
-
             }
 
             return NoContent();
-
         }
 
-
-        [Authorize]
+        [Authorize(Roles = "PokemonDelete")]
         [HttpDelete("{pokemonId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -187,7 +182,6 @@ namespace PokemonReviewApp.Controllers
                 return NotFound();
             }
 
-            //silinecek pokemon için review var mı kontrol ediyoruz varsa reviewlerini de silmek için
             var reviewsToDelete = reviewInterface.GetReviewsOfAPokemon(pokemonId);
             var pokemonToDelete = pokemonInterface.GetPokemon(pokemonId);
 
@@ -210,9 +204,6 @@ namespace PokemonReviewApp.Controllers
             }
 
             return NoContent();
-
         }
-
     }
-
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
@@ -20,6 +21,7 @@ namespace PokemonReviewApp.Controllers
             this.mapper = mapper;
         }
 
+        [Authorize(Roles = "CountryList")]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<CountryOutputDto>))]
         public IActionResult GetCountries()
@@ -32,6 +34,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(countries);
         }
 
+        [Authorize(Roles = "CountryDetail")]
         [HttpGet("{countryId}")]
         [ProducesResponseType(200, Type = typeof(CountryOutputDto))]
         [ProducesResponseType(400)]
@@ -49,6 +52,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(country);
         }
 
+        [Authorize(Roles = "CountryDetail")]
         [HttpGet("owners/{ownerId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
@@ -57,7 +61,6 @@ namespace PokemonReviewApp.Controllers
         {
             var country = countryInterface.GetCountryByOwner(ownerId);
 
-            //owner'ın country'si var mı kontrol ediyoruz
             if (country == null)
                 return NotFound("Owner does not exist or has no country.");
 
@@ -69,6 +72,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(countryDto);
         }
 
+        [Authorize(Roles = "CountryCreate")]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -101,7 +105,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created");
         }
 
-
+        [Authorize(Roles = "CountryUpdate")]
         [HttpPut("{countryId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -133,15 +137,12 @@ namespace PokemonReviewApp.Controllers
             {
                 ModelState.AddModelError("", "Something went wrong while updating country.");
                 return StatusCode(500, ModelState);
-
             }
 
             return NoContent();
-
         }
 
-
-
+        [Authorize(Roles = "CountryDelete")]
         [HttpDelete("{countryId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -165,7 +166,6 @@ namespace PokemonReviewApp.Controllers
             }
 
             return NoContent();
-
         }
     }
 }

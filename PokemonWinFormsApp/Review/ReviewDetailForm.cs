@@ -14,6 +14,13 @@ namespace PokemonWinFormsApp.Review
 
         public async Task LoadReviewDetailAsync(int reviewId)
         {
+            if (!UserSession.HasPermission("ReviewDetail"))
+            {
+                MessageBox.Show("You do not have permission to view review details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             try
             {
                 var review = await _apiService.GetByIdAsync<ReviewOutputDto>("review", reviewId);

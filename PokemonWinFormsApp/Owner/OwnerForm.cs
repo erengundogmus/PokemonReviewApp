@@ -36,12 +36,18 @@ namespace PokemonWinFormsApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonDetail_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("OwnerDetail"))
+            {
+                MessageBox.Show("You do not have permission to view owner details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;
@@ -64,6 +70,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("OwnerCreate"))
+            {
+                MessageBox.Show("You do not have permission to create an owner.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var createForm = new OwnerCreateForm();
@@ -79,6 +91,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("OwnerUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update an owner.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;
@@ -103,6 +121,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("OwnerDelete"))
+            {
+                MessageBox.Show("You do not have permission to delete an owner.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedOwner = dataGridView1.CurrentRow.DataBoundItem as OwnerOutputDto;

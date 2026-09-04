@@ -28,12 +28,18 @@ namespace PokemonWinFormsApp.Food
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Veriler yüklenirken hata oluştu: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("FoodUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update food.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var updatedFood = new FoodInputDto
             {
                 Name = textName.Text,

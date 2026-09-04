@@ -14,6 +14,12 @@ namespace PokemonWinFormsApp.Owner
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("OwnerCreate"))
+            {
+                MessageBox.Show("You do not have permission to create an owner.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var newOwner = new OwnerInputDto
             {
                 Name = textName.Text,

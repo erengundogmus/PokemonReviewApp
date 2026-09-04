@@ -14,6 +14,13 @@ namespace PokemonWinFormsApp.Country
 
         public async Task LoadCountryDetailAsync(int countryId)
         {
+            if (!UserSession.HasPermission("CountryDetail"))
+            {
+                MessageBox.Show("You do not have permission to view country details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             try
             {
                 var country = await _apiService.GetByIdAsync<CountryOutputDto>("country", countryId);

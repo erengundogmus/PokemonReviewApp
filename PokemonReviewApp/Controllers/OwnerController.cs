@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PokemonReviewApp.InputDtos;
 using PokemonReviewApp.Interfaces;
@@ -9,7 +10,6 @@ namespace PokemonReviewApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
     public class OwnerController : Controller
     {
         private readonly IOwnerInterface ownerInterface;
@@ -23,6 +23,7 @@ namespace PokemonReviewApp.Controllers
             this.countryInterface = countryInterface;
         }
 
+        [Authorize(Roles = "OwnerList")]
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<OwnerOutputDto>))]
         public IActionResult GetOwners()
@@ -35,6 +36,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(owners);
         }
 
+        [Authorize(Roles = "OwnerDetail")]
         [HttpGet("{ownerId}")]
         [ProducesResponseType(200, Type = typeof(OwnerOutputDto))]
         [ProducesResponseType(400)]
@@ -52,6 +54,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(owner);
         }
 
+        [Authorize(Roles = "OwnerDetail")]
         [HttpGet("{ownerId}/pokemon")]
         [ProducesResponseType(200, Type = typeof(IEnumerable<PokemonOutputDto>))]
         [ProducesResponseType(400)]
@@ -71,6 +74,7 @@ namespace PokemonReviewApp.Controllers
             return Ok(ownersPokemons);
         }
 
+        [Authorize(Roles = "OwnerCreate")]
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
@@ -108,7 +112,7 @@ namespace PokemonReviewApp.Controllers
             return Ok("Successfully created");
         }
 
-
+        [Authorize(Roles = "OwnerUpdate")]
         [HttpPut("{ownerId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]
@@ -130,7 +134,6 @@ namespace PokemonReviewApp.Controllers
                 return StatusCode(422, ModelState);
             }
 
-            //gerekirse güncellemede de CountryId kontrolü yapılabilir
             if (!countryInterface.CountryExists(updatedowner.CountryId))
             {
                 ModelState.AddModelError("", "Country does not exist.");
@@ -153,7 +156,7 @@ namespace PokemonReviewApp.Controllers
             return NoContent();
         }
 
-
+        [Authorize(Roles = "OwnerDelete")]
         [HttpDelete("{ownerId}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(204)]

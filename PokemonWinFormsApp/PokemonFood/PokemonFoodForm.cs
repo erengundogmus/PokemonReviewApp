@@ -49,6 +49,12 @@ namespace PokemonWinFormsApp.PokemonFood
 
         private async void buttonPokemonsMenu_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonsMenu"))
+            {
+                MessageBox.Show("You do not have permission to view a pokemon's menu.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -76,6 +82,12 @@ namespace PokemonWinFormsApp.PokemonFood
 
         private async void buttonAddToMenu_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonFoodAdd"))
+            {
+                MessageBox.Show("You do not have permission to add food to a pokemon's menu.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null && dataGridView2.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;
@@ -111,6 +123,12 @@ namespace PokemonWinFormsApp.PokemonFood
 
         private async void buttonRemoveFromMenu_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("PokemonFoodRemove"))
+            {
+                MessageBox.Show("You do not have permission to remove food from a pokemon's menu.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null && dataGridView3.CurrentRow != null)
             {
                 var selectedPokemon = dataGridView1.CurrentRow.DataBoundItem as PokemonOutputDto;

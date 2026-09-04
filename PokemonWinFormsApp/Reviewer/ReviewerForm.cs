@@ -36,12 +36,18 @@ namespace PokemonWinFormsApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("API connection error or failed while loading data: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private async void buttonDetail_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewerDetail"))
+            {
+                MessageBox.Show("You do not have permission to view reviewer details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;
@@ -64,6 +70,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewerCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a reviewer.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             try
             {
                 var createForm = new ReviewerCreateForm();
@@ -79,6 +91,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonUpdate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewerUpdate"))
+            {
+                MessageBox.Show("You do not have permission to update a reviewer.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;
@@ -103,6 +121,12 @@ namespace PokemonWinFormsApp
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewerDelete"))
+            {
+                MessageBox.Show("You do not have permission to delete a reviewer.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dataGridView1.CurrentRow != null)
             {
                 var selectedReviewer = dataGridView1.CurrentRow.DataBoundItem as ReviewerOutputDto;

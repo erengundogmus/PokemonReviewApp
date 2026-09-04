@@ -15,6 +15,13 @@ namespace PokemonWinFormsApp.Category
 
         public async Task LoadCategoryDetailAsync(int categoryId)
         {
+            if (!UserSession.HasPermission("CategoryDetail"))
+            {
+                MessageBox.Show("You do not have permission to view category details.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                this.Close();
+                return;
+            }
+
             _categoryId = categoryId;
             try
             {

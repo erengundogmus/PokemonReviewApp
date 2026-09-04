@@ -14,6 +14,12 @@ namespace PokemonWinFormsApp.Country
 
         private async void CountryCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("CountryCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a country.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var newCountry = new CountryInputDto
             {
                 Name = textName.Text,

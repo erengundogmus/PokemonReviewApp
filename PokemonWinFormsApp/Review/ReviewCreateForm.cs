@@ -14,6 +14,12 @@ namespace PokemonWinFormsApp.Review
 
         private async void buttonCreate_Click(object sender, EventArgs e)
         {
+            if (!UserSession.HasPermission("ReviewCreate"))
+            {
+                MessageBox.Show("You do not have permission to create a review.", "Access Denied", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var newReview = new ReviewInputDto
             {
                 Title = textTitle.Text,
